@@ -5,7 +5,7 @@
 <!-- doc-sync: order-source / 2026-10-19-r1 -->
 
 日期: 2026-10-19. 状态: 已实现, 本地单元测试通过, 等待 review.
-分支: `feat/replayable-order-source`. PR 链接在创建后补充.
+分支: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
 基线: 已通过 GitHub 确认 PR #2 合并至 `8412ad1a7733e6e19b9642fa9ef4dc287e54aca7`.
 
 ## 范围与来源

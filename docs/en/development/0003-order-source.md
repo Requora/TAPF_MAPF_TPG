@@ -5,7 +5,7 @@
 <!-- doc-sync: order-source / 2026-10-19-r1 -->
 
 Date: 2026-10-19. Status: implemented, local unit tests passed, pending review.
-Branch: `feat/replayable-order-source`. Add the PR link after creation.
+Branch: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
 Baseline: GitHub confirmed PR #2 merged at `8412ad1a7733e6e19b9642fa9ef4dc287e54aca7`.
 
 ## Scope and sources
