@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0006-current-task-compiler.md) | [English](../../en/development/0006-current-task-compiler.md)
 
-<!-- doc-sync: current-task-compiler / 2026-10-19-r1 -->
+<!-- doc-sync: current-task-compiler / 2026-10-19-r2 -->
 
 Date: 2026-10-19. Status: restricted stage 4 implementation, fixture-tested; pending review.
 Branch: `feat/current-task-compiler`. [PR #6](https://github.com/Requora/TAPF_MAPF_TPG/pull/6).
@@ -24,6 +24,17 @@ types `5c3ffe789c8f43061961fd89bb7c217781ecda259ddb8c26c8c5d06c7d601b05`.
 Original repository code using the standard library; no upstream solver integrated.
 
 ## Decisions and observable behavior
+
+Review refactor: `_compiler_validation.py` owns model references, request shape,
+bindings, action locks, Lift preconditions, carry ownership, duplicate claims,
+target validity, and orphaned carrying checks. Model fields use explicit attribute
+access, such as `model.nodes`; there is no fixed-field getattr loop.
+The compiler calls validation at model/request entry, before each unfinished task,
+after target resolution, and before returning jobs. It propagates failures without
+constructing them inline. The compiler retains target resolution, action conversion,
+and candidate bookkeeping. Failure codes, messages, related IDs, and check order
+remain unchanged. These private checks do not implement the stage 9 safety Validator.
+AGENTS.md records this separation, including business preconditions.
 
 - Use next_step already projected to join_state. Do not advance it again.
 - Support exactly one Lift, Serve, Drop sequence per unfinished bound task.
@@ -67,11 +78,19 @@ python -m pip wheel --no-deps --wheel-dir /tmp/warehouse-compiler-wheel .
 git diff --check
 ```
 
-All 48 tests passed from source and the installed wheel, including 15 compiler tests.
+All 49 tests passed from source and the installed wheel, including 16 compiler tests.
 Ruff and pip check passed. No unexpected test failures. Initial gh status lookup failed
 because gh is absent; the GitHub connector confirmed merge status. The reference package
 has 160 unchanged files. Bilingual docs passed gpt-6-luna / low review.
 Remote CI results will be recorded in the PR.
+
+The review adds regression coverage for both Lift failures: the target shelf is
+carried by B, or A already carries another shelf. Both preserve the exact CONFLICT
+diagnostic and input snapshots. Model checks cover duplicate IDs in all five indexed
+collections and unknown place nodes/resources. A temporary comparison harness ran
+the compiler tests against the pre-review implementation at `6e47781` and the refactor:
+11 job results and 43 Failure results matched exactly. Exception cases were checked
+by the separate unwrapped regression suite. The harness is not a repository artifact.
 
 No allocator, MAPF/TPG/TAPF integration, Runtime commit, inventory/demand feasibility,
 continuous geometry, resource scheduling, or parking validation was performed.
@@ -79,7 +98,8 @@ Returned jobs are compiler output, not accepted executable proposals.
 
 ## Line counts and next step
 
-Code: +322/-0, including 15 tests. Documentation counts are disclosed separately in
-the PR; configuration is unchanged. Wait for user review and merge. Then continue
+Code: +412/-0 against main, including 16 tests. Documentation counts, including
+AGENTS.md, are disclosed separately in the PR; build/CI configuration is unchanged.
+Wait for user review and merge. Then continue
 stage 4/5 with the smallest required current-task assignment increment, preserving
 the decision to defer multi-task scheduling and suffix editing.

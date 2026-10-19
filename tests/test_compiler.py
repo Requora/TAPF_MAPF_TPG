@@ -99,6 +99,24 @@ class CompilerTests(unittest.TestCase):
     def test_blocked_current_task_does_not_retry(self):
         self.assert_failure(self.compile(tasks=self.progress(0, blocked=True)), "NO_PLAN")
 
+    def test_lift_preconditions_preserve_diagnostics_and_inputs(self):
+        other = replace(self.model.objects[0], id="other-shelf")
+        model = replace(self.model, objects=self.model.objects + (other,))
+        compiler = CurrentTaskCompiler(model, sim_dt_s=0.1)
+        cases = (
+            (ObjectState("shelf", None, "B"), ObjectState("other-shelf", Pose2(4, 0, 0), None)),
+            (ObjectState("shelf", Pose2(0, 0, 0), None), ObjectState("other-shelf", None, "A")),
+        )
+        for objects in cases:
+            with self.subTest(objects=objects):
+                request = replace(self.request, start=self.state(objects=objects))
+                original = copy.deepcopy((model, request, self.draft))
+                result = compiler.compile_jobs(request, self.draft)
+                self.assertEqual(result, Failure(
+                    "CONFLICT", "Lift requires an empty robot and grounded shelf", ("A", "shelf"),
+                ))
+                self.assertEqual((model, request, self.draft), original)
+
     def test_queue_edits_and_new_definitions_are_explicitly_deferred(self):
         for draft in (TaskDelta((self.request.tasks[0].task,), ()),
                       TaskDelta((), (RobotQueue("A", ()),))):
@@ -153,7 +171,12 @@ class CompilerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             CurrentTaskCompiler(self.model, sim_dt_s=0)
         for model in (replace(self.model, robots=self.model.robots * 2),
-                      replace(self.model, places=(replace(self.model.places[0], node_id="missing"),))):
+                      replace(self.model, nodes=self.model.nodes * 2),
+                      replace(self.model, resources=self.model.resources * 2),
+                      replace(self.model, objects=self.model.objects * 2),
+                      replace(self.model, places=self.model.places * 2),
+                      replace(self.model, places=(replace(self.model.places[0], node_id="missing"),)),
+                      replace(self.model, places=(replace(self.model.places[0], resource_id="missing"),))):
             with self.assertRaises(ValueError):
                 CurrentTaskCompiler(model, sim_dt_s=0.1)
         with self.assertRaises(ValueError):
