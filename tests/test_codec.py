@@ -90,9 +90,37 @@ class CodecTests(unittest.TestCase):
                     dumps(c.Point2(value, 0.0))
                 with self.assertRaises(ValueError):
                     from_data(c.Point2, {"x_m": value, "y_m": 0})
-        for token in ("NaN", "Infinity", "-Infinity", "1e400", "-1e400", str(10**400)):
+        for token in ("NaN", "Infinity", "-Infinity", "1e400", "-1e400"):
             with self.subTest(token=token), self.assertRaises(ValueError):
                 loads(c.Point2, '{"x_m":' + token + ',"y_m":0}')
+        with self.assertRaises(OverflowError):
+            loads(c.Point2, '{"x_m":' + str(10**400) + ',"y_m":0}')
+
+    def test_union_preserves_selected_branch_error(self):
+        data = {"station_id": "S", "picks": [{"order_id": "O", "sku": "X", "quantity": True}]}
+        with self.assertRaisesRegex(ValueError, r"^\$\.picks\[0\]\.quantity: expected int$"):
+            from_data(c.TaskAction, data)
+        with self.assertRaises(OverflowError):
+            from_data(float | None, 10**400)
+        self.assertEqual(from_data(float | None, 2), 2.0)
+        self.assertEqual(from_data(c.Pose2 | None, {"x_m": 0, "y_m": 0, "yaw_rad": 0}),
+                         c.Pose2(0.0, 0.0, 0.0))
+
+    def test_public_result_unions(self):
+        failure = c.Failure("BAD_INPUT", "invalid request", ())
+        cases = ((c.TaskDelta | c.Failure, c.TaskDelta((), ())),
+                 (c.FleetPlan | c.Failure, c.FleetPlan("Q", (), ())),
+                 (c.MotionPlan | c.Failure, c.MotionPlan((), ())),
+                 (c.ExecutableProposal | c.Failure,
+                  c.ExecutableProposal("Q", c.TaskDelta((), ()), c.MotionPlan((), ()))),
+                 (c.IdealControlFrame | c.Failure, c.IdealControlFrame(0.0, 1.0, (), ())),
+                 (c.Observation | c.Failure, c.Observation(c.PhysicalState(0.0, (), (), ()), ())),
+                 (c.Accepted | c.Failure, c.Accepted("C", 1)),
+                 (tuple[c.RobotJobs, ...] | c.Failure, (c.RobotJobs("R", ()),)))
+        for cls, value in cases:
+            with self.subTest(cls=cls):
+                self.assertEqual(loads(cls, dumps(value)), value)
+                self.assertEqual(loads(cls, dumps(failure)), failure)
 
     def test_duplicate_keys_at_any_depth(self):
         for text in ('{"x_m":0,"x_m":1,"y_m":0}',

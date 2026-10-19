@@ -29,17 +29,36 @@ def to_data(value):
     raise TypeError(f"Unsupported JSON type: {type(value).__name__}")
 
 
+def _matches_union_member(cls, data):
+    """Select by outer shape and Literal tags; decoding checks nested values."""
+    if isinstance(cls, type) and dc.is_dataclass(cls):
+        if not isinstance(data, dict):
+            return False
+        fields = {field.name: field for field in dc.fields(cls)}
+        required = {name for name, field in fields.items()
+                    if field.default is dc.MISSING and field.default_factory is dc.MISSING}
+        if not required <= data.keys() <= fields.keys():
+            return False
+        hints = t.get_type_hints(cls)
+        return all(t.get_origin(hints[name]) is not t.Literal or
+                   any(type(value) is type(tag) and value == tag
+                       for tag in t.get_args(hints[name]))
+                   for name, value in data.items())
+    if t.get_origin(cls) is tuple:
+        return isinstance(data, (list, tuple))
+    if cls is float:
+        return type(data) in (int, float)
+    return type(data) is cls
+
+
 def from_data(cls, data, path="$"):
-    """Decode a contract annotation; malformed values raise ValueError with paths."""
+    """Decode contract shapes; errors propagate, including native float overflow."""
     origin, args = t.get_origin(cls), t.get_args(cls)
     if origin in (t.Union, types.UnionType):
-        errors = []
-        for member in args:
-            try:
-                return from_data(member, data, path)
-            except ValueError as exc:
-                errors.append(str(exc))
-        raise ValueError(f"{path}: no union member matched: {errors}")
+        matches = [member for member in args if _matches_union_member(member, data)]
+        if len(matches) != 1:
+            raise ValueError(f"{path}: expected exactly one union shape, matched {len(matches)}")
+        return from_data(matches[0], data, path)
     if origin is t.Literal:
         if not any(type(data) is type(item) and data == item for item in args):
             raise ValueError(f"{path}: expected one of {args!r}")
@@ -76,10 +95,7 @@ def from_data(cls, data, path="$"):
     if cls is float:
         if type(data) not in (int, float):
             raise ValueError(f"{path}: expected a finite number")
-        try:
-            value = float(data)
-        except OverflowError as exc:
-            raise ValueError(f"{path}: number exceeds finite float range") from exc
+        value = float(data)
         if not math.isfinite(value):
             raise ValueError(f"{path}: expected a finite number")
         return value

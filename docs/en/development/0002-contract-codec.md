@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0002-contract-codec.md) | [English](../../en/development/0002-contract-codec.md)
 
-<!-- doc-sync: codec / 2026-10-19-r2 -->
+<!-- doc-sync: codec / 2026-10-19-r3 -->
 
 Date: 2026-10-19. Status: implemented and fixture-verified, pending review.
 Branch: `feat/strict-contract-codec`. [PR #2](https://github.com/Requora/TAPF_MAPF_TPG/pull/2).
@@ -28,7 +28,7 @@ Copy two selected JSON fixtures byte-for-byte from the reference `package/exampl
 ## Decisions and observable behavior
 
 Decoding checks nested fields, required values, exact scalar types, Literals,
-unions, and homogeneous tuple arrays. Nullable fields remain required unless
+unions with a unique outer shape or Literal tag, and homogeneous tuple arrays. Nullable fields remain required unless
 the contract provides a default. Missing action discriminators use their defaults.
 Integer JSON numbers may populate float fields; booleans cannot populate numbers.
 Construct fresh frozen contracts and tuples without changing the input.
@@ -62,8 +62,8 @@ python -m venv /tmp/warehouse-codec-check
 git diff --check
 ```
 
-Observed on Python 3.14.7: all 12 tests passed from source and from a fresh venv.
-The actual isolated run used `/tmp/warehouse-codec-e0vywp9w`, ran from `/tmp`,
+Observed on Python 3.14.7: all 14 tests passed from source and from a fresh venv.
+The actual isolated run used `/tmp/warehouse-codec-review-m5ocx6c4`, ran from `/tmp`,
 and selected this repository's tests by absolute path. The codec import resolved
 inside that venv's `site-packages`, without importing the reference package.
 Whitespace checks passed. No test failures occurred.
@@ -74,7 +74,7 @@ proposal, ideal_control_frame, and observation. Only the two selected fixtures
 are committed; the other seven checks are local evidence, not CI coverage.
 Backend configuration payloads and JSON Schema validation were not tested.
 
-CI runs the 12 tests against the installed package on Python 3.10 and 3.14.
+CI runs the 14 tests against the installed package on Python 3.10 and 3.14.
 Remote results are reported on the PR; local execution only covered Python 3.14.7.
 The initial `gpt-6.1-sol` / `low` review passed document checks. Per the latest
 user instruction, AGENTS.md now requires `gpt-6-luna` / `low` for document review.
@@ -82,15 +82,43 @@ The revised documents passed review with that configuration.
 Per the user's request, AGENTS.md now says to avoid `try/except` where possible.
 Do not catch or hide errors for production fault tolerance. Let errors terminate
 execution early and preserve the original traceback for development and debugging.
-This update changes only the rule and bilingual logs; code tests are not rerun.
+That rule-only update did not rerun code tests. The subsequent codec review below
+changes code and reruns the tests.
 All 149 files in the reference SHA256 manifest still match.
 The initial `gh` probe failed because the CLI is absent; the GitHub connector
 confirmed the merged baseline. A guessed reference test filename did not exist;
 file discovery found `test_contracts.py`. Neither issue changed the source bundle.
 
+## Review correction: remove exception handling
+
+[Review comment](https://github.com/Requora/TAPF_MAPF_TPG/pull/2#discussion_r4317735344)
+asked whether `try` could be removed. Both `try/except` blocks were removed.
+Select a union member by its outer shape, required/allowed fields, and Literal tags,
+then decode only that member. Do not catch nested decode failures to try another
+branch. Zero or multiple matching shapes raise `ValueError`; this covers all current
+public contract unions, not arbitrary overlapping unions.
+Let `float(data)` raise its original `OverflowError` for oversized integers.
+Non-finite float values still raise `ValueError`. Added tests cover all public
+Result unions and direct propagation of nested and overflow errors.
+
+Observed failure replay, exit code 1, with no exception wrapping:
+
+```bash
+PYTHONPATH=src python -c 'from warehouse_api.codec import from_data; from_data(float | None, 10**400)'
+```
+
+```text
+value = float(data)
+OverflowError: int too large to convert to float
+```
+
+AST inspection confirms no `try` remains in `codec.py`. All 14 tests passed from
+source and a freshly installed package; all nine reference payloads round-tripped
+again. This remains shape verification only. Document checks use `gpt-6-luna` / `low`.
+
 ## Size and next step
 
-Against main: 236 added Python lines and 76 added fixture lines, 312 total, no
+Against main: 280 added Python lines and 76 added fixture lines, 356 total, no
 deletions. Count fixtures in the code budget conservatively. CI adds 2 configuration
 lines. Git counts the final unterminated line in each JSON fixture; `wc -l`
 under-counted the initial total by two. Documentation is counted separately in the PR description.
