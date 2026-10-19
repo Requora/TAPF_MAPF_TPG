@@ -2,12 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r6 -->
+<!-- doc-sync: roadmap / 2026-10-19-r7 -->
 
-Status: PR #3 merged at `b310d6a`. Stage 3 order source and seeded generator are implemented.
-Stage 4 shared action timing is implemented and locally tested, pending review;
-the rest of the compiler and stages 5-11 remain planned.
-See the [timing log](0004-action-durations.md) for evidence and limits.
+Status: PR #4 merged at `65e0738`. Stage 3 orders and stage 4 shared action timing are implemented.
+Stage 4 candidate queue edits and explicit StepLock checks are fixture verified, pending review.
+Carrying ownership, remaining-action compilation, and stages 5-11 remain planned.
+See the [queue log](0005-candidate-queues.md) for evidence and limits.
 Each numbered stage may need several PRs. Every PR stays within 500 changed code
 lines, excluding documentation and configuration, and waits for user merge before
 the next development step. Keep the Chinese and English editions synchronized.

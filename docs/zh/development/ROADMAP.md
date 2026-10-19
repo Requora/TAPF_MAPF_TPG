@@ -2,11 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r6 -->
+<!-- doc-sync: roadmap / 2026-10-19-r7 -->
 
-状态: PR #3 已合并至 `b310d6a`. 阶段 3 订单源与带 seed 的生成器已实现.
-阶段 4 共用动作耗时函数已实现并通过本地测试, 等待 review; 编译器其余部分
-及阶段 5-11 仍为计划. 证据与限制见 [耗时日志](0004-action-durations.md).
+状态: PR #4 已合并至 `65e0738`. 阶段 3 订单和阶段 4 共用动作耗时已实现.
+阶段 4 候选队列编辑与显式 StepLock 检查已通过 fixture 验证, 等待 review.
+携带归属, 剩余动作编译及阶段 5-11 仍为计划.
+证据与限制见 [队列日志](0005-candidate-queues.md).
 每个阶段可能需要多个 PR. 每个 PR 的代码变更不超过 500 行,
 文档和配置不计入. 用户合并后才能开发下一步. 中英文同步更新.
 
