@@ -5,7 +5,7 @@
 <!-- doc-sync: current-task-compiler / 2026-10-19-r1 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限实现, 已通过 fixture 验证, 等待 review.
-分支: `feat/current-task-compiler`. 创建 PR 后补充链接.
+分支: `feat/current-task-compiler`. [PR #6](https://github.com/Requora/TAPF_MAPF_TPG/pull/6).
 基线: GitHub 确认 PR #5 已合并至 `526589d6c86341e9ce06ad313f029da854a2dba6`.
 
 ## 范围与来源

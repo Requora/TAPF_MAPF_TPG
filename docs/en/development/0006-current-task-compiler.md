@@ -5,7 +5,7 @@
 <!-- doc-sync: current-task-compiler / 2026-10-19-r1 -->
 
 Date: 2026-10-19. Status: restricted stage 4 implementation, fixture-tested; pending review.
-Branch: `feat/current-task-compiler`. PR link will be added after creation.
+Branch: `feat/current-task-compiler`. [PR #6](https://github.com/Requora/TAPF_MAPF_TPG/pull/6).
 Baseline: GitHub confirmed PR #5 merged at `526589d6c86341e9ce06ad313f029da854a2dba6`.
 
 ## Scope and sources
