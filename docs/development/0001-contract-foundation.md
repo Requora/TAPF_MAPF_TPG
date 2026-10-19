@@ -1,8 +1,8 @@
 # PR 1 — shared contracts and review workflow
 
-Date: 2026-10-19. Status: branch pushed; PR creation blocked by GitHub connection.
-Branch: `feat/api-contract-foundation`. No PR number has been created.
-[Review diff / create PR](https://github.com/Requora/TAPF_MAPF_TPG/compare/main...feat/api-contract-foundation?expand=1).
+Date: 2026-10-19. Status: PR open; waiting for user review and merge.
+Branch: `feat/api-contract-foundation`.
+[PR #1](https://github.com/Requora/TAPF_MAPF_TPG/pull/1).
 
 ## Scope and rationale
 
@@ -80,7 +80,8 @@ confirmed GitHub is installed; accessible app installations did not include the
 repository owner. No local GitHub CLI, CLI login, token environment variable or
 Git credential helper was available for an authenticated API fallback.
 
-The repository needs access through the GitHub connection to create the PR here.
-Alternatively, the user can open the comparison link above and create the PR.
-The branch contains all reviewable changes. Do not treat the comparison link as
-an existing PR. Remote CI results could not be read (HTTP 404); local checks passed.
+The user installed/authorized the connector for the organization. On retry,
+repository lookup succeeded and PR #1 was created successfully on 2026-10-19.
+The earlier access failure is resolved. Local checks passed; remote CI results
+are available through the PR checks page. No subsequent development stage has
+started. Wait for the user's review and merge.
