@@ -2,13 +2,13 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r8 -->
+<!-- doc-sync: roadmap / 2026-10-19-r9 -->
 
-Status: PR #4 merged at `65e0738`. Stage 3 orders and stage 4 shared action timing are implemented.
-PR #5 withdraws the queue implementation and records only the scope decision, pending review.
-Retain API 0.7 and leave unused fields empty under their existing semantics. Current-task
-compilation, action locks, carry checks, and stages 5-11 remain planned.
-See the [review decision](0005-candidate-queues.md).
+Status: PR #5 merged at `526589d`. Stage 3 orders and stage 4 shared action timing are implemented.
+This PR implements a restricted compiler for accepted current tasks, fixture-tested and pending review.
+It checks projected progress, action locks, and carry ownership; candidate task and queue edits are rejected.
+Retain API 0.7. Stages 5-11 remain planned.
+See the [review decision](0005-candidate-queues.md) and [compiler log](0006-current-task-compiler.md).
 Each numbered stage may need several PRs. Every PR stays within 500 changed code
 lines, excluding documentation and configuration, and waits for user merge before
 the next development step. Keep the Chinese and English editions synchronized.
