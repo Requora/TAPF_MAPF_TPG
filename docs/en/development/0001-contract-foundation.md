@@ -1,8 +1,8 @@
 # PR 1 - shared contracts and review workflow
 
-[中文](0001-contract-foundation_ZH.md) | [English](0001-contract-foundation.md) | [한국어](0001-contract-foundation_KO.md)
+[中文](../../zh/development/0001-contract-foundation.md) | [English](../../en/development/0001-contract-foundation.md)
 
-<!-- doc-sync: foundation / 2026-10-19-r2 -->
+<!-- doc-sync: foundation / 2026-10-19-r3 -->
 
 Date: 2026-10-19. Status: review fixes prepared; waiting for user review and merge.
 Branch: `feat/api-contract-foundation`. [PR #1](https://github.com/Requora/TAPF_MAPF_TPG/pull/1).
@@ -63,21 +63,20 @@ Observed: contracts loaded from `src/warehouse_api/contracts.py`; 72 classes and
 82 annotated methods resolved; 38 tests passed. Reference helpers are supplied
 through the package search path above. They are not shipped in this PR.
 
-CI for pre-review commit `8d1e4f1` passed on Python 3.10 and 3.14:
-[run 39304485036](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39304485036).
+CI for the latest code commit `cb83b1c` passed on Python 3.10 and 3.14:
+[run 39306082944](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39306082944).
 Revised-commit CI is tracked on the PR checks page. These tests do not establish
 production planner, Runtime, continuous collision, or native simulator correctness.
 
 ## Review fixes
 
-- A `gpt-6.1-sol` subagent with `low` reasoning checked all 12 documents read-only.
-  No issues were found in language parity, punctuation, local links, revision markers,
-  or recorded hashes/counts. Remote links and upstream claims were not reverified.
-  AGENTS now requires this delegation for document checks.
-- [Three synchronized languages](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317490698): README, rules, roadmap, and this log now each have Chinese, English, and Korean editions, with language links and matching revision markers.
-- [English punctuation](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317495406): normalize project documents and contract descriptions; preserve the supplied reference bundle.
-- [Communication principles](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317507084): add all six requested principles to AGENTS, including the 80% ASD-STE100 target, real traces, labeled teaching simplifications, and useful-only visualization.
-- User clarification in chat: documentation and configuration are excluded from the 500-line limit. Synchronize that rule across all three language editions.
+- Per the latest user request, project documents now have only Chinese and English editions. Store them in `docs/zh/` and `docs/en/` with matching relative filenames and synchronized updates.
+- The root README contains navigation only. Keep only the Chinese AGENTS file at the root; remove its English and Korean copies. Remove all Korean project documents added in this PR.
+- This bilingual requirement supersedes the earlier [three-language request](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317490698). Preserve the supplied reference bundle.
+- [English punctuation](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317495406): retain the normalized punctuation in project documents and contract field descriptions.
+- [Communication principles](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317507084): AGENTS retains all six principles, including the 80% ASD-STE100 target, real traces, labeled teaching simplifications, and useful-only visualization.
+- Documentation and configuration are excluded from the 500-line limit. Document checks remain delegated to a `gpt-6.1-sol` subagent with `low` reasoning.
+- This revision only changes document layout, rules, and links. Code and configuration are unchanged, so code tests are not rerun. Record this round's document check results in the PR description.
 
 Size against main: 446 added code lines (445 contracts + 1 initializer), no code
 deletions. Packaging and CI are 39 configuration lines, counted separately.

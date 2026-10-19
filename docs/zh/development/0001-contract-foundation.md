@@ -1,8 +1,8 @@
 # PR 1 - 共享契约与 review 流程
 
-[中文](0001-contract-foundation_ZH.md) | [English](0001-contract-foundation.md) | [한국어](0001-contract-foundation_KO.md)
+[中文](../../zh/development/0001-contract-foundation.md) | [English](../../en/development/0001-contract-foundation.md)
 
-<!-- doc-sync: foundation / 2026-10-19-r2 -->
+<!-- doc-sync: foundation / 2026-10-19-r3 -->
 
 日期: 2026-10-19. 状态: review 修正已准备, 等待用户 review 和合并.
 分支: `feat/api-contract-foundation`. [PR #1](https://github.com/Requora/TAPF_MAPF_TPG/pull/1).
@@ -58,20 +58,20 @@ PYTHON
 实际观察: 契约来自 `src/warehouse_api/contracts.py`; 72 个类和 82 个带注解方法解析成功;
 38 项测试通过. 参考辅助模块由上述包搜索路径提供, 未包含在本 PR 中.
 
-review 前提交 `8d1e4f1` 的 Python 3.10 和 3.14 CI 已通过:
-[run 39304485036](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39304485036).
+最近代码提交 `cb83b1c` 的 Python 3.10 和 3.14 CI 已通过:
+[run 39306082944](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39306082944).
 修改后提交的 CI 见 PR 检查页. 这些测试不证明生产规划器, Runtime,
 连续碰撞检查或原生模拟器的正确性.
 
 ## Review 修正
 
-- 已由 `gpt-6.1-sol` 模型, `low` 推理强度的 subagent 只读检查全部 12 份文档.
-  三语一致性, 标点, 本地链接, 修订标识, 已记录哈希和行数均未发现问题.
-  本次未重新核验远程链接及上游结论. AGENTS 已要求文档检查使用此委派方式.
-- [三语同步](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317490698): README, 规则, 开发计划和本日志均提供中英韩三版, 增加语言链接和一致的修订标识.
-- [英文标点](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317495406): 统一项目文档和契约字段说明的标点, 保留用户提供的参考包原状.
-- [表达原则](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317507084): 在 AGENTS 中补齐要求的六条原则, 包括接近 80% ASD-STE100, 真实轨迹, 标注教学简化, 仅采用有助理解的可视化.
-- 用户在聊天中明确: 文档和配置不计入 500 行限制. 三语规则同步更新.
+- 按用户最新要求, 项目文档仅保留中文和英文. 两种语言分别位于 `docs/zh/` 和 `docs/en/`, 使用相同的相对文件名并同步更新.
+- 根目录 README 只保留文档导航. AGENTS 只保留根目录中文版本, 删除英文及韩文副本. 删除本 PR 新增的所有韩文项目文档.
+- 原 [三语要求](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317490698) 已被上述双语要求替代. 用户提供的参考包保持原状.
+- [英文标点](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317495406): 保留已统一的项目文档和契约字段说明标点.
+- [表达原则](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317507084): AGENTS 保留六条原则, 包括接近 80% ASD-STE100, 真实轨迹, 标注教学简化, 仅采用有助理解的可视化.
+- 文档和配置不计入 500 行限制. 文档检查仍委派给 `gpt-6.1-sol` 模型, `low` 推理强度的 subagent.
+- 本次只调整文档布局, 规则和链接. 代码与配置均未改变, 不重复运行代码测试. 本轮文档检查结果在 PR 描述中记录.
 
 相对 main 新增代码 446 行 (契约 445 + 包入口 1), 无代码删除.
 打包和 CI 共 39 行配置, 单独统计. 文档也单独统计.

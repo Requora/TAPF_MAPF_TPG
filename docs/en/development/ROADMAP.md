@@ -1,13 +1,13 @@
 # Development roadmap
 
-[中文](ROADMAP_ZH.md) | [English](ROADMAP.md) | [한국어](ROADMAP_KO.md)
+[中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r2 -->
+<!-- doc-sync: roadmap / 2026-10-19-r3 -->
 
 Status: PR 1 establishes contracts. All implementation stages below are pending.
 Each numbered stage may need several PRs. Every PR stays within 500 changed code
 lines, excluding documentation and configuration, and waits for user merge before
-the next development step. Keep all three language editions synchronized.
+the next development step. Keep the Chinese and English editions synchronized.
 
 ## Replaceable modules
 

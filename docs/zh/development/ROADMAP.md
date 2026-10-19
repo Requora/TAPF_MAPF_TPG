@@ -1,12 +1,12 @@
 # 开发计划
 
-[中文](ROADMAP_ZH.md) | [English](ROADMAP.md) | [한국어](ROADMAP_KO.md)
+[中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r2 -->
+<!-- doc-sync: roadmap / 2026-10-19-r3 -->
 
 状态: PR 1 建立共享契约. 下列实现阶段均未开始.
 每个阶段可能需要多个 PR. 每个 PR 的代码变更不超过 500 行,
-文档和配置不计入. 用户合并后才能开发下一步. 三种语言同步更新.
+文档和配置不计入. 用户合并后才能开发下一步. 中英文同步更新.
 
 ## 可替换模块
 
