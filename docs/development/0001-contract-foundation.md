@@ -1,87 +1,96 @@
-# PR 1 — shared contracts and review workflow
+# PR 1 - shared contracts and review workflow
 
-Date: 2026-10-19. Status: PR open; waiting for user review and merge.
-Branch: `feat/api-contract-foundation`.
-[PR #1](https://github.com/Requora/TAPF_MAPF_TPG/pull/1).
+[中文](0001-contract-foundation_ZH.md) | [English](0001-contract-foundation.md) | [한국어](0001-contract-foundation_KO.md)
 
-## Scope and rationale
+<!-- doc-sync: foundation / 2026-10-19-r2 -->
 
-The tracked repository initially contained only README.md and .gitignore at
+Date: 2026-10-19. Status: review fixes prepared; waiting for user review and merge.
+Branch: `feat/api-contract-foundation`. [PR #1](https://github.com/Requora/TAPF_MAPF_TPG/pull/1).
+
+## Scope and provenance
+
+The initial repository contained README.md and .gitignore at
 `4f0109145ca3fbe3a8130a3cb94c757e2544d17e`.
-The user supplied the untracked `warehouse_api_v0_7/` specification bundle.
-Read the English guide, type definitions, reference implementation and validation
-notes. Keep the bundle intact and import only its shared contracts in this PR.
+The user supplied the untracked `warehouse_api_v0_7/` reference bundle.
+Read the English guide, type definitions, reference code, and validation notes.
+Keep that bundle unchanged. Import only its shared contracts into the package.
 
-`src/warehouse_api/contracts.py` is a byte-for-byte copy of
-`warehouse_api_v0_7/package/warehouse_api/contracts.py` (445 source lines).
-Its SHA256 is
-`8608f438a78470fae3535dbc0b1180583a7ae83875921bf717251a2518318bbd`.
-Retain the supplied bilingual field metadata to avoid an API change.
-Production code will import this single package, not the local reference bundle.
+`src/warehouse_api/contracts.py` was initially copied from
+`warehouse_api_v0_7/package/warehouse_api/contracts.py` (445 lines).
+Review changed only Chinese field-description punctuation to English punctuation.
+The file is no longer byte-identical; API fields, defaults, types, and Protocols remain unchanged.
 
-Add package metadata, import CI, AGENTS.md, and a module/research roadmap.
-Backend message types and Protocols are retained; no simulator is implemented.
-No upstream solver is vendored, compiled, or represented as operational.
+- Original SHA256: `8608f438a78470fae3535dbc0b1180583a7ae83875921bf717251a2518318bbd`.
+- Current SHA256: `ad02ec8870b84e01389ba8d8ef986038bf4dccb63e295a2cbc92cf0b1e13906a`.
+
+Production code imports this package, not the reference bundle. Add package metadata,
+import CI, development rules, and a module/research roadmap. Keep backend boundary
+types; no simulator is implemented. No native solver has been built or integrated.
 
 ## Verification
 
-Reference baseline command, run from the repository root:
+Original baseline command, from the repository root:
 
 ```bash
 PYTHONPATH=warehouse_api_v0_7/package python -m unittest discover -s warehouse_api_v0_7/package/tests -v
 ```
 
-Result: **38 passed**, Python 3.14.7. These are existing reference-package tests,
-including its backend helper tests. They do not verify a production planner,
-Runtime, continuous validator, or native simulator. The reference bundle remains
-local and is not required by CI or package installation.
+Result: 38 passed on Python 3.14.7. The first attempt inside the package directory
+could not find `python`; using the root shell and explicit PYTHONPATH resolved it.
+No source change was needed for that environment issue.
 
-An initial test attempt used `python` inside the reference package directory;
-that shell could not find the interpreter. Running from the repository root
-with explicit PYTHONPATH resolved the environment issue; no source change was needed.
+The initial package was built and installed into a temporary venv using
+`python -m pip install /home/yimin/research/TAPF_MAPF_TPG`. From outside the repository,
+`python -I` loaded the installed package and resolved 72 classes and 82 annotated methods.
+This check did not depend on the reference bundle or a source-path import.
 
-Standalone check: created a temporary venv, installed the repository using
-`python -m pip install /home/yimin/research/TAPF_MAPF_TPG`, changed to a temporary
-directory outside the repository, and imported with `python -I` (isolated mode).
-Resolved all public class and annotated method types using `typing.get_type_hints`.
-Observed output:
+For this review, AST comparison ignored only the first argument of field helper `F`.
+All remaining AST nodes matched the reference. Annotation resolution passed again.
+Reran the 38 reference tests against the revised source contracts with this command:
 
-```text
-Successfully installed warehouse-planning-api-0.7.0
-API: 0.7
-Loaded: /tmp/warehouse-pr1-57l_4xev/venv/lib/python3.14/site-packages/warehouse_api/contracts.py
-Resolved classes: 72 annotated methods: 82
+```bash
+PYTHONPATH=src python - <<'PYTHON'
+from pathlib import Path
+import unittest, warehouse_api
+warehouse_api.__path__.append(str(Path('warehouse_api_v0_7/package/warehouse_api').resolve()))
+suite = unittest.defaultTestLoader.discover('warehouse_api_v0_7/package/tests')
+result = unittest.TextTestRunner().run(suite)
+raise SystemExit(not result.wasSuccessful())
+PYTHON
 ```
 
-This verifies installation without the local reference bundle or source-path
-imports. CI repeats installation and annotation resolution on Python 3.10 and
-3.14; remote results are pending. Annotations describe data shapes; they do not
-enforce runtime values, semantic constraints, or solver conformance.
+Observed: contracts loaded from `src/warehouse_api/contracts.py`; 72 classes and
+82 annotated methods resolved; 38 tests passed. Reference helpers are supplied
+through the package search path above. They are not shipped in this PR.
 
-Code/config scope: 485 raw added lines (445 contracts, 1 package initializer,
-12 packaging metadata, 27 CI). No code deletions. This conservative count includes
-comments and blank lines and is below the 500 effective-code-line limit.
-README, AGENTS and development notes are documentation and are reported separately.
+CI for pre-review commit `8d1e4f1` passed on Python 3.10 and 3.14:
+[run 39304485036](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39304485036).
+Revised-commit CI is tracked on the PR checks page. These tests do not establish
+production planner, Runtime, continuous collision, or native simulator correctness.
 
-## Review focus and next step
+## Review fixes
 
-- Verify that the source hash matches the supplied contract file.
-- Review module boundaries, upstream candidates and the simulator exclusion.
-- Review the <=500-code-line rule and the stop-until-user-merge rule in AGENTS.md.
-- After this PR is merged, begin only the next small codec/fixture PR.
+- A `gpt-6.1-sol` subagent with `low` reasoning checked all 12 documents read-only.
+  No issues were found in language parity, punctuation, local links, revision markers,
+  or recorded hashes/counts. Remote links and upstream claims were not reverified.
+  AGENTS now requires this delegation for document checks.
+- [Three synchronized languages](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317490698): README, rules, roadmap, and this log now each have Chinese, English, and Korean editions, with language links and matching revision markers.
+- [English punctuation](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317495406): normalize project documents and contract descriptions; preserve the supplied reference bundle.
+- [Communication principles](https://github.com/Requora/TAPF_MAPF_TPG/pull/1#discussion_r4317507084): add all six requested principles to AGENTS, including the 80% ASD-STE100 target, real traces, labeled teaching simplifications, and useful-only visualization.
+- User clarification in chat: documentation and configuration are excluded from the 500-line limit. Synchronize that rule across all three language editions.
 
-No work on that next PR is authorized before the user merges this one.
+Size against main: 446 added code lines (445 contracts + 1 initializer), no code
+deletions. Packaging and CI are 39 configuration lines, counted separately.
+Documentation is also separate. This includes raw code comments and blank lines,
+so the effective code count remains below 500.
 
-## Publication result
+## Publication and next step
 
-SSH push to `origin/feat/api-contract-foundation` succeeded. The connected GitHub
-app returned HTTP 404 for both repository lookup and PR creation. Plugin discovery
-confirmed GitHub is installed; accessible app installations did not include the
-repository owner. No local GitHub CLI, CLI login, token environment variable or
-Git credential helper was available for an authenticated API fallback.
+SSH push succeeded, but initial GitHub repository lookup and PR creation returned
+HTTP 404. No authenticated local CLI fallback was available. The user installed
+and authorized the connector for the organization. Retry succeeded and PR #1 opened
+on 2026-10-19. The access failure is resolved.
 
-The user installed/authorized the connector for the organization. On retry,
-repository lookup succeeded and PR #1 was created successfully on 2026-10-19.
-The earlier access failure is resolved. Local checks passed; remote CI results
-are available through the PR checks page. No subsequent development stage has
-started. Wait for the user's review and merge.
+Review these fixes in the same PR. No later development stage has started.
+After the user merges this PR, confirm the remote merge and begin only the next
+small codec/fixture PR. Do not merge or resolve the user's review threads automatically.
