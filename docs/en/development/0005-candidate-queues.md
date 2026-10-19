@@ -5,7 +5,7 @@
 <!-- doc-sync: candidate-queues / 2026-10-19-r1 -->
 
 Date: 2026-10-19. Status: stage 4 queue helper implemented and fixture verified, pending review.
-Branch: `feat/candidate-queue-edits`. PR link: pending creation.
+Branch: `feat/candidate-queue-edits`. [PR #5](https://github.com/Requora/TAPF_MAPF_TPG/pull/5).
 Baseline: GitHub confirmed PR #4 merged at `65e0738ea6e43f94b39c507bd49291ecb873f059`.
 
 ## Scope and sources

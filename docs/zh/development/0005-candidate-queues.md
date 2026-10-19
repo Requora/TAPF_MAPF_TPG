@@ -5,7 +5,7 @@
 <!-- doc-sync: candidate-queues / 2026-10-19-r1 -->
 
 日期: 2026-10-19. 状态: 阶段 4 队列辅助函数已实现并通过 fixture 验证, 等待 review.
-分支: `feat/candidate-queue-edits`. PR 链接: 创建后补充.
+分支: `feat/candidate-queue-edits`. [PR #5](https://github.com/Requora/TAPF_MAPF_TPG/pull/5).
 基线: GitHub 已确认 PR #4 合并至 `65e0738ea6e43f94b39c507bd49291ecb873f059`.
 
 ## 范围与来源
