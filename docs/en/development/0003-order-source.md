@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0003-order-source.md) | [English](../../en/development/0003-order-source.md)
 
-<!-- doc-sync: order-source / 2026-10-19-r1 -->
+<!-- doc-sync: order-source / 2026-10-19-r2 -->
 
 Date: 2026-10-19. Status: implemented, local unit tests passed, pending review.
 Branch: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
@@ -92,8 +92,18 @@ ValueError: until_s: time moved backward from 2.0 to 1.0
 The initial `gh` probe failed because the CLI is absent; the GitHub connector then confirmed merge status.
 Runtime, allocators, and native solvers remain unimplemented. Continuous geometry and safe stopping are unverified.
 
+## Review correction: centralize input validation
+
+As requested, move order input checks and error messages into the internal `_order_validation.py` module.
+`reset`, `release`, and `generate_orders` call `validate_orders`, `validate_release_time`,
+and `validate_generation_parameters`, respectively. The main flows contain no raise branches.
+Validation rules, exception types, and messages are unchanged. Reset validates before merging SKUs and replacing state.
+All existing 23 tests passed again from source and the reinstalled isolated package; no tests were added.
+The isolated installation uses `pip install --force-reinstall "$PWD"`; other verification commands are unchanged.
+See the PR for this revision's CI status. Documentation passed another review with `gpt-6-luna` / `low`.
+
 ## Line counts and next step
 
-Against main: Python +256/-0, including 112 implementation and 144 test lines, below the 500-line limit.
+Against main: Python +287/-0, including 73 main-flow, 70 validation, and 144 test lines, below the 500-line limit.
 Configuration +1/-1 only renames the CI step. Documentation counts are disclosed separately in the PR body.
 Wait for user review and merge before starting the stage 4 shared task compiler.

@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0003-order-source.md) | [English](../../en/development/0003-order-source.md)
 
-<!-- doc-sync: order-source / 2026-10-19-r1 -->
+<!-- doc-sync: order-source / 2026-10-19-r2 -->
 
 日期: 2026-10-19. 状态: 已实现, 本地单元测试通过, 等待 review.
 分支: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
@@ -85,8 +85,18 @@ ValueError: until_s: time moved backward from 2.0 to 1.0
 本轮初次探测 `gh` 失败, 原因为 CLI 未安装; 随后使用 GitHub connector 确认合并状态.
 未实现 Runtime, 分配器或原生求解器, 未验证连续几何或停车安全.
 
+## Review 修正: 集中输入校验
+
+按用户要求, 将订单输入检查和错误消息集中到内部模块 `_order_validation.py`.
+`reset`, `release` 和 `generate_orders` 分别调用 `validate_orders`,
+`validate_release_time` 和 `validate_generation_parameters`. 主流程不再包含 raise 分支.
+校验规则, 异常类型和错误消息不变. reset 先完成校验, 再合并 SKU 和重置状态.
+原有 23 项测试在源码与重新安装的隔离包上再次通过, 未新增测试.
+隔离安装命令使用 `pip install --force-reinstall "$PWD"`, 其余验证命令同上.
+本次修订的 CI 状态见 PR; 文档已通过 `gpt-6-luna` / `low` 复核.
+
 ## 行数与下一步
 
-相对 main: Python +256/-0, 含实现 112 行和测试 144 行, 低于 500 行限制.
+相对 main: Python +287/-0, 含主流程 73 行, 校验 70 行和测试 144 行, 低于 500 行限制.
 配置 +1/-1, 仅改 CI 步骤名称. 文档单独在 PR 描述披露.
 等待用户 review 和合并后, 才开始阶段 4 的共享任务编译器.
