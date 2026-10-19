@@ -2,10 +2,10 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r4 -->
+<!-- doc-sync: readme / 2026-10-19-r7 -->
 
 依据 Warehouse API 0.7 英文规范构建模块化仓库规划系统.
-当前提供共享契约, 严格 JSON 结构 codec 和已测试的 fixture.
+当前提供共享契约, 严格 JSON 结构 codec, 已测试的 fixture 和可重放订单源.
 规划器适配层和 Runtime 尚未实现.
 
 Python 3.10+, 从仓库根目录运行:
@@ -22,6 +22,14 @@ python -I -m unittest discover -s tests -v
 解码检查类型和字段; 编码转换 JSON 兼容值.
 这些操作不验证业务规则, 连续几何或安全停车.
 
+CI 在 PR 更新和 main 推送时运行 Ruff 静态检查, 并在 Python 3.14
+上构建和测试 wheel. 汇总结果见 `CI gate`. 本地静态检查命令:
+
+```bash
+python -m pip install ruff==0.14.0
+ruff check src tests
+```
+
 用户提供的 `warehouse_api_v0_7/` 是本地参考文档包.
 安装本项目不需要它, 本 PR 也未将其整体入库.
 契约文件保留原 API; review 中统一了字段说明的标点.
@@ -31,4 +39,5 @@ python -I -m unittest discover -s tests -v
 - [模块边界与分批计划](development/ROADMAP.md)
 - [首个 PR: 来源与验证](development/0001-contract-foundation.md)
 - [Codec: 范围, fixture 与验证](development/0002-contract-codec.md)
+- [订单源: seed, 发布轨迹与验证](development/0003-order-source.md)
 - [开发与 review 规则](../../AGENTS.md)

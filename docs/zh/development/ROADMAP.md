@@ -2,11 +2,11 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r4 -->
+<!-- doc-sync: roadmap / 2026-10-19-r5 -->
 
-状态: PR 1 已合并至 `16f65e3`. 阶段 2 codec 和选定 fixture 已实现并通过本地验证,
-等待 review. 阶段 3-11 仍为计划.
-证据与限制见 [codec 日志](0002-contract-codec.md).
+状态: PR 2 已合并至 `8412ad1`. 阶段 3 订单源与带 seed 的生成器已实现,
+本地测试通过, 等待 review. 阶段 4-11 仍为计划.
+证据与限制见 [订单源日志](0003-order-source.md).
 每个阶段可能需要多个 PR. 每个 PR 的代码变更不超过 500 行,
 文档和配置不计入. 用户合并后才能开发下一步. 中英文同步更新.
 

@@ -1,22 +1,50 @@
-name: Contracts
-on: [push, pull_request]
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  import:
+  lint:
+    name: Static checks
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: ["3.10", "3.14"]
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
-      - run: python -m pip install .
-      - name: Test installed codec and contract fixtures
+          python-version: "3.14"
+      - run: python -m pip install ruff==0.14.0
+      - run: ruff check src tests
+
+  test:
+    name: Tests (Python 3.14)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Build wheel
+        run: python -m pip wheel --no-deps --wheel-dir dist .
+      - name: Install wheel and check dependencies
+        run: |
+          python -m pip install dist/*.whl
+          python -m pip check
+      - name: Test installed wheel in isolated mode
         run: python -I -m unittest discover -s tests -v
       - name: Resolve public contract annotations
         run: |
-          python - <<'PY'
+          python -I - <<'PY'
           from typing import get_type_hints
           from warehouse_api import contracts
           for value in vars(contracts).values():
@@ -27,3 +55,18 @@ jobs:
                           get_type_hints(method)
           print("Contract imports, class and method annotations passed")
           PY
+
+  required:
+    name: CI gate
+    if: ${{ always() }}
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require every check to pass
+        env:
+          LINT_RESULT: ${{ needs.lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+        run: |
+          test "$LINT_RESULT" = success
+          test "$TEST_RESULT" = success

@@ -2,10 +2,10 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r4 -->
+<!-- doc-sync: readme / 2026-10-19-r7 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
-Current status: shared contracts and a strict JSON shape codec with tested fixtures.
+Current status: shared contracts, strict JSON shape codec, tested fixtures, and replayable orders.
 Planner adapters and Runtime are not implemented.
 
 Python 3.10+, from the repository root:
@@ -22,6 +22,14 @@ Use `warehouse_api.codec.loads(TargetType, text)` to decode and `dumps(value)` t
 Decoding checks types and fields; encoding converts JSON-compatible values.
 These operations do not validate business rules, continuous geometry, or safe stopping.
 
+CI runs Ruff on PR updates and main pushes, then builds and tests wheels on
+Python 3.14. See `CI gate` for the aggregate result. Run static checks locally:
+
+```bash
+python -m pip install ruff==0.14.0
+ruff check src tests
+```
+
 The user-supplied `warehouse_api_v0_7/` directory is a local reference bundle.
 It is not required to install this package and is not included wholesale in this PR.
 The contract file preserves the supplied API; field-description punctuation was
@@ -31,4 +39,5 @@ Backend boundary types remain for compatibility; simulator implementation is out
 - [Module boundaries and incremental plan](development/ROADMAP.md)
 - [First PR: provenance and verification](development/0001-contract-foundation.md)
 - [Codec: scope, fixtures, and verification](development/0002-contract-codec.md)
+- [Order source: seed, release trace, and verification](development/0003-order-source.md)
 - [Development and review rules (Chinese only)](../../AGENTS.md)
