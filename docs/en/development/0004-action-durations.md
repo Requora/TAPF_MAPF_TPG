@@ -5,7 +5,7 @@
 <!-- doc-sync: action-durations / 2026-10-19-r1 -->
 
 Date: 2026-10-19. Status: stage 4 timing helper implemented and unit-tested; pending review.
-Branch: `feat/shared-action-durations`. PR link will be added after creation.
+Branch: `feat/shared-action-durations`. [PR #4](https://github.com/Requora/TAPF_MAPF_TPG/pull/4).
 Baseline: GitHub confirmed PR #3 merged at `b310d6ab19944eff0044a2d9ea5e6bfc1eae8a89`.
 
 ## Scope and sources

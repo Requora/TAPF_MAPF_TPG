@@ -5,7 +5,7 @@
 <!-- doc-sync: action-durations / 2026-10-19-r1 -->
 
 日期: 2026-10-19. 状态: 阶段 4 耗时函数已实现并通过单元测试, 等待 review.
-分支: `feat/shared-action-durations`. 创建后补充 PR 链接.
+分支: `feat/shared-action-durations`. [PR #4](https://github.com/Requora/TAPF_MAPF_TPG/pull/4).
 基线: GitHub 已确认 PR #3 合并至 `b310d6ab19944eff0044a2d9ea5e6bfc1eae8a89`.
 
 ## 范围与来源
