@@ -2,16 +2,16 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r9 -->
+<!-- doc-sync: roadmap / 2026-10-19-r10 -->
 
-Status: PR #5 merged at `526589d`. Stage 3 orders and stage 4 shared action timing are implemented.
-This PR implements a restricted compiler for accepted current tasks, fixture-tested and pending review.
-It checks projected progress, action locks, and carry ownership; candidate task and queue edits are rejected.
+Status: PR #6 merged at `412ec32`. Stage 3 orders and stage 4 shared action timing are implemented.
+The current-task compiler has fixture verification. This PR supports binding new tasks to idle robots,
+preserves existing progress and bindings, and awaits review. Reassignment and multi-task queues remain unsupported.
 Retain API 0.7. Stages 5-11 remain planned.
-See the [review decision](0005-candidate-queues.md) and [compiler log](0006-current-task-compiler.md).
-Each numbered stage may need several PRs. Every PR stays within 500 changed code
-lines, excluding documentation and configuration, and waits for user merge before
-the next development step. Keep the Chinese and English editions synchronized.
+See the [review decision](0005-candidate-queues.md), [current-task compiler](0006-current-task-compiler.md),
+and [new-task bindings](0007-current-task-bindings.md).
+A stage may require several PRs. Each PR has at most 500 changed code lines,
+excluding docs and configuration. Start the next increment only after user merge. Keep both languages synchronized.
 
 ## Replaceable modules
 

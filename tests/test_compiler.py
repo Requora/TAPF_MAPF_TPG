@@ -117,10 +117,11 @@ class CompilerTests(unittest.TestCase):
                 ))
                 self.assertEqual((model, request, self.draft), original)
 
-    def test_queue_edits_and_new_definitions_are_explicitly_deferred(self):
-        for draft in (TaskDelta((self.request.tasks[0].task,), ()),
-                      TaskDelta((), (RobotQueue("A", ()),))):
-            self.assert_failure(self.compiler.compile_jobs(self.request, draft), "UNSUPPORTED")
+    def test_existing_task_copies_and_queue_edits_are_rejected(self):
+        draft = TaskDelta((self.request.tasks[0].task,), ())
+        self.assert_failure(self.compiler.compile_jobs(self.request, draft), "CONFLICT")
+        draft = TaskDelta((), (RobotQueue("A", ()),))
+        self.assert_failure(self.compiler.compile_jobs(self.request, draft), "UNSUPPORTED")
         self.assert_failure(self.compile(queues=(QueueState("A", ("T", "T"), 0),)), "UNSUPPORTED")
 
     def test_running_action_at_splice_is_rejected(self):

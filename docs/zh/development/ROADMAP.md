@@ -2,13 +2,14 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r9 -->
+<!-- doc-sync: roadmap / 2026-10-19-r10 -->
 
-状态: PR #5 已合并至 `526589d`. 阶段 3 订单和阶段 4 共用动作耗时已实现.
-本 PR 实现已接受当前任务的受限编译器, 已通过 fixture 验证, 等待 review.
-检查预测进度, 动作锁和携带归属; 不接受候选任务或队列编辑.
+状态: PR #6 已合并至 `412ec32`. 阶段 3 订单和阶段 4 共用动作耗时已实现.
+当前任务编译器已通过 fixture 验证. 本 PR 支持向空闲机器人绑定新任务,
+保持现有任务进度和绑定, 等待 review. 重分配和多任务队列仍不支持.
 保留 API 0.7. 阶段 5-11 仍为计划.
-见 [review 决定](0005-candidate-queues.md) 和 [编译器日志](0006-current-task-compiler.md).
+见 [review 决定](0005-candidate-queues.md), [当前任务编译](0006-current-task-compiler.md)
+和 [新任务绑定](0007-current-task-bindings.md).
 每个阶段可能需要多个 PR. 每个 PR 的代码变更不超过 500 行,
 文档和配置不计入. 用户合并后才能开发下一步. 中英文同步更新.
 

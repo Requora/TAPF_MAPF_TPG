@@ -28,8 +28,6 @@ def validate_request(
 ) -> Failure | None:
     from_data(AssignmentRequest, to_data(request))
     from_data(TaskDelta, to_data(draft))
-    if draft.tasks or draft.queues:
-        return Failure("UNSUPPORTED", "Candidate task and queue edits are deferred", ())
     state = request.start.join_state
     if state.running_actions:
         return Failure("UNSUPPORTED", "Splice must not contain unfinished actions", ())
@@ -80,6 +78,51 @@ def validate_request(
             return Failure("BAD_INPUT", "Invalid action lock reference", (lock.step.task_id,))
         if owners.get(lock.step.task_id) != lock.robot_id:
             return Failure("CONFLICT", "Committed action executor must be preserved", (lock.step.task_id, lock.robot_id))
+    return None
+
+
+def validate_candidate_bindings(
+    model: WorldModel, request: AssignmentRequest, draft: TaskDelta,
+) -> Failure | None:
+    """Accept only new definitions bound once to robots with empty queues.
+
+    The request has already passed boundary validation. An empty old queue has
+    no protected prefix, so its proposed singleton is also the complete queue.
+    Existing bindings, progress, and action locks remain unchanged.
+    """
+    new_ids = [task.id for task in draft.tasks]
+    robot_ids = [queue.robot_id for queue in draft.queues]
+    if len(set(new_ids)) != len(new_ids):
+        return Failure("BAD_INPUT", "Duplicate candidate task ID", tuple(new_ids))
+    if len(set(robot_ids)) != len(robot_ids):
+        return Failure("BAD_INPUT", "Duplicate candidate queue robot", tuple(robot_ids))
+    existing = {progress.task.id for progress in request.tasks}
+    for task in draft.tasks:
+        if task.id in existing:
+            return Failure("CONFLICT", "Candidate task ID already exists", (task.id,))
+        if not task.steps:
+            return Failure("UNSUPPORTED", "Empty candidate tasks are not supported", (task.id,))
+    robots = {robot.id for robot in model.robots}
+    occupied = {queue.robot_id for queue in request.queues if queue.task_ids}
+    bound = set()
+    for queue in draft.queues:
+        if queue.robot_id not in robots:
+            return Failure("BAD_INPUT", "Unknown candidate robot", (queue.robot_id,))
+        if queue.robot_id in occupied:
+            return Failure("UNSUPPORTED", "Existing current bindings cannot be edited", (queue.robot_id,))
+        if len(queue.task_ids) != 1:
+            return Failure("UNSUPPORTED", "Candidate binding requires exactly one task", (queue.robot_id,))
+        task_id = queue.task_ids[0]
+        if task_id in existing:
+            return Failure("UNSUPPORTED", "Only newly defined tasks can be assigned", (task_id,))
+        if task_id not in new_ids:
+            return Failure("BAD_INPUT", "Unknown candidate task", (task_id,))
+        if task_id in bound:
+            return Failure("BAD_INPUT", "Candidate task has multiple executors", (task_id,))
+        bound.add(task_id)
+    for task_id in new_ids:
+        if task_id not in bound:
+            return Failure("BAD_INPUT", "Candidate task has no executor", (task_id,))
     return None
 
 

@@ -2,10 +2,10 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r10 -->
+<!-- doc-sync: readme / 2026-10-19-r11 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
-Current status: shared contracts, strict JSON shape codec, tested fixtures, replayable orders, and shared action timing.
+Current status: shared contracts, strict JSON shape codec, tested fixtures, replayable orders, shared action timing, and a limited current-task compiler.
 Current development focuses on each robot's current task; defer queue scheduling and retain unused API fields.
 Planner adapters and Runtime are not implemented.
 
@@ -44,3 +44,5 @@ Backend boundary types remain for compatibility; simulator implementation is out
 - [Action timing: rounding policy, traces, and verification](development/0004-action-durations.md)
 - [Review decision: defer queue implementation, retain API](development/0005-candidate-queues.md)
 - [Development and review rules (Chinese only)](../../AGENTS.md)
+- [Current-task compilation: action locks and carry ownership](development/0006-current-task-compiler.md)
+- [New-task bindings: idle robots and candidate checks](development/0007-current-task-bindings.md)
