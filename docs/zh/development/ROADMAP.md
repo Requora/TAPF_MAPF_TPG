@@ -2,12 +2,13 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r8 -->
+<!-- doc-sync: roadmap / 2026-10-19-r9 -->
 
-状态: PR #4 已合并至 `65e0738`. 阶段 3 订单和阶段 4 共用动作耗时已实现.
-PR #5 已撤回队列实现, 仅记录范围决定, 等待 review. 保留原 API 0.7,
-暂不需要的字段按原语义留空; 当前任务编译, 动作锁及携带归属检查和阶段 5-11 仍为计划.
-见 [review 决定](0005-candidate-queues.md).
+状态: PR #5 已合并至 `526589d`. 阶段 3 订单和阶段 4 共用动作耗时已实现.
+本 PR 实现已接受当前任务的受限编译器, 已通过 fixture 验证, 等待 review.
+检查预测进度, 动作锁和携带归属; 不接受候选任务或队列编辑.
+保留 API 0.7. 阶段 5-11 仍为计划.
+见 [review 决定](0005-candidate-queues.md) 和 [编译器日志](0006-current-task-compiler.md).
 每个阶段可能需要多个 PR. 每个 PR 的代码变更不超过 500 行,
 文档和配置不计入. 用户合并后才能开发下一步. 中英文同步更新.
 
