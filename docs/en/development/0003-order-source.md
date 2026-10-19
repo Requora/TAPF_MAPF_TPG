@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0003-order-source.md) | [English](../../en/development/0003-order-source.md)
 
-<!-- doc-sync: order-source / 2026-10-19-r3 -->
+<!-- doc-sync: order-source / 2026-10-19-r4 -->
 
 Date: 2026-10-19. Status: implemented, local unit tests passed, pending review.
 Branch: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
@@ -75,8 +75,8 @@ including 9 new order tests. Coverage includes ordered release, SKU merging, res
 no repeated release, backward time, unchanged state on failure, seed reproducibility,
 global RNG isolation, rejected parameters, and generated time overflow checks.
 No unexpected test failures occurred. All 149 reference file SHA256 hashes still match.
-Whitespace checks passed. CI continues to run all tests on Python 3.10 and 3.14;
-see the PR for remote status. Documentation review by `gpt-6-luna` / `low` passed,
+Whitespace checks passed. The initial CI ran all tests on Python 3.10 and 3.14;
+see the CI configuration section below for the expanded matrix. Documentation review by `gpt-6-luna` / `low` passed,
 with no issues in bilingual parity, English punctuation, links, or technical facts.
 
 Failure replay, expected exit code 1, with the original traceback preserved:
@@ -116,9 +116,40 @@ All `src/warehouse_api/` files were checked; explicit raises now occur only in t
 All existing 23 tests passed again from source and the reinstalled isolated package; no tests were added.
 See the PR for this revision's CI status. Bilingual documentation passed `gpt-6-luna` / `low` review.
 
+## CI configuration
+
+As requested, expand the existing Contracts workflow into CI, still located at
+`.github/workflows/contracts.yml`. Run on PR updates, main pushes, and manual dispatch;
+the manual entry becomes available after the workflow merges into the default branch.
+Branch pushes do not duplicate PR checks. Use contents: read permissions and cancel
+older runs for the same ref.
+
+- Static checks: pin Ruff 0.14.0, run E9/F rules on src and tests, with a 5-minute timeout.
+- Python 3.10-3.14: each job builds and installs a wheel, runs pip check,
+  and runs 23 tests plus contract annotation checks in Python isolated mode.
+  Each job has a 10-minute timeout; failure on one version does not cancel others.
+- CI gate: aggregate static checks and every Python version; pass only when all succeed,
+  with a 2-minute timeout. It provides a stable check name; branch protection settings
+  were not changed.
+
+Local Python 3.14.7 passed Ruff, wheel build/install, pip check, 23 tests, and annotation checks.
+The isolated environment is `/tmp/warehouse-ci-check`; install Ruff with
+`python -m pip install ruff==0.14.0`. Other commands are in the workflow.
+The local wheel output uses the environment's dist directory.
+All 16 success/failure/cancelled/skipped combinations of the CI gate were checked;
+only success/success returned 0. Ruff returned F821 and exit code 1 for
+`print(undefined_ci_probe)` supplied through stdin. These were expected failure probes
+and did not modify project files. See the PR's CI link for actual remote matrix results.
+Bilingual documentation was reviewed with gpt-6-luna / low; an outdated CI version-range statement was corrected.
+
+Configuration references: [GitHub concurrency documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)
+and [Ruff 0.14.0 release](https://github.com/astral-sh/ruff/releases/tag/0.14.0).
+CI does not run native solvers, continuous geometry checks, or stopping validation.
+
 ## Line counts and next step
 
 Against main: Python +383/-54, or 437 changed lines, below the 500-line limit.
 Order implementation and tests +287, codec validation module +83, codec main flow +13/-54.
-Configuration +1/-1 only renames the CI step. Documentation counts are disclosed separately in the PR body.
+Configuration +60/-7 covers the workflow and Ruff settings. Documentation counts are disclosed separately in the PR body.
+Conservatively counting changed executable workflow commands (+8/-2) gives a 447-line code budget.
 Wait for user review and merge before starting the stage 4 shared task compiler.

@@ -2,7 +2,7 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r5 -->
+<!-- doc-sync: readme / 2026-10-19-r6 -->
 
 依据 Warehouse API 0.7 英文规范构建模块化仓库规划系统.
 当前提供共享契约, 严格 JSON 结构 codec, 已测试的 fixture 和可重放订单源.
@@ -21,6 +21,14 @@ python -I -m unittest discover -s tests -v
 使用 `warehouse_api.codec.loads(TargetType, text)` 解码, `dumps(value)` 编码.
 解码检查类型和字段; 编码转换 JSON 兼容值.
 这些操作不验证业务规则, 连续几何或安全停车.
+
+CI 在 PR 更新和 main 推送时运行 Ruff 静态检查, 并在 Python 3.10-3.14
+上构建和测试 wheel. 汇总结果见 `CI gate`. 本地静态检查命令:
+
+```bash
+python -m pip install ruff==0.14.0
+ruff check src tests
+```
 
 用户提供的 `warehouse_api_v0_7/` 是本地参考文档包.
 安装本项目不需要它, 本 PR 也未将其整体入库.

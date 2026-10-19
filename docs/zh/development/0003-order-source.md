@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0003-order-source.md) | [English](../../en/development/0003-order-source.md)
 
-<!-- doc-sync: order-source / 2026-10-19-r3 -->
+<!-- doc-sync: order-source / 2026-10-19-r4 -->
 
 日期: 2026-10-19. 状态: 已实现, 本地单元测试通过, 等待 review.
 分支: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
@@ -69,7 +69,7 @@ Python 3.14.7 上源码与独立安装包均通过 23 项测试, 其中 9 项新
 包括有序发布, SKU 合并, reset 重放, 不重复发布, 时间倒退, 失败不改变状态,
 seed 重现, 全局 RNG 隔离, 参数拒绝及生成时间溢出检查. 没有非预期测试失败.
 149 个参考文件的 SHA256 全部匹配. 空白检查通过.
-CI 继续在 Python 3.10 和 3.14 上运行全部测试; 远端状态见 PR.
+最初 CI 在 Python 3.10 和 3.14 上运行全部测试; 后续扩展见下文 CI 配置.
 文档已通过 `gpt-6-luna` / `low` 检查, 双语一致性, 英文标点, 链接和技术事实均无问题.
 
 失败重放, 预期退出码 1, 保留原始 traceback:
@@ -107,9 +107,36 @@ JSON 重复键/非有限常量处理集中到内部模块 `_codec_validation.py`
 原有 23 项测试在源码与重新安装的隔离包上再次通过, 未新增测试.
 本次修订的 CI 状态见 PR. 双语文档已通过 `gpt-6-luna` / `low` 复核.
 
+## CI 配置
+
+按用户要求, 将已有 Contracts workflow 扩展为 CI, 文件仍为
+`.github/workflows/contracts.yml`. PR 更新, main 推送和手动触发均可运行;
+手动触发入口需该 workflow 合并到默认分支后可用. 分支推送不重复运行 PR 检查.
+采用 contents: read 权限, 同一 ref 的新运行取消旧运行.
+
+- Static checks: 固定 Ruff 0.14.0, 用 E9/F 规则检查 src 和 tests, 超时 5 分钟.
+- Python 3.10-3.14: 各自构建 wheel, 安装 wheel, 执行 pip check,
+  在 Python 隔离模式运行 23 项测试及契约注解检查, 每个任务超时 10 分钟.
+  一个版本失败不会取消其他版本.
+- CI gate: 汇总静态检查与全部版本, 只有全部成功才通过, 超时 2 分钟.
+  它提供固定检查名称; 本次未修改 GitHub 分支保护设置.
+
+本地 Python 3.14.7 已通过 Ruff, wheel 构建/安装, pip check, 23 项测试和注解检查.
+隔离环境为 `/tmp/warehouse-ci-check`, 安装命令为 `python -m pip install ruff==0.14.0`;
+其余命令见 workflow. 本地 wheel 输出至该环境的 dist 目录.
+CI gate 的 16 种 success/failure/cancelled/skipped 组合均已检查,
+只有 success/success 返回 0. Ruff 对 stdin 中的 `print(undefined_ci_probe)`
+返回 F821 和退出码 1. 这些为预期失败探针, 没有修改项目文件.
+本次实际远端矩阵结果见 PR 的 CI 链接. 双语文档经 gpt-6-luna / low 复核, 已修正一处旧 CI 版本范围表述.
+
+配置参考 [GitHub 并发说明](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)
+和 [Ruff 0.14.0 发布记录](https://github.com/astral-sh/ruff/releases/tag/0.14.0).
+CI 不运行原生求解器, 连续几何或停车验证.
+
 ## 行数与下一步
 
 相对 main: Python +383/-54, 共 437 行变更, 低于 500 行限制.
 订单实现与测试 +287, codec 校验模块 +83, codec 主流程 +13/-54.
-配置 +1/-1, 仅改 CI 步骤名称. 文档单独在 PR 描述披露.
+配置 +60/-7, 包含 workflow 与 Ruff 配置. 文档单独在 PR 描述披露.
+保守地计入 workflow 中变更的可执行命令 +8/-2, 代码预算为 447 行.
 等待用户 review 和合并后, 才开始阶段 4 的共享任务编译器.

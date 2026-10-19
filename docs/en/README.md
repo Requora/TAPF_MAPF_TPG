@@ -2,7 +2,7 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r5 -->
+<!-- doc-sync: readme / 2026-10-19-r6 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
 Current status: shared contracts, strict JSON shape codec, tested fixtures, and replayable orders.
@@ -21,6 +21,14 @@ Installing the package uses setuptools. Import types from `warehouse_api.contrac
 Use `warehouse_api.codec.loads(TargetType, text)` to decode and `dumps(value)` to encode.
 Decoding checks types and fields; encoding converts JSON-compatible values.
 These operations do not validate business rules, continuous geometry, or safe stopping.
+
+CI runs Ruff on PR updates and main pushes, then builds and tests wheels on
+Python 3.10-3.14. See `CI gate` for the aggregate result. Run static checks locally:
+
+```bash
+python -m pip install ruff==0.14.0
+ruff check src tests
+```
 
 The user-supplied `warehouse_api_v0_7/` directory is a local reference bundle.
 It is not required to install this package and is not included wholesale in this PR.
