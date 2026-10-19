@@ -2,20 +2,25 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r3 -->
+<!-- doc-sync: readme / 2026-10-19-r4 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
-Current status: shared contracts only. Planner adapters and Runtime are not implemented.
+Current status: shared contracts and a strict JSON shape codec with tested fixtures.
+Planner adapters and Runtime are not implemented.
 
 Python 3.10+, from the repository root:
 
 ```bash
 python -m pip install .
 python -c 'from warehouse_api.contracts import API_VERSION; print(API_VERSION)'
+python -I -m unittest discover -s tests -v
 ```
 
 Runtime use of this contract package needs only the Python standard library.
 Installing the package uses setuptools. Import types from `warehouse_api.contracts`.
+Use `warehouse_api.codec.loads(TargetType, text)` to decode and `dumps(value)` to encode.
+Decoding checks types and fields; encoding converts JSON-compatible values.
+These operations do not validate business rules, continuous geometry, or safe stopping.
 
 The user-supplied `warehouse_api_v0_7/` directory is a local reference bundle.
 It is not required to install this package and is not included wholesale in this PR.
@@ -25,4 +30,5 @@ Backend boundary types remain for compatibility; simulator implementation is out
 
 - [Module boundaries and incremental plan](development/ROADMAP.md)
 - [First PR: provenance and verification](development/0001-contract-foundation.md)
+- [Codec: scope, fixtures, and verification](development/0002-contract-codec.md)
 - [Development and review rules (Chinese only)](../../AGENTS.md)

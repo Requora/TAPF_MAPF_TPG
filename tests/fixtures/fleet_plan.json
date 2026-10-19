@@ -1,0 +1,40 @@
+{
+  "request_id": "Q1",
+  "routes": [
+    {
+      "robot_id": "R3",
+      "steps": [
+        {
+          "step": {
+            "task_id": "T9",
+            "step_index": 0
+          },
+          "kind": "do"
+        },
+        {
+          "edge_id": "E01",
+          "kind": "move"
+        },
+        {
+          "step": {
+            "task_id": "T9",
+            "step_index": 1
+          },
+          "kind": "do"
+        },
+        {
+          "edge_id": "E12",
+          "kind": "move"
+        },
+        {
+          "step": {
+            "task_id": "T9",
+            "step_index": 2
+          },
+          "kind": "do"
+        }
+      ]
+    }
+  ],
+  "before": []
+}

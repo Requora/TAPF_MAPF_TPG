@@ -1,0 +1,36 @@
+{
+  "tasks": [
+    {
+      "id": "T9",
+      "steps": [
+        {
+          "object_id": "P17",
+          "kind": "lift"
+        },
+        {
+          "station_id": "S2",
+          "picks": [
+            {
+              "order_id": "O8",
+              "sku": "X",
+              "quantity": 2
+            }
+          ],
+          "kind": "serve"
+        },
+        {
+          "storage_id": "L31",
+          "kind": "drop"
+        }
+      ]
+    }
+  ],
+  "queues": [
+    {
+      "robot_id": "R3",
+      "task_ids": [
+        "T9"
+      ]
+    }
+  ]
+}

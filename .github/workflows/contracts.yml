@@ -12,6 +12,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install .
+      - name: Test installed codec and contract fixtures
+        run: python -I -m unittest discover -s tests -v
       - name: Resolve public contract annotations
         run: |
           python - <<'PY'
