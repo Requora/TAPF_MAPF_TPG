@@ -2,10 +2,11 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r8 -->
+<!-- doc-sync: readme / 2026-10-19-r10 -->
 
 依据 Warehouse API 0.7 英文规范构建模块化仓库规划系统.
 当前提供共享契约, 严格 JSON 结构 codec, 已测试的 fixture, 可重放订单源和共用动作耗时函数.
+当前开发关注每台机器人的当前任务; 暂不实现队列调度, 保留 API 中未使用的字段.
 规划器适配层和 Runtime 尚未实现.
 
 Python 3.10+, 从仓库根目录运行:
@@ -41,4 +42,5 @@ ruff check src tests
 - [Codec: 范围, fixture 与验证](development/0002-contract-codec.md)
 - [订单源: seed, 发布轨迹与验证](development/0003-order-source.md)
 - [动作耗时: 量化策略, 轨迹与验证](development/0004-action-durations.md)
+- [Review 决定: 暂缓队列实现, 保留 API](development/0005-candidate-queues.md)
 - [开发与 review 规则](../../AGENTS.md)
