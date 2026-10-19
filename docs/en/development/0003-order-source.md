@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0003-order-source.md) | [English](../../en/development/0003-order-source.md)
 
-<!-- doc-sync: order-source / 2026-10-19-r2 -->
+<!-- doc-sync: order-source / 2026-10-19-r3 -->
 
 Date: 2026-10-19. Status: implemented, local unit tests passed, pending review.
 Branch: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
@@ -102,8 +102,23 @@ All existing 23 tests passed again from source and the reinstalled isolated pack
 The isolated installation uses `pip install --force-reinstall "$PWD"`; other verification commands are unchanged.
 See the PR for this revision's CI status. Documentation passed another review with `gpt-6-luna` / `low`.
 
+## Review correction: clean up the existing codec
+
+As requested, apply the same cleanup to the earlier `codec.py`. Input shape checks,
+scalar decoding checks, and JSON duplicate-key/non-finite constant handling now live
+in the internal `_codec_validation.py` module. `to_data`, `from_data`, and `loads`
+call these functions, with no raise branches in the main flows.
+Union selection and recursive conversion remain in the codec; no exception handling was added.
+Public interfaces, exception types, error paths, and messages are unchanged;
+oversized integers still raise the original OverflowError directly.
+All `src/warehouse_api/` files were checked; explicit raises now occur only in the two validation modules.
+`contracts.py` and `__init__.py` contain no such error branches and need no changes.
+All existing 23 tests passed again from source and the reinstalled isolated package; no tests were added.
+See the PR for this revision's CI status. Bilingual documentation passed `gpt-6-luna` / `low` review.
+
 ## Line counts and next step
 
-Against main: Python +287/-0, including 73 main-flow, 70 validation, and 144 test lines, below the 500-line limit.
+Against main: Python +383/-54, or 437 changed lines, below the 500-line limit.
+Order implementation and tests +287, codec validation module +83, codec main flow +13/-54.
 Configuration +1/-1 only renames the CI step. Documentation counts are disclosed separately in the PR body.
 Wait for user review and merge before starting the stage 4 shared task compiler.

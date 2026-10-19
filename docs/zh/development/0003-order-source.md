@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0003-order-source.md) | [English](../../en/development/0003-order-source.md)
 
-<!-- doc-sync: order-source / 2026-10-19-r2 -->
+<!-- doc-sync: order-source / 2026-10-19-r3 -->
 
 日期: 2026-10-19. 状态: 已实现, 本地单元测试通过, 等待 review.
 分支: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
@@ -95,8 +95,21 @@ ValueError: until_s: time moved backward from 2.0 to 1.0
 隔离安装命令使用 `pip install --force-reinstall "$PWD"`, 其余验证命令同上.
 本次修订的 CI 状态见 PR; 文档已通过 `gpt-6-luna` / `low` 复核.
 
+## Review 修正: 整理已有 codec
+
+按用户要求, 同样整理之前的 `codec.py`. 输入结构检查, 标量解码校验和
+JSON 重复键/非有限常量处理集中到内部模块 `_codec_validation.py`.
+`to_data`, `from_data` 和 `loads` 调用对应函数, 主流程不再包含 raise 分支.
+联合类型分支选择与递归转换保留在 codec; 未增加异常捕获.
+公共接口, 异常类型, 错误路径与消息不变, 超大整数仍直接抛出原始 OverflowError.
+已检查全部 `src/warehouse_api/` 文件; 显式 raise 现在仅存在于两个校验模块.
+`contracts.py` 与 `__init__.py` 无同类报错分支, 不需要修改.
+原有 23 项测试在源码与重新安装的隔离包上再次通过, 未新增测试.
+本次修订的 CI 状态见 PR. 双语文档已通过 `gpt-6-luna` / `low` 复核.
+
 ## 行数与下一步
 
-相对 main: Python +287/-0, 含主流程 73 行, 校验 70 行和测试 144 行, 低于 500 行限制.
+相对 main: Python +383/-54, 共 437 行变更, 低于 500 行限制.
+订单实现与测试 +287, codec 校验模块 +83, codec 主流程 +13/-54.
 配置 +1/-1, 仅改 CI 步骤名称. 文档单独在 PR 描述披露.
 等待用户 review 和合并后, 才开始阶段 4 的共享任务编译器.
