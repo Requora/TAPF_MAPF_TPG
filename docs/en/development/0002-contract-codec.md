@@ -76,8 +76,9 @@ Backend configuration payloads and JSON Schema validation were not tested.
 
 CI runs the 12 tests against the installed package on Python 3.10 and 3.14.
 Remote results are reported on the PR; local execution only covered Python 3.14.7.
-The required `gpt-6.1-sol` / `low` subagent passed document parity, punctuation,
-local links, hashes, chapter references, and technical-fact checks.
+The initial `gpt-6.1-sol` / `low` review passed document checks. Per the latest
+user instruction, AGENTS.md now requires `gpt-6-luna` / `low` for document review.
+The revised documents await a check with that configuration.
 All 149 files in the reference SHA256 manifest still match.
 The initial `gh` probe failed because the CLI is absent; the GitHub connector
 confirmed the merged baseline. A guessed reference test filename did not exist;
@@ -85,7 +86,8 @@ file discovery found `test_contracts.py`. Neither issue changed the source bundl
 
 ## Size and next step
 
-Against main: 236 added Python lines and 74 added fixture lines, 310 total, no
+Against main: 236 added Python lines and 76 added fixture lines, 312 total, no
 deletions. Count fixtures in the code budget conservatively. CI adds 2 configuration
-lines. Documentation is counted separately in the PR description.
+lines. Git counts the final unterminated line in each JSON fixture; `wc -l`
+under-counted the initial total by two. Documentation is counted separately in the PR description.
 Wait for user review and merge. Only then begin stage 3, seeded order sources.

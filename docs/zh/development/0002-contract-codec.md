@@ -74,8 +74,9 @@ proposal, ideal_control_frame 和 observation. 仅提交两个选定 fixture;
 
 CI 在 Python 3.10 和 3.14 上对安装后的包运行 12 项测试.
 远端结果见 PR; 本地仅运行了 Python 3.14.7.
-指定 `gpt-6.1-sol` / `low` subagent 已通过双语一致性, 标点,
-本地链接, 哈希, 章节引用与技术事实检查.
+首次 `gpt-6.1-sol` / `low` 文档检查通过. 按用户最新要求,
+AGENTS.md 的文档检查配置已改为 `gpt-6-luna` / `low`.
+修订后的文档待按新配置复核.
 参考 SHA256 清单中的 149 个文件仍全部匹配.
 首次探测 `gh` 因未安装 CLI 失败; GitHub connector 确认了已合并基线.
 猜测的参考测试文件名不存在; 文件检索找到 `test_contracts.py`.
@@ -83,7 +84,8 @@ CI 在 Python 3.10 和 3.14 上对安装后的包运行 12 项测试.
 
 ## 行数与下一步
 
-相对 main: 新增 Python 236 行, fixture 74 行, 共 310 行, 无删除.
+相对 main: 新增 Python 236 行, fixture 76 行, 共 312 行, 无删除.
 保守地将 fixture 计入代码预算. CI 新增配置 2 行.
+Git 将两个 JSON fixture 末尾未换行的内容各计为一行; 初次 `wc -l` 总计少了两行.
 文档单独计数并在 PR 描述披露.
 等待用户 review 和合并, 之后才开始阶段 3 的带 seed 订单源.
