@@ -26,18 +26,14 @@ jobs:
       - run: ruff check src tests
 
   test:
-    name: Python ${{ matrix.python }}
+    name: Tests (Python 3.14)
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "3.14"
       - name: Build wheel
         run: python -m pip wheel --no-deps --wheel-dir dist .
       - name: Install wheel and check dependencies

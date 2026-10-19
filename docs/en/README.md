@@ -2,7 +2,7 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r6 -->
+<!-- doc-sync: readme / 2026-10-19-r7 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
 Current status: shared contracts, strict JSON shape codec, tested fixtures, and replayable orders.
@@ -23,7 +23,7 @@ Decoding checks types and fields; encoding converts JSON-compatible values.
 These operations do not validate business rules, continuous geometry, or safe stopping.
 
 CI runs Ruff on PR updates and main pushes, then builds and tests wheels on
-Python 3.10-3.14. See `CI gate` for the aggregate result. Run static checks locally:
+Python 3.14. See `CI gate` for the aggregate result. Run static checks locally:
 
 ```bash
 python -m pip install ruff==0.14.0

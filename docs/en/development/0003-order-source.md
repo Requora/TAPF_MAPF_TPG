@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0003-order-source.md) | [English](../../en/development/0003-order-source.md)
 
-<!-- doc-sync: order-source / 2026-10-19-r4 -->
+<!-- doc-sync: order-source / 2026-10-19-r5 -->
 
 Date: 2026-10-19. Status: implemented, local unit tests passed, pending review.
 Branch: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
@@ -76,7 +76,7 @@ no repeated release, backward time, unchanged state on failure, seed reproducibi
 global RNG isolation, rejected parameters, and generated time overflow checks.
 No unexpected test failures occurred. All 149 reference file SHA256 hashes still match.
 Whitespace checks passed. The initial CI ran all tests on Python 3.10 and 3.14;
-see the CI configuration section below for the expanded matrix. Documentation review by `gpt-6-luna` / `low` passed,
+see the CI configuration section below for the current setup. Documentation review by `gpt-6-luna` / `low` passed,
 with no issues in bilingual parity, English punctuation, links, or technical facts.
 
 Failure replay, expected exit code 1, with the original traceback preserved:
@@ -125,10 +125,10 @@ Branch pushes do not duplicate PR checks. Use contents: read permissions and can
 older runs for the same ref.
 
 - Static checks: pin Ruff 0.14.0, run E9/F rules on src and tests, with a 5-minute timeout.
-- Python 3.10-3.14: each job builds and installs a wheel, runs pip check,
-  and runs 23 tests plus contract annotation checks in Python isolated mode.
-  Each job has a 10-minute timeout; failure on one version does not cancel others.
-- CI gate: aggregate static checks and every Python version; pass only when all succeed,
+- Tests (Python 3.14): build and install a wheel, run pip check,
+  and run all 23 tests plus contract annotation checks in Python isolated mode,
+  with a 10-minute timeout. As requested, remove the matrix and use only Python 3.14 in CI.
+- CI gate: aggregate static checks and the test job; pass only when all succeed,
   with a 2-minute timeout. It provides a stable check name; branch protection settings
   were not changed.
 
@@ -139,8 +139,8 @@ The local wheel output uses the environment's dist directory.
 All 16 success/failure/cancelled/skipped combinations of the CI gate were checked;
 only success/success returned 0. Ruff returned F821 and exit code 1 for
 `print(undefined_ci_probe)` supplied through stdin. These were expected failure probes
-and did not modify project files. See the PR's CI link for actual remote matrix results.
-Bilingual documentation was reviewed with gpt-6-luna / low; an outdated CI version-range statement was corrected.
+and did not modify project files. See the PR's CI link for actual remote test results.
+Bilingual documentation was reviewed with gpt-6-luna / low; the single-version configuration and full test coverage description were synchronized.
 
 Configuration references: [GitHub concurrency documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)
 and [Ruff 0.14.0 release](https://github.com/astral-sh/ruff/releases/tag/0.14.0).
@@ -150,6 +150,6 @@ CI does not run native solvers, continuous geometry checks, or stopping validati
 
 Against main: Python +383/-54, or 437 changed lines, below the 500-line limit.
 Order implementation and tests +287, codec validation module +83, codec main flow +13/-54.
-Configuration +60/-7 covers the workflow and Ruff settings. Documentation counts are disclosed separately in the PR body.
+Configuration +59/-10 covers the workflow and Ruff settings. Documentation counts are disclosed separately in the PR body.
 Conservatively counting changed executable workflow commands (+8/-2) gives a 447-line code budget.
 Wait for user review and merge before starting the stage 4 shared task compiler.
