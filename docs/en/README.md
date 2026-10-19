@@ -2,10 +2,11 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r9 -->
+<!-- doc-sync: readme / 2026-10-19-r10 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
-Current status: shared contracts, strict JSON shape codec, tested fixtures, replayable orders, shared action timing, and candidate queue edits.
+Current status: shared contracts, strict JSON shape codec, tested fixtures, replayable orders, and shared action timing.
+Current development focuses on each robot's current task; defer queue scheduling and retain unused API fields.
 Planner adapters and Runtime are not implemented.
 
 Python 3.10+, from the repository root:
@@ -41,5 +42,5 @@ Backend boundary types remain for compatibility; simulator implementation is out
 - [Codec: scope, fixtures, and verification](development/0002-contract-codec.md)
 - [Order source: seed, release trace, and verification](development/0003-order-source.md)
 - [Action timing: rounding policy, traces, and verification](development/0004-action-durations.md)
-- [Candidate queues: suffix edits, explicit locks, and replay](development/0005-candidate-queues.md)
+- [Review decision: defer queue implementation, retain API](development/0005-candidate-queues.md)
 - [Development and review rules (Chinese only)](../../AGENTS.md)
