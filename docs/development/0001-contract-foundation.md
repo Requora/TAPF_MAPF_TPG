@@ -1,7 +1,8 @@
 # PR 1 — shared contracts and review workflow
 
-Date: 2026-10-19. Status: prepared for review; no later stage started.
-Branch: `feat/api-contract-foundation`. PR link: added after creation.
+Date: 2026-10-19. Status: branch pushed; PR creation blocked by GitHub connection.
+Branch: `feat/api-contract-foundation`. No PR number has been created.
+[Review diff / create PR](https://github.com/Requora/TAPF_MAPF_TPG/compare/main...feat/api-contract-foundation?expand=1).
 
 ## Scope and rationale
 
@@ -70,3 +71,16 @@ README, AGENTS and development notes are documentation and are reported separate
 - After this PR is merged, begin only the next small codec/fixture PR.
 
 No work on that next PR is authorized before the user merges this one.
+
+## Publication result
+
+SSH push to `origin/feat/api-contract-foundation` succeeded. The connected GitHub
+app returned HTTP 404 for both repository lookup and PR creation. Plugin discovery
+confirmed GitHub is installed; accessible app installations did not include the
+repository owner. No local GitHub CLI, CLI login, token environment variable or
+Git credential helper was available for an authenticated API fallback.
+
+The repository needs access through the GitHub connection to create the PR here.
+Alternatively, the user can open the comparison link above and create the PR.
+The branch contains all reviewable changes. Do not treat the comparison link as
+an existing PR. Remote CI results could not be read (HTTP 404); local checks passed.
