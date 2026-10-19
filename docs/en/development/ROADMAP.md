@@ -2,11 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r5 -->
+<!-- doc-sync: roadmap / 2026-10-19-r6 -->
 
-Status: PR 2 merged at `8412ad1`. Stage 3 order source and seeded generator are
-implemented and locally tested, pending review. Stages 4-11 remain planned.
-See the [order source log](0003-order-source.md) for evidence and limits.
+Status: PR #3 merged at `b310d6a`. Stage 3 order source and seeded generator are implemented.
+Stage 4 shared action timing is implemented and locally tested, pending review;
+the rest of the compiler and stages 5-11 remain planned.
+See the [timing log](0004-action-durations.md) for evidence and limits.
 Each numbered stage may need several PRs. Every PR stays within 500 changed code
 lines, excluding documentation and configuration, and waits for user merge before
 the next development step. Keep the Chinese and English editions synchronized.
