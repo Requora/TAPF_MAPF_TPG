@@ -5,7 +5,7 @@
 <!-- doc-sync: current-task-bindings / 2026-10-19-r1 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
-Branch: `feat/current-task-bindings`. Add the PR link after creation.
+Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
 Baseline: GitHub confirmed PR #6 merged at `412ec329362320a644aa1aab29157d4adc888029`.
 
 ## Scope and sources
@@ -80,7 +80,7 @@ All 61 source and installed-wheel tests pass, including 12 new candidate binding
 Ruff, pip check, and diff checks pass. Hashes of all 160 reference files are unchanged.
 No unexpected test failures. The first status query failed because gh is absent; the GitHub connector confirmed the merge.
 The initial lookup used a nonexistent CI filename and scripts directory; the actual contracts.yml was then read.
-Bilingual review and remote CI results will be recorded in the PR.
+Bilingual docs passed gpt-6-luna / low review. Remote CI results will be recorded in the PR.
 
 No allocator, stock/demand feasibility, MAPF/TPG/TAPF, Runtime atomic commit,
 continuous geometry, resource scheduling, or parking safety verification. Compiled jobs are not an acceptable execution proposal.

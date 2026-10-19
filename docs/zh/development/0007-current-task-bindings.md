@@ -5,7 +5,7 @@
 <!-- doc-sync: current-task-bindings / 2026-10-19-r1 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
-分支: `feat/current-task-bindings`. PR 链接将在创建后补充.
+分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
 基线: GitHub 确认 PR #6 已合并至 `412ec329362320a644aa1aab29157d4adc888029`.
 
 ## 范围与来源
@@ -79,7 +79,7 @@ git diff --check
 Ruff, pip check 和 diff 检查通过. 160 个参考文件哈希保持不变.
 没有非预期测试失败. 首次状态查询因未安装 gh 失败, 改用 GitHub 连接器确认合并.
 初次查找使用了不存在的 CI 文件名和 scripts 目录, 随后读取实际 contracts.yml.
-双语文档复核和远端 CI 结果将在 PR 中记录.
+双语文档通过 gpt-6-luna / low 复核. 远端 CI 结果将在 PR 中记录.
 
 尚未验证分配器, 库存/需求可行性, MAPF/TPG/TAPF, Runtime 原子提交,
 连续几何, 资源调度或停车安全. 编译 jobs 不代表可接受执行方案.
