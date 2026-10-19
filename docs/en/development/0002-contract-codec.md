@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0002-contract-codec.md) | [English](../../en/development/0002-contract-codec.md)
 
-<!-- doc-sync: codec / 2026-10-19-r1 -->
+<!-- doc-sync: codec / 2026-10-19-r2 -->
 
 Date: 2026-10-19. Status: implemented and fixture-verified, pending review.
 Branch: `feat/strict-contract-codec`. [PR #2](https://github.com/Requora/TAPF_MAPF_TPG/pull/2).
@@ -79,6 +79,10 @@ Remote results are reported on the PR; local execution only covered Python 3.14.
 The initial `gpt-6.1-sol` / `low` review passed document checks. Per the latest
 user instruction, AGENTS.md now requires `gpt-6-luna` / `low` for document review.
 The revised documents passed review with that configuration.
+Per the user's request, AGENTS.md now says to avoid `try/except` where possible.
+Do not catch or hide errors for production fault tolerance. Let errors terminate
+execution early and preserve the original traceback for development and debugging.
+This update changes only the rule and bilingual logs; code tests are not rerun.
 All 149 files in the reference SHA256 manifest still match.
 The initial `gh` probe failed because the CLI is absent; the GitHub connector
 confirmed the merged baseline. A guessed reference test filename did not exist;

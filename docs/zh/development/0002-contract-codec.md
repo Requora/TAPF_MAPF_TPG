@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0002-contract-codec.md) | [English](../../en/development/0002-contract-codec.md)
 
-<!-- doc-sync: codec / 2026-10-19-r1 -->
+<!-- doc-sync: codec / 2026-10-19-r2 -->
 
 日期: 2026-10-19. 状态: 已实现并通过 fixture 验证, 等待 review.
 分支: `feat/strict-contract-codec`. [PR #2](https://github.com/Requora/TAPF_MAPF_TPG/pull/2).
@@ -77,6 +77,9 @@ CI 在 Python 3.10 和 3.14 上对安装后的包运行 12 项测试.
 首次 `gpt-6.1-sol` / `low` 文档检查通过. 按用户最新要求,
 AGENTS.md 的文档检查配置已改为 `gpt-6-luna` / `low`.
 修订后的文档已按新配置复核通过.
+按用户要求, AGENTS.md 新增开发约定: 尽量不使用 `try/except`,
+不为生产环境容错而捕获或隐藏错误. 让错误尽早终止执行并保留原始 traceback,
+便于开发调试. 此次仅更新约定与双语日志, 不修改代码, 不重复运行代码测试.
 参考 SHA256 清单中的 149 个文件仍全部匹配.
 首次探测 `gh` 因未安装 CLI 失败; GitHub connector 确认了已合并基线.
 猜测的参考测试文件名不存在; 文件检索找到 `test_contracts.py`.
