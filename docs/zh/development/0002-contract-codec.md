@@ -5,7 +5,7 @@
 <!-- doc-sync: codec / 2026-10-19-r1 -->
 
 日期: 2026-10-19. 状态: 已实现并通过 fixture 验证, 等待 review.
-分支: `feat/strict-contract-codec`. PR 链接: 待创建.
+分支: `feat/strict-contract-codec`. [PR #2](https://github.com/Requora/TAPF_MAPF_TPG/pull/2).
 基线: 已确认 PR #1 合并, `16f65e361b2d78876c789eaa42374a59cd5c7afb`.
 
 ## 范围与来源
@@ -76,7 +76,7 @@ CI 在 Python 3.10 和 3.14 上对安装后的包运行 12 项测试.
 远端结果见 PR; 本地仅运行了 Python 3.14.7.
 首次 `gpt-6.1-sol` / `low` 文档检查通过. 按用户最新要求,
 AGENTS.md 的文档检查配置已改为 `gpt-6-luna` / `low`.
-修订后的文档待按新配置复核.
+修订后的文档已按新配置复核通过.
 参考 SHA256 清单中的 149 个文件仍全部匹配.
 首次探测 `gh` 因未安装 CLI 失败; GitHub connector 确认了已合并基线.
 猜测的参考测试文件名不存在; 文件检索找到 `test_contracts.py`.

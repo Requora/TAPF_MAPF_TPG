@@ -5,7 +5,7 @@
 <!-- doc-sync: codec / 2026-10-19-r1 -->
 
 Date: 2026-10-19. Status: implemented and fixture-verified, pending review.
-Branch: `feat/strict-contract-codec`. PR link: pending creation.
+Branch: `feat/strict-contract-codec`. [PR #2](https://github.com/Requora/TAPF_MAPF_TPG/pull/2).
 Baseline: PR #1 confirmed merged, `16f65e361b2d78876c789eaa42374a59cd5c7afb`.
 
 ## Scope and provenance
@@ -78,7 +78,7 @@ CI runs the 12 tests against the installed package on Python 3.10 and 3.14.
 Remote results are reported on the PR; local execution only covered Python 3.14.7.
 The initial `gpt-6.1-sol` / `low` review passed document checks. Per the latest
 user instruction, AGENTS.md now requires `gpt-6-luna` / `low` for document review.
-The revised documents await a check with that configuration.
+The revised documents passed review with that configuration.
 All 149 files in the reference SHA256 manifest still match.
 The initial `gh` probe failed because the CLI is absent; the GitHub connector
 confirmed the merged baseline. A guessed reference test filename did not exist;
