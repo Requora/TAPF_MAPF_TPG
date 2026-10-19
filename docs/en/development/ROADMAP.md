@@ -2,9 +2,11 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r3 -->
+<!-- doc-sync: roadmap / 2026-10-19-r4 -->
 
-Status: PR 1 establishes contracts. All implementation stages below are pending.
+Status: PR 1 merged at `16f65e3`. Stage 2 codec and selected fixtures are implemented
+and locally verified, pending review. Stages 3-11 remain planned.
+See the [codec log](0002-contract-codec.md) for evidence and limits.
 Each numbered stage may need several PRs. Every PR stays within 500 changed code
 lines, excluding documentation and configuration, and waits for user merge before
 the next development step. Keep the Chinese and English editions synchronized.
