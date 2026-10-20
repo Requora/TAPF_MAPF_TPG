@@ -1,4 +1,7 @@
-"""This module adapts compiled action targets to upstream LaCAM route searches."""
+"""中文: 该模块把编译器输出的动作执行位置交给上游 LaCAM 路径搜索, 使业务动作获得到达路线.
+
+English: This module sends compiled action locations to upstream LaCAM route searches so business actions receive arrival routes.
+"""
 from pathlib import Path
 from tempfile import mkdtemp
 from time import monotonic

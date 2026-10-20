@@ -10,12 +10,12 @@ from warehouse_api.allocation import SingleShelfAllocator
 from warehouse_api.contracts import ExecutableProposal, Failure, RobotSpec
 
 
-# 中文: 在无需原生程序时验证最小分配器拒绝边界, 让缺库存和多车限制保持显式, 不被集成环境缺失遮盖.
-# English: Check subset rejection without native binaries so stock infeasibility and multi-robot
+# 中文: NativeSubsetTests 测试类无需原生程序即可检查分配器的拒绝条件. 这些测试让库存不足和多机器人限制在缺少集成环境时仍可验证.
+# English: NativeSubsetTests checks subset rejection without native binaries so stock infeasibility and multi-robot
 # limits remain visible even without an integration environment.
 class NativeSubsetTests(unittest.TestCase):
-    # 中文: 分别触发库存无解和多车不支持, 防止适配器静默忽略约束后继续规划.
-    # English: Trigger stock infeasibility and unsupported multi-robot input so adapters cannot
+    # 中文: 本测试分别触发库存无解和多车不支持, 防止适配器静默忽略约束后继续规划.
+    # English: This test triggers stock infeasibility and unsupported multi-robot input so adapters cannot
     # silently ignore constraints and continue planning.
     def test_infeasible_stock_and_multiple_robots_are_explicit_failures(self):
         _, model, request = scenario(stock=0)
@@ -24,13 +24,13 @@ class NativeSubsetTests(unittest.TestCase):
         self.assertEqual(SingleShelfAllocator(model).allocate(request.assignment).code, "UNSUPPORTED")
 
 
-# 中文: 用实际编译的上游程序验证完整受限规划链, 将原生证据与 fixture测试分开, 不把运动学检查当碰撞证明.
-# English: Exercise the supported chain with real upstream binaries, separating native evidence from
-# fixtures and kinematic checks from collision proofs.
+# 中文: NativeChainTests 测试类用实际编译的上游程序验证受支持的规划链. 原生执行证据不同于使用固定替身输出的 fixture 测试, 运动学检查也不证明无碰撞.
+# English: NativeChainTests exercises the supported chain with real upstream binaries, separating native evidence from
+# fixed-output test doubles, and kinematic checks from collision proofs.
 @unittest.skipUnless(os.environ.get("WAREHOUSE_NATIVE_BIN"), "set WAREHOUSE_NATIVE_BIN for real upstream integration")
 class NativeChainTests(unittest.TestCase):
-    # 中文: 执行真实链并核对阶段及六次原生命令成功, 为多个案例共享证据断言, 防止成功状态来自替身或未运行程序.
-    # English: Run the real chain and check stages plus six successful native calls so shared
+    # 中文: run_chain 方法运行真实规划链, 核对阶段顺序和六次原生命令成功. 多个案例复用这些断言, 防止替身或未运行的程序冒充成功结果.
+    # English: run_chain runs the real chain and checks stages plus six successful native calls so shared
     # assertions cannot pass with doubles or unexecuted binaries.
     def run_chain(self, **parameters):
         evidence = run(Path(os.environ["WAREHOUSE_NATIVE_BIN"]), **parameters)
@@ -44,9 +44,10 @@ class NativeChainTests(unittest.TestCase):
             self.assertTrue(all(row["exit_code"] == 0 and not row["timed_out"] for row in records))
         return evidence, result
 
-    # 中文: 解析检查动作静止段及每段 Hermite 极值, 验证引用, tick和终速, 防止仅看端点就漏掉区间运动学违规.
-    # English: Check action holds and analytic Hermite extrema with references, tick alignment and
-    # final speed so endpoint-only checks cannot miss interval violations.
+    # 中文: 本测试用解析公式检查静止动作和 Hermite 曲线的速度与加速度极值. Hermite 曲线用相邻位置和速度确定段内运动. 本测试还核对动作引用, 离散时间步 tick 对齐和终速, 防止端点检查漏掉段内违规.
+    # English: This test analytically checks action holds and speed/acceleration extrema on Hermite curves.
+    # Each curve derives motion from adjacent positions and velocities. The test also checks action references,
+    # discrete timestep (tick) alignment and final speed so endpoint checks cannot miss interval violations.
     def test_real_chain_preserves_actions_and_exact_kinematic_bounds(self):
         evidence, proposal = self.run_chain()
         segment = proposal.motion.common_prefix[0]
@@ -84,8 +85,8 @@ class NativeChainTests(unittest.TestCase):
         self.assertEqual(proposal.motion.stop_tail[0].knots[0], last)
         self.assertEqual(proposal.motion.stop_tail[0].knots[-1].pose, last.pose)
 
-    # 中文: 改变数量和目的地并比较原生输出, 证明分配, 编译和路径确实联动, 避免固定输出冒充端到端运行.
-    # English: Change quantities and destinations and compare native output so fixed responses
+    # 中文: 本测试改变数量和目的地并比较原生输出, 证明分配, 编译和路径确实联动, 避免固定输出冒充端到端运行.
+    # English: This test changes quantities and destinations and compares native output so fixed responses
     # cannot masquerade as end-to-end propagation.
     def test_changed_orders_and_destinations_change_real_outputs(self):
         first_evidence, first = self.run_chain()
@@ -99,8 +100,8 @@ class NativeChainTests(unittest.TestCase):
         self.assertGreater(changed.motion.common_prefix[0].knots[-1].time_s,
                            first.motion.common_prefix[0].knots[-1].time_s)
 
-    # 中文: 让库存不足请求停在分配层, 检查没有原生证据, 保证已知失败不会浪费后续求解预算.
-    # English: Stop an insufficient-stock request at allocation and check that no native evidence
+    # 中文: 本测试让库存不足请求停在分配层, 检查没有原生证据, 保证已知失败不会浪费后续求解预算.
+    # English: This test stops an insufficient-stock request at allocation and checks that no native evidence
     # exists so known failure does not consume downstream solver budget.
     def test_rejected_order_never_runs_native_stages(self):
         evidence = run(Path(os.environ["WAREHOUSE_NATIVE_BIN"]), stock=0)

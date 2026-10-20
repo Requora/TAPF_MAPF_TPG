@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r9 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r10 -->
 
 ## Scope and status
 
@@ -137,3 +137,13 @@ The allocator explanation now states that it accepts only one robot, one shelf a
 AGENTS.md now requires explicit subjects in both languages and nearby explanations of nouns, abbreviations and project terms, including their meaning and role. This follow-up applies the rule to the two reviewed files; it does not claim a repository-wide audit under the new rule.
 
 Relative to `5a21fb8`, the raw diff in two code files is 82 lines (+58/-24), consisting only of comments and module docstrings. The Python ASTs are identical after excluding module docstrings. No behavior changed, so no artificial failing tests were added. All 79 tests passed with real native binaries enabled; Ruff and diff checks passed. Supported scope, the website evidence snapshot and the PR's review status are unchanged, so no website republication is needed.
+
+## Parallel comment-subject revision, 2026-10-20
+
+The user requested parallel subagents to revise the remaining Chinese comments. Three subagents handled contracts.py, the other production modules, and tests; the main agent handled both C++ entry points, website scripts, and final integration. The review covered 154 production definitions and 111 test definitions, plus module descriptions, inline explanations and browser callbacks. Comments now name the responsible type, method or callback and explain nearby terms such as StepRef, tick, Hermite interpolation, test doubles, and map/architecture-diagram nodes. English explanations remain aligned.
+
+This follow-up changes only comments and docstrings, with no changes to interface signatures, field metadata or executable logic. The documentation-review subagent separately checks bilingual meaning, subjects, punctuation and interface-declaration boundaries. Published website content, interactions and the evidence snapshot are unchanged, so no republication is needed. This follow-up does not extend planning capabilities or continuous-safety validation.
+
+Relative to `f0fffef`, the raw diff in 45 code files is 1,858 lines (+1,018/-840), all comments and docstrings. These lines still count toward the PR code diff under the user-authorized exception for PR #9. Verification confirms identical ASTs in 41 Python files after removing docstrings, and identical content in the other four C++/JavaScript/HTML files after removing full-line comments. Bilingual-description coverage checks passed for all 265 Python definitions.
+
+Verification uses the unittest and Ruff commands already recorded in this log. All 79 local tests passed with real native binaries enabled. `node --check` passed for both browser scripts; Ruff and `git diff --check` passed. Comments introduce no new runtime behavior, so no artificial failing tests were added. Readers can inspect the stage explanations in `StagedPipeline.solve` or the type explanations in contracts.py. PR #9 remains open for review and has not been merged.

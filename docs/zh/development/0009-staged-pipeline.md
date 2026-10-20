@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r9 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r10 -->
 
 ## 范围与状态
 
@@ -137,3 +137,13 @@ PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已�
 AGENTS.md 新增要求: 中英文注释必须有明确主语, 并在附近解释所用名词, 缩写和项目术语的含义及作用. 本轮将规则应用于上述被 review 的两个文件, 未声称已按新规则重审全仓库.
 
 相对 `5a21fb8`, 两个代码文件的原始变更为 82 行 (+58/-24), 内容仅为注释和模块 docstring; 去除模块 docstring 后的 Python AST 完全相同. 本轮没有行为修改, 因此没有添加人为失败测试. 使用真实原生二进制的 79 项测试全部通过, Ruff 和 diff 检查通过. 支持范围, 网页证据快照及 PR 待 review 状态不变, 无需重新发布网页.
+
+## 并行补全注释主语, 2026-10-20
+
+用户要求启动 subagent 并行修改剩余中文注释. 三个 subagent 分别负责 contracts.py, 其余生产模块和 tests; 主 agent 负责两个 C++ 入口, 网页脚本及最终汇总. 本轮检查覆盖 154 个生产定义和 111 个测试定义, 以及模块说明, 行内解释和网页回调. 注释现在明确指出具体类型, 方法或回调负责什么, 并在附近解释 StepRef, tick, Hermite 插值, 测试替身和地图/架构图节点等术语. 英文说明同步保持一致.
+
+本轮只修改注释和 docstring, 未改变接口签名, 字段元数据或执行逻辑. 文档检查 subagent 另行检查中英文含义, 主语, 标点和接口声明边界. 已发布网页的可见内容, 交互和证据快照不变, 无需重新发布. 本轮不扩大规划能力或连续安全验证范围.
+
+相对 `f0fffef`, 45 个代码文件的原始变更为 1,858 行 (+1,018/-840), 全部为注释和 docstring; 这些行仍计入 PR 代码差异, 沿用用户对 PR #9 的行数例外. 验证确认: 41 个 Python 文件去除 docstring 后的 AST 完全相同, 其余 4 个 C++/JavaScript/HTML 文件去除整行注释后的内容完全相同. 265 个 Python 定义的双语说明覆盖检查通过.
+
+验证命令沿用本日志的 unittest 和 Ruff 命令. 本地启用真实原生二进制后, 79 项测试全部通过. 两个网页脚本的 `node --check`, Ruff 和 `git diff --check` 通过. 注释没有新运行行为, 本轮没有人为添加失败测试. 用户可以从 `StagedPipeline.solve` 的阶段说明或 contracts.py 的类型说明检查本轮可读性改动; PR #9 继续等待 review, 未合并.

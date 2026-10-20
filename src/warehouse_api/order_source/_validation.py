@@ -1,36 +1,39 @@
-"""Input validation for order replay and generation; errors propagate directly."""
+"""中文: 该模块校验订单生成和重放的输入, 使错误在改变发布状态前直接暴露.
+
+English: This module validates order-generation and replay inputs so errors surface before release state changes.
+"""
 from math import isfinite
 
 from warehouse_api.contracts import Order
 
 
-# 中文: 统一检查订单时间是有限非负数, 在发布和生成前排除非法时间, 避免游标与排序失去意义.
-# English: Check that order times are finite and nonnegative before release or generation so cursor
-# ordering remains meaningful.
+# 中文: _time 检查订单时间是否有限且非负, 在发布和生成前拒绝非法值, 使订单排序和已发布位置仍有明确的时间含义.
+# English: _time checks that order times are finite and nonnegative before release or generation so order
+# sorting and release progress retain a meaningful time basis.
 def _time(value: float, name: str) -> None:
     if type(value) not in (int, float) or not isfinite(value) or value < 0:
         raise ValueError(f"{name}: expected a finite nonnegative time")
 
 
-# 中文: 拒绝空白标识, 为订单和 SKU 提供基本输入约束, 防止后续归并时无法追溯需求来源.
-# English: Reject blank identifiers so orders and SKUs remain traceable when demand is normalized
-# and merged.
+# 中文: _identifier 拒绝空白订单标识和商品编号(SKU), 使订单需求在归并后仍能对应到原订单和商品.
+# English: _identifier rejects blank order identifiers and stock-keeping unit (SKU) identifiers so merged
+# demand remains traceable to its order and item.
 def _identifier(value: str, name: str) -> None:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{name}: expected a nonblank string")
 
 
-# 中文: 拒绝布尔值和非正件数, 让商品数量保持明确整数语义, 避免无效需求进入服务耗时计算.
-# English: Reject booleans and nonpositive quantities so item counts retain integer meaning before
-# service-duration calculation.
+# 中文: _positive_int 拒绝布尔值和非正整数件数, 使商品数量保持计数含义, 防止无效需求进入服务耗时计算.
+# English: _positive_int rejects booleans and nonpositive item counts so quantities retain integer-count
+# semantics before service-duration calculation.
 def _positive_int(value: int, name: str) -> None:
     if type(value) is not int or value <= 0:
         raise ValueError(f"{name}: expected a positive integer")
 
 
-# 中文: 校验整批订单 ID, 时间和需求, 在替换发布状态前一次完成, 防止部分接受非法订单序列.
-# English: Validate the full order batch before replacing release state so invalid IDs, times or
-# demand cannot be partially accepted.
+# 中文: validate_orders 在替换订单发布状态前校验整批订单的唯一标识, 时间和商品需求, 防止重放器只接受非法序列的一部分.
+# English: validate_orders checks identifiers for uniqueness, times and item demand across the full batch
+# before release-state replacement so the replay source cannot partially accept an invalid sequence.
 def validate_orders(orders: tuple[Order, ...]) -> None:
     seen = set()
     for order in orders:
@@ -48,18 +51,20 @@ def validate_orders(orders: tuple[Order, ...]) -> None:
             _positive_int(item.quantity, f"{order.id}.{item.sku}.quantity")
 
 
-# 中文: 禁止非有限时间和倒退发布, 保证游标只向前推进, 避免历史订单被误认为新需求.
-# English: Reject invalid or backward release times so the cursor advances monotonically and past
-# orders cannot become new demand again.
+# 中文: validate_release_time 拒绝非有限, 负值或倒退的发布截止时间, 保证已发布位置只前进, 防止历史订单再次被当成新需求.
+# English: validate_release_time rejects nonfinite, negative or backward release cutoffs so release
+# progress moves forward and past orders cannot become new demand again.
 def validate_release_time(until_s: float, previous_s: float) -> None:
     _time(until_s, "until_s")
     if until_s < previous_s:
         raise ValueError(f"until_s: time moved backward from {previous_s} to {until_s}")
 
 
-# 中文: 在随机生成前检查种子, SKU 和时间边界, 及早暴露不可复现或溢出的配置, 避免生成到一半才失败.
-# English: Validate seed, catalog and time bounds before generation so invalid or overflowing
-# configurations fail before a partial schedule is built.
+# 中文: validate_generation_parameters 在生成订单前检查随机种子, 商品编号(SKU), 件数和最后一个订单的时间范围,
+# 让无效或溢出配置在产生部分订单前失败.
+# English: validate_generation_parameters checks the random seed, stock-keeping unit (SKU) identifiers,
+# quantities and final-order time bounds before generation so invalid or overflowing settings fail before
+# a partial order sequence is built.
 def validate_generation_parameters(
     seed: int,
     count: int,

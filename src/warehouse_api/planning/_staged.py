@@ -1,4 +1,7 @@
-"""Sequential candidate planning. No ledger mutation or Runtime acceptance."""
+"""中文: 该模块顺序计算完整候选方案, 使各阶段共享时间预算; Runtime 运行协调模块仍负责验收与账本提交.
+
+English: This module computes complete candidates sequentially so stages share a time budget; the Runtime coordination module remains responsible for acceptance and ledger commits.
+"""
 from dataclasses import replace
 from time import monotonic
 
@@ -9,20 +12,24 @@ from warehouse_api.contracts import (
 )
 
 
-# 中文: 通过公开协议依次运行分配, 编译, MAPF和TPG, 用一个预算组织候选计算, 保留各阶段独立替换能力.
-# English: Compose allocation, compilation, MAPF and TPG through public protocols under one deadline
-# so each stage remains independently replaceable.
+# 中文: StagedPipeline 通过模块间的协议依次调用任务分配, 动作编译, MAPF 多机器人路径规划和 TPG 运动时序规划, 用同一计算时间预算组织候选方案,
+# 让各阶段可独立替换.
+# English: StagedPipeline calls allocation, action compilation, MAPF multi-agent path finding and TPG
+# motion timing through inter-module protocols under one computation budget so each candidate-planning
+# stage remains independently replaceable.
 class StagedPipeline:
-    """Allocate, compile, route, and prepare motion under one wall-clock budget.
+    """StagedPipeline allocates, compiles, routes and prepares motion under one wall-clock budget.
 
     Stages must respect their budgets and must not mutate input snapshots.
     Synchronous calls cannot be preempted here; late results are discarded.
     Runtime must validate and atomically accept the returned candidate.
     """
 
-    # 中文: 注入各阶段实现并建立 trace 容器, 将编排与算法选择分开, 便于用真实适配器或明确的测试替身验证边界.
-    # English: Inject stage implementations and initialize tracing so orchestration is independent
-    # of algorithm choice and can be checked with native adapters or explicit doubles.
+    # 中文: StagedPipeline.__init__ 保存调用方选定的各阶段实现, 并创建 last_trace 来记录阶段请求和结果, 将流程编排与算法选择分开,
+    # 便于检查真实适配器或测试替身的交互.
+    # English: StagedPipeline.__init__ stores the supplied stage implementations and creates last_trace
+    # to record stage requests and results so orchestration stays separate from algorithm choice and
+    # native-adapter or test-double interactions remain inspectable.
     def __init__(self, allocator: Allocator, compiler: SharedCompiler,
                  path_planner: PathPlanner, motion_planner: MotionPlanner):
         self.allocator = allocator
@@ -31,9 +38,10 @@ class StagedPipeline:
         self.motion_planner = motion_planner
         self.last_trace: list[tuple[str, object, object]] = []
 
-    # 中文: 传递同一请求和递减预算并保留阶段结果, 在失败或到期时停止, 只返回完整候选而不提交实时账本.
-    # English: Pass one request with decreasing budgets, record stage results and stop on failure or
-    # expiry, returning a complete candidate without committing live state.
+    # 中文: solve 将同一规划请求和剩余计算时间传给各阶段, 记录中间结果并在失败或超时后停止, 使调用方只收到完整候选方案. 该方法不提交库存, 任务进度等实时账本.
+    # English: solve passes the same planning request and remaining computation time through the stages,
+    # records intermediate results and stops on failure or timeout so callers receive only complete
+    # candidates; the method does not commit live records such as stock or task progress.
     def solve(self, request: PlanningRequest) -> ExecutableProposal | Failure:
         started = monotonic()
         self.last_trace = []
@@ -56,8 +64,8 @@ class StagedPipeline:
             return draft
         if monotonic() >= deadline:
             return timeout
-        # 中文: 编译器同时读取旧快照和草稿, 保护进度与锁后再给出统一物理动作.
-        # English: Compile old state plus the draft so progress and locks are protected before routing.
+        # 中文: 编译器同时读取已接受状态快照和候选任务草稿, 保留进度与执行者锁定后生成统一执行动作.
+        # English: The compiler reads accepted state and the task draft to preserve progress and executor locks before routing.
         jobs = self.compiler.compile_jobs(assignment, draft)
         self.last_trace.append(("compilation", (assignment, draft), jobs))
         if isinstance(jobs, Failure):
@@ -65,7 +73,7 @@ class StagedPipeline:
         remaining = deadline - monotonic()
         if remaining <= 0:
             return timeout
-        # 中文: MAPF 接收编译动作而不是订单; 这里选择路线, 还没有决定真实执行时间.
+        # 中文: MAPF 路径规划器接收编译器生成的执行动作, 据此选择到达路线; 该阶段尚不决定真实执行时间.
         # English: MAPF consumes compiled jobs, not orders; it chooses routes rather than physical times.
         path_request = PathRequest(assignment.start, jobs, remaining)
         plan = self.path_planner.plan(path_request)
@@ -78,7 +86,7 @@ class StagedPipeline:
         remaining = deadline - monotonic()
         if remaining <= 0:
             return timeout
-        # 中文: TPG 必须沿同一条路线保留同一组动作, 再计算曲线和完整停车尾段候选.
+        # 中文: TPG 运动规划器沿选定路线保留同一组动作, 再计算运动曲线与使机器人最终停稳的尾段候选.
         # English: TPG retains these routes and actions while constructing motion and a stop-tail candidate.
         motion_request = MotionRequest(
             assignment.start, jobs, plan, request.target_end_s, remaining,
@@ -89,6 +97,6 @@ class StagedPipeline:
             return motion
         if monotonic() >= deadline:
             return timeout
-        # 中文: 返回完整候选不等于允许执行; 后续 Runtime 仍须独立验证并原子提交.
-        # English: Returning a complete candidate does not authorize execution; Runtime must validate and commit.
+        # 中文: solve 返回的完整候选尚未获准执行; Runtime 运行协调模块仍须独立验证, 并一次性提交完整方案.
+        # English: solve returns an unaccepted candidate; the Runtime coordination module must validate it and commit the complete plan atomically.
         return ExecutableProposal(assignment.start.request_id, draft, motion)

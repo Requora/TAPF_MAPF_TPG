@@ -1,4 +1,7 @@
-"""This module assigns the only robot and shelf to fulfill the supplied item demand."""
+"""中文: 该模块把唯一的机器人和货架分配给一条商品需求, 为真实规划链提供最小任务输入.
+
+English: This module assigns the only robot and shelf to one item-demand row to provide minimal task input for the real planning chain.
+"""
 from warehouse_api.contracts import (
     AssignmentRequest, Drop, Failure, Lift, Pick, RobotQueue, Serve, Task, TaskDelta, WorldModel,
 )

@@ -1,10 +1,15 @@
-// Export speedSolver actions without stepping or implementing a simulator.
+// This wrapper exports speedSolver actions without running a simulator.
 #include <generate_graph.h>
 #include <speed_solver.h>
 #include <iomanip>
 
-// 中文: 将所选直线路线交给 speedSolver并导出原语, 为 Python精确转换提供证据, 不执行模拟器步进.
-// English: Run speedSolver on the chosen lane route and export primitives for exact Python conversion without stepping a simulator.
+// 中文: main 读取已经选定的直线路线, 调用 WinkTPG 的 speedSolver 为机器人计算各段移动的时间和速度.
+// 本入口将每段移动的开始时间, 耗时, 初速和末速写入文件, 让 Python 适配器根据真实上游输出构造运动曲线.
+// simEnv 在这里仅保存求解器所需的初始状态; 本入口不推进仿真时间, 也不执行机器人动作.
+// English: main reads the selected straight route and calls WinkTPG's speedSolver to compute timing and speeds.
+// This entry point writes each movement's start time, duration, initial speed and final speed so the Python adapter
+// can construct motion curves from actual upstream output. simEnv only stores the initial state needed by the solver;
+// this entry point neither advances simulated time nor executes robot actions.
 int main(int argc, char** argv) {
     if (argc != 4) return 2;
     std::ifstream input(argv[1]);

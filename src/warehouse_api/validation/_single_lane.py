@@ -1,4 +1,7 @@
-"""Reject constraints that the first native single-lane adapters cannot express."""
+"""中文: 该模块拒绝首批单车道原生适配器无法表达的约束, 防止实际调用静默扩大宣称支持的范围.
+
+English: This module rejects constraints the initial single-lane native adapters cannot express so actual calls cannot silently exceed their declared scope.
+"""
 from math import isfinite
 
 from warehouse_api.contracts import (
@@ -6,9 +9,10 @@ from warehouse_api.contracts import (
 )
 
 
-# 中文: 集中声明原生适配器能表达的几何与初态子集, 不支持就拒绝, 避免偷偷简化多车或运动中续接约束.
-# English: Declare the native adapters' supported geometry and start-state subset centrally so
-# multi-robot or moving-splice constraints are rejected rather than silently simplified.
+# 中文: check_single_lane 检查原生适配器支持的地图几何和方案接入初态, 对多车或接入时仍在运动等情况明确返回不支持, 防止适配器静默简化这些约束.
+# English: check_single_lane checks the map geometry and plan-join state supported by the native adapters
+# and explicitly rejects cases such as multiple robots or a moving join state so adapters cannot silently
+# simplify those constraints.
 def check_single_lane(model: WorldModel, start: PlanningStart) -> Failure | None:
     unsupported = Failure("UNSUPPORTED", "Requires one stationary robot and shelf on an eastbound unit lane", ())
     if len(model.robots) != 1 or len(model.objects) != 1 or model.obstacles:
@@ -16,8 +20,8 @@ def check_single_lane(model: WorldModel, start: PlanningStart) -> Failure | None
     for entries in (model.nodes, model.edges, model.resources, model.places):
         if len({entry.id for entry in entries}) != len(entries):
             return Failure("BAD_INPUT", "Duplicate model ID", ())
-    # 中文: 按 x 排序后逐格验证单位车道, 避免依赖输入容器的排列顺序.
-    # English: Sort by x to check unit-lane spacing independently of input ordering.
+    # 中文: lambda 提供节点的 x 坐标, 让 check_single_lane 按位置检查相邻节点是否间隔一米, 避免依赖输入顺序.
+    # English: The lambda supplies node x coordinates so check_single_lane checks one-meter spacing independently of input order.
     nodes = sorted(model.nodes, key=lambda node: node.position.x_m)
     if (len(nodes) < 4 or any(node.position.x_m != index or node.position.y_m != 0
                               for index, node in enumerate(nodes))):
@@ -30,8 +34,8 @@ def check_single_lane(model: WorldModel, start: PlanningStart) -> Failure | None
     resources = {resource.id for resource in model.resources}
     if any(place.node_id not in positions or place.resource_id not in resources for place in model.places):
         return Failure("BAD_INPUT", "Place references an unknown node or resource", ())
-    # 中文: 用节点坐标给位置排序, 确认业务目标符合向东服务顺序.
-    # English: Order places by node position to check the eastbound service sequence.
+    # 中文: lambda 提供作业位置所在节点的 x 坐标, 让 check_single_lane 核对取架, 服务和归还位置的向东顺序.
+    # English: The lambda supplies each place's node x coordinate so check_single_lane checks the eastbound pickup, service and return order.
     places = sorted(model.places, key=lambda place: positions[place.node_id])
     if ([place.kind for place in places] != ["storage", "station", "storage"]
             or any(place.yaw_rad != 0 for place in places)
@@ -55,16 +59,17 @@ def check_single_lane(model: WorldModel, start: PlanningStart) -> Failure | None
     return None
 
 
-# 中文: 要求一个机器人的 Lift/Serve/Drop 精确匹配支持位置和占用, 为 MAPF/TPG 共用作业检查, 防止接口相同却语义不同.
-# English: Require Lift/Serve/Drop jobs to match supported places and resources so MAPF and TPG
-# share semantic checks rather than merely compatible types.
+# 中文: check_jobs 要求单个机器人的抬架, 工作站服务和放架动作分别匹配支持的位置及占用资源, 使路径规划与运动时序规划共用同一业务检查, 防止类型兼容却执行语义不同.
+# English: check_jobs requires one robot's shelf lift, workstation service and shelf drop to match the
+# supported places and occupied resources so routing and motion timing share business checks instead of
+# merely compatible types.
 def check_jobs(model: WorldModel, jobs: tuple[RobotJobs, ...]) -> Failure | None:
     if len(jobs) != 1 or jobs[0].robot_id != model.robots[0].id:
         return Failure("UNSUPPORTED", "Native subset requires one complete robot job", ())
     actions = jobs[0].actions
     nodes = {node.id: node.position.x_m for node in model.nodes}
-    # 中文: 按车道顺序配对动作和位置, 防止同类位置被错误匹配.
-    # English: Order places along the lane so actions are matched to the correct locations.
+    # 中文: lambda 提供作业位置所在节点的 x 坐标, 让 check_jobs 按车道顺序配对动作和位置, 防止两个存储位置被对调.
+    # English: The lambda supplies each place's node x coordinate so check_jobs pairs actions with lane-ordered places without swapping the storage locations.
     places = sorted(model.places, key=lambda place: nodes[place.node_id])
     if (tuple(action.kind for action in actions) != ("lift", "serve", "drop")
             or len({action.step for action in actions}) != 3):
@@ -77,9 +82,10 @@ def check_jobs(model: WorldModel, jobs: tuple[RobotJobs, ...]) -> Failure | None
     return None
 
 
-# 中文: 检查新任务快照及唯一需求/库存行, 区分非法输入与库存无解, 保证最小分配器不会覆盖已接受工作.
-# English: Check a fresh task snapshot and the single demand/stock row, separating invalid input
-# from infeasibility so allocation cannot overwrite accepted work.
+# 中文: check_assignment 检查请求没有已接受任务或锁, 且只有一条商品需求和库存记录, 区分错误输入与库存不足, 使最小分配器不会覆盖既有工作.
+# English: check_assignment checks that the request has no accepted tasks or locks and has one item-
+# demand row and one stock row, distinguishing invalid input from insufficient stock so the minimal
+# allocator cannot overwrite existing work.
 def check_assignment(model: WorldModel, request: AssignmentRequest) -> Failure | None:
     if request.tasks or request.locks or any(queue.task_ids or queue.locked_prefix_count for queue in request.queues):
         return Failure("UNSUPPORTED", "First native chain requires a fresh task snapshot", ())

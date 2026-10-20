@@ -1,4 +1,7 @@
-"""Convert actual WinkTPG primitives to exact Hermite knots and action holds."""
+"""中文: 该模块将 WinkTPG 时间和速度记录转换成 Hermite 轨迹的时间, 位置和速度节点, 并加入动作静止段, 让上游结果可由统一运动契约表达.
+
+English: This module converts WinkTPG timing and speed records into time, position and velocity knots for Hermite trajectories and inserts stationary action intervals so shared motion contracts can represent upstream results.
+"""
 from math import ceil
 from pathlib import Path
 from tempfile import mkdtemp
@@ -12,22 +15,27 @@ from warehouse_api.validation import check_jobs, check_single_lane
 from ._validation import check_profile, check_route
 
 
-# 中文: 把真实 WinkTPG 原语转换为公共连续轨迹, 独立于路径选择保留物理动作时序, 当前仅支持单车直线子集.
-# English: Convert real WinkTPG primitives to public continuous motion while preserving action
-# timing independently of route selection, within the single-lane subset.
+# 中文: NativeWinkTpgPlanner 将上游 WinkTPG 的每格时间和速度记录转换为模块间共享的连续轨迹, 沿已选路线安排机器人动作.
+# 该类让路径选择与运动时序可分别替换, 当前只支持单车直线车道.
+# English: NativeWinkTpgPlanner converts upstream WinkTPG per-cell time and speed records into shared
+# continuous trajectories and schedules actions along the selected route so routing and motion timing
+# remain separately replaceable; the adapter currently supports one robot on a straight lane.
 class NativeWinkTpgPlanner:
-    # 中文: 保存静态模型, 原生程序路径和仿真步长, 为轨迹转换确定统一单位及 tick 对齐规则, 不隐式读取运行状态.
-    # English: Store the model, executable path and timestep so trajectory conversion has explicit
-    # units and tick alignment without hidden runtime state.
+    # 中文: NativeWinkTpgPlanner.__init__ 保存场景模型, 已编译的桥接程序路径和仿真步长, 为轨迹转换明确输入及动作对齐时间,
+    # 避免读取隐藏的运行状态.
+    # English: NativeWinkTpgPlanner.__init__ stores the scene model, compiled bridge path and simulation
+    # timestep so trajectory conversion has explicit inputs and action-alignment times without reading
+    # hidden runtime state.
     def __init__(self, model: WorldModel, executable: str, *, sim_dt_s: float):
         self.model = model
         self.executable = str(Path(executable).resolve())
         self.sim_dt_s = sim_dt_s
         self.last_run_directory: Path | None = None
 
-    # 中文: 沿选定路线生成原生速度曲线, 保留加减速切换并插入完整动作静止段, 让编译语义在真实时间轴上成立.
-    # English: Time the chosen route with native profiles, preserving acceleration switches and
-    # complete stationary actions so compiled semantics survive on the physical timeline.
+    # 中文: prepare 沿已选路线调用上游程序计算速度曲线, 保留加减速切换点并插入完整的静止动作时段, 使编译器指定的动作位置和耗时在真实时间轴上成立.
+    # English: prepare calls the upstream program to compute speed profiles along the selected route,
+    # preserves acceleration-switch points and inserts complete stationary action intervals so compiled
+    # targets and durations hold on the physical timeline.
     def prepare(self, request: MotionRequest) -> MotionPlan | Failure:
         failure = (check_single_lane(self.model, request.start) or check_jobs(self.model, request.jobs)
                    or check_route(self.model, request, self.sim_dt_s))
@@ -63,12 +71,13 @@ class NativeWinkTpgPlanner:
             for x, (start, duration, v0, v1) in zip(path, rows):
                 if origin + start > knots[-1].time_s + 1e-8:
                     knots.append(Knot(origin + start, Pose2(x, 0, 0), Twist2(v0, 0, 0)))
-                # 中文: 上游零速到零速表示加速跨一格再减速, 中点是必须保留的真实切换点.
-                # English: Zero-to-zero crosses one cell by accelerating then braking; keep the true midpoint switch.
+                # 中文: 上游起终速度均为零的记录表示机器人先加速再减速跨过一格; prepare 保留格子中点的切换状态以还原真实运动.
+                # English: A zero-to-zero record crosses one cell by accelerating then braking; prepare keeps the midpoint switch to preserve the actual motion.
                 if v0 == v1 == 0:
                     knots.append(Knot(origin + start + duration / 2, Pose2(x + 0.5, 0, 0), Twist2(1, 0, 0)))
                 knots.append(Knot(origin + start + duration, Pose2(x + 1, 0, 0), Twist2(v1, 0, 0)))
-            # Hold at rest until a backend tick; never shorten a compiled action.
+            # 中文: prepare 让机器人静止等待到下一个仿真步长边界, 再安排完整动作耗时, 防止时间对齐缩短动作.
+            # English: prepare holds the robot still until a simulation-step boundary, then schedules the full action duration so alignment cannot shorten the action.
             time = knots[-1].time_s
             aligned = ceil(time / self.sim_dt_s) * self.sim_dt_s
             if aligned > time:

@@ -9,12 +9,12 @@ from warehouse_api.contracts import Item, Order, OrderSource
 from warehouse_api.order_source import ReplayOrderSource, generate_orders
 
 
-# 中文: 覆盖订单发布和重置语义, 防止重复需求或状态污染, 为后续分配提供可信发布序列.
-# English: Test order release and reset semantics so allocation receives a reliable sequence without
+# 中文: OrderSourceTests 测试类覆盖订单发布和重置语义, 防止重复需求或状态污染, 为后续分配提供可信发布序列.
+# English: OrderSourceTests tests order release and reset semantics so allocation receives a reliable sequence without
 # duplicate demand or contaminated state.
 class OrderSourceTests(unittest.TestCase):
-    # 中文: 构造乱序时间和重复 SKU 的订单, 让归一化与同刻排序在每个测试中可被明确检验.
-    # English: Build orders with unordered times and repeated SKUs so normalization and equal-time
+    # 中文: setUp 方法构造乱序时间和重复商品种类标识 SKU 的订单, 让归一化与同刻排序在每个测试中可被明确检验.
+    # English: setUp builds orders with unordered times and repeated product identifiers (SKUs) so normalization and equal-time
     # ordering are explicit in every test.
     def setUp(self):
         self.orders = (
@@ -23,8 +23,8 @@ class OrderSourceTests(unittest.TestCase):
             Order("Z", 0.0, (Item("Y", 2),), None),
         )
 
-    # 中文: 验证截止时刻包含边界, SKU合并且订单只发布一次, 防止同一需求被多次交给分配器.
-    # English: Check inclusive deadlines, SKU merging and one-time release so allocation never
+    # 中文: 本测试验证截止时刻包含边界, SKU 合并且订单只发布一次, 防止同一需求被多次交给分配器.
+    # English: This test checks inclusive deadlines, SKU merging and one-time release so allocation never
     # receives the same demand twice.
     def test_inclusive_ordering_merging_and_no_duplicates(self):
         source: OrderSource = ReplayOrderSource(self.orders)
@@ -38,8 +38,8 @@ class OrderSourceTests(unittest.TestCase):
         self.assertEqual(source.release(2.0), ())
         self.assertEqual(source.release(100.0), ())
 
-    # 中文: 验证重置能重放, 替换和清空序列, 保证实验重启不继承旧游标或剩余订单.
-    # English: Check replay, replacement and clearing through reset so restarted experiments do not
+    # 中文: 本测试验证重置能重放, 替换和清空序列, 保证实验重启不继承旧游标或剩余订单.
+    # English: This test checks replay, replacement and clearing through reset so restarted experiments do not
     # inherit old cursors or orders.
     def test_reset_replays_and_replaces_schedule(self):
         source = ReplayOrderSource(self.orders)
@@ -53,8 +53,8 @@ class OrderSourceTests(unittest.TestCase):
         self.assertEqual(source.release(0.0), ())
         self.assertEqual(ReplayOrderSource().release(0.0), ())
 
-    # 中文: 在错误发布时间之后继续正常发布, 验证失败不推进游标, 避免订单被悄悄跳过.
-    # English: Resume release after invalid times to check that failed calls preserve the cursor and
+    # 中文: 本测试在错误发布时间之后继续正常发布, 验证失败不推进游标, 避免订单被悄悄跳过.
+    # English: This test resumes release after invalid times to check that failed calls preserve the cursor and
     # do not silently skip orders.
     def test_backward_and_invalid_times_preserve_cursor(self):
         source = ReplayOrderSource(self.orders)
@@ -67,8 +67,8 @@ class OrderSourceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "backward"):
             source.release(9.0)
 
-    # 中文: 尝试用非法订单重置后重放旧序列, 确认校验先于状态替换, 防止半完成的重置污染实验.
-    # English: Attempt invalid resets before replaying the old schedule so validation is confirmed
+    # 中文: 本测试尝试用非法订单重置后重放旧序列, 确认校验先于状态替换, 防止半完成的重置污染实验.
+    # English: This test attempts invalid resets before replaying the old schedule so validation is confirmed
     # to precede any state replacement.
     def test_invalid_reset_preserves_existing_schedule_and_time(self):
         source = ReplayOrderSource(self.orders)
@@ -90,8 +90,8 @@ class OrderSourceTests(unittest.TestCase):
             source.release(0.0)
         self.assertEqual(tuple(order.id for order in source.release(2.0)), ("A", "B"))
 
-    # 中文: 比较两个订单源及原始输入, 确认游标隔离, 防止一个实验的发布影响另一个实验.
-    # English: Compare two sources and their input to ensure cursor isolation and prevent one
+    # 中文: 本测试比较两个订单源及原始输入, 确认游标隔离, 防止一个实验的发布影响另一个实验.
+    # English: This test compares two sources and their input to ensure cursor isolation and prevent one
     # experiment from affecting another.
     def test_inputs_are_unchanged_and_instances_are_independent(self):
         before = copy.deepcopy(self.orders)
@@ -102,19 +102,19 @@ class OrderSourceTests(unittest.TestCase):
         self.assertEqual(second.release(0.0), (self.orders[2],))
 
 
-# 中文: 验证随机订单的 seed 和参数语义, 为可复现实验建立约束, 防止随机性掩盖规划回归.
-# English: Test seeded generation and parameter semantics so reproducible demand can expose planner
+# 中文: GenerationTests 测试类验证随机订单的随机种子 seed 和参数语义, 为可复现实验建立约束, 防止随机性掩盖规划回归.
+# English: GenerationTests tests generation controlled by a random seed and parameter semantics so reproducible demand can expose planner
 # regressions instead of hiding them in randomness.
 class GenerationTests(unittest.TestCase):
-    # 中文: 固定一个含多 SKU 的生成配置, 作为对照实验基线, 让各测试只改变关注的参数.
-    # English: Fix a multi-SKU generation configuration so each test changes only the parameter
+    # 中文: setUp 方法固定一个含多个商品种类标识 SKU 的生成配置, 作为对照实验基线, 让各测试只改变关注的参数.
+    # English: setUp fixes a generation configuration with multiple product identifiers (SKUs) so each test changes only the parameter
     # under examination.
     def setUp(self):
         self.parameters = dict(seed=17, count=12, skus=("Y", "X", "Z"),
                                release_interval_s=2.0, max_quantity=3, due_after_s=5.0)
 
-    # 中文: 核对同 seed 重现和全局随机状态不变, 防止订单生成影响其他随机算法的结果.
-    # English: Check seeded replay and global RNG isolation so generating orders cannot perturb
+    # 中文: 本测试核对同 seed 重现和全局随机状态不变, 防止订单生成影响其他随机算法的结果.
+    # English: This test checks seeded replay and global random-number-generator state isolation so generating orders cannot perturb
     # other randomized algorithms.
     def test_seed_replay_and_global_random_state_isolation(self):
         state = random.getstate()
@@ -124,8 +124,8 @@ class GenerationTests(unittest.TestCase):
         self.assertEqual(generate_orders(**{**self.parameters, "skus": ("Z", "Y", "X")}), first)
         self.assertNotEqual(generate_orders(**{**self.parameters, "seed": 18}), first)
 
-    # 中文: 验证生成的 ID, 数量和时间后经 codec及订单源重放, 保证随机输出真正符合公共输入契约.
-    # English: Check generated IDs, quantities and times through codec and release replay so
+    # 中文: 本测试验证生成的 ID, 数量和时间后经 JSON 编解码器 codec 及订单源重放, 保证随机输出真正符合模块间共享的输入契约.
+    # English: This test checks generated IDs, quantities and times through the JSON codec and order-release replay so
     # generated demand actually satisfies public contracts.
     def test_generated_contracts_and_release_replay(self):
         orders = generate_orders(**self.parameters)
@@ -147,8 +147,8 @@ class GenerationTests(unittest.TestCase):
         source.reset(orders)
         self.assertEqual(source.release(30), observed)
 
-    # 中文: 覆盖空需求, 同刻发布和无截止配置, 明确合法退化情况, 避免生成器凭空补需求或时间.
-    # English: Cover empty demand, simultaneous release and disabled due times so supported edge
+    # 中文: 本测试覆盖空需求, 同刻发布和无截止配置, 明确合法退化情况, 避免生成器凭空补需求或时间.
+    # English: This test covers empty demand, simultaneous release and disabled due times so supported edge
     # cases do not invent orders or timing.
     def test_empty_zero_interval_and_disabled_deadlines(self):
         self.assertEqual(generate_orders(seed=0, count=0, skus=("X",)), ())
@@ -160,8 +160,8 @@ class GenerationTests(unittest.TestCase):
         self.assertEqual(tuple(order.id for order in source.release(0)),
                          tuple(sorted(order.id for order in orders)))
 
-    # 中文: 逐项拒绝错误参数及末时刻溢出, 保证失败发生在生成前, 避免得到部分有效的订单序列.
-    # English: Reject invalid settings and final-time overflow before generation so a configuration
+    # 中文: 本测试逐项验证生成器拒绝错误参数及末时刻溢出, 保证失败发生在生成前, 避免得到部分有效的订单序列.
+    # English: This test checks rejection of invalid settings and final-time overflow before generation so a configuration
     # cannot produce a partially valid schedule.
     def test_invalid_generation_parameters(self):
         cases = {"seed": (True, 1.5), "count": (-1, True, 1.5),

@@ -1,4 +1,7 @@
-"""Replayable demand only; no inventory, assignment, or runtime writes."""
+"""中文: 该模块生成并重放订单需求, 使实验可复现且不修改库存, 任务分配或运行状态.
+
+English: This module generates and replays order demand so experiments remain reproducible without modifying stock, allocation or runtime state.
+"""
 from random import Random
 
 from ._validation import (
@@ -9,23 +12,25 @@ from ._validation import (
 from warehouse_api.contracts import Item, Order
 
 
-# 中文: 按仿真时间一次性发布订单, 用可重置游标支持复现实验, 不承担库存预留或机器人分配.
-# English: Release each order once by simulation time with a resettable cursor so experiments are
-# reproducible without mixing demand release and allocation.
+# 中文: ReplayOrderSource 按仿真时间各发布一次订单, 并用可重置的游标记录已发布位置, 让实验能够重放同一需求序列. 该类不预留库存或分配机器人.
+# English: ReplayOrderSource releases each order once by simulation time and records release progress
+# with a resettable cursor so experiments can replay the same demand sequence; the class does not reserve
+# stock or assign robots.
 class ReplayOrderSource:
-    """Implement OrderSource with an inclusive, monotonic release cursor."""
+    """ReplayOrderSource implements OrderSource with an inclusive, monotonic release cursor."""
 
-    # 中文: 通过统一 reset 路径建立初始订单序列, 让构造和重放采用相同校验及归一化规则.
-    # English: Initialize through reset so construction and replay use the same validation and
-    # normalization rules.
+    # 中文: ReplayOrderSource.__init__ 通过 reset 建立初始订单序列, 让首次构造和后续重放采用相同的输入检查及订单归并规则.
+    # English: ReplayOrderSource.__init__ builds the initial order sequence through reset so construction
+    # and later replay use the same input checks and order-normalization rules.
     def __init__(self, orders: tuple[Order, ...] = ()) -> None:
         self.reset(orders)
 
-    # 中文: 先校验再合并 SKU并排序订单, 全部成功后重置游标, 避免非法新序列破坏旧重放状态.
-    # English: Validate, merge repeated SKUs and sort orders before resetting the cursor so an
-    # invalid replacement cannot destroy the old replay state.
+    # 中文: reset 先校验全部订单, 再合并相同商品编号(SKU)的需求并排序, 最后重置已发布位置, 避免非法的新序列破坏旧重放状态.
+    # English: reset validates all orders, merges demand with the same stock-keeping unit (SKU)
+    # identifier and sorts the orders before resetting release progress, so an invalid sequence cannot
+    # destroy the old replay state.
     def reset(self, orders: tuple[Order, ...]) -> None:
-        """Validate all orders before replacing the current replay state."""
+        """reset validates all orders before replacing the current replay state."""
         validate_orders(orders)
         normalized = []
         for order in orders:
@@ -35,16 +40,16 @@ class ReplayOrderSource:
             items = tuple(Item(sku, quantity) for sku, quantity in sorted(quantities.items()))
             normalized.append(Order(order.id, order.released_at_s, items, order.due_at_s))
         # 中文: 排序键用发布时间和 ID 消除同刻歧义, 保证订单重放顺序稳定.
-        # English: Order by release time and ID so simultaneous releases replay deterministically.
+        # English: The sorting lambda uses release time and ID so simultaneous releases replay deterministically.
         self._orders = tuple(sorted(normalized, key=lambda order: (order.released_at_s, order.id)))
         self._cursor = 0
         self._until_s = 0.0
 
-    # 中文: 返回截止时刻首次到期的订单并推进游标, 使重复调用不重复发布, 且非法时间不改变已发布进度.
-    # English: Return newly due orders and advance the cursor so repeated calls do not duplicate
-    # demand and invalid times preserve release progress.
+    # 中文: release 返回发布时间不晚于 until_s 且尚未发布的订单, 然后推进已发布位置, 使重复调用不会重复产生需求; 非法时间不会改变发布进度.
+    # English: release returns unpublished orders whose release time is at or before until_s and advances
+    # release progress so repeated calls cannot duplicate demand; invalid times leave progress unchanged.
     def release(self, until_s: float) -> tuple[Order, ...]:
-        """Return each due order once; invalid calls leave the cursor intact."""
+        """release returns each newly releasable order once; invalid calls leave the cursor intact."""
         validate_release_time(until_s, self._until_s)
         end = self._cursor
         while end < len(self._orders) and self._orders[end].released_at_s <= until_s:
@@ -55,9 +60,11 @@ class ReplayOrderSource:
         return released
 
 
-# 中文: 用私有随机数发生器生成带种子的订单, 隔离全局随机状态, 让需求实验可按参数和 Python 版本复现.
-# English: Generate seeded orders with a private RNG so experiments are reproducible for the same
-# parameters and Python version without altering global randomness.
+# 中文: generate_orders 用 seed 初始化独立的随机数发生器, 按给定商品编号, 件数和发布时间参数生成订单,
+# 让相同 Python 版本的实验可复现且不改变全局随机状态.
+# English: generate_orders initializes a private random-number generator with seed and generates orders
+# from the supplied item identifiers, quantities and release parameters so experiments are reproducible
+# on the same Python version without changing global randomness.
 def generate_orders(
     *,
     seed: int,
@@ -67,13 +74,13 @@ def generate_orders(
     max_quantity: int = 5,
     due_after_s: float | None = None,
 ) -> tuple[Order, ...]:
-    """Generate demand using a private RNG and explicit experiment parameters.
+    """generate_orders creates demand using a private random generator and explicit parameters.
 
-    Release order i at i * release_interval_s, starting at zero. Choose a
-    uniform item count in [1, len(skus)], sample distinct SKUs, then choose
-    each quantity uniformly in [1, max_quantity]. IDs are order-0, order-1,
+    The function releases order i at i * release_interval_s, starting at zero.
+    It chooses a uniform item count in [1, len(skus)], samples distinct item
+    identifiers and chooses each quantity uniformly in [1, max_quantity]. IDs are order-0, order-1,
     etc. A due offset of None disables deadlines. Reproducibility requires
-    the same parameters and Python version; persist orders for other versions.
+    the same parameters and Python version; saved orders support replay on other versions.
     """
     validate_generation_parameters(
         seed, count, skus, release_interval_s, max_quantity, due_after_s,

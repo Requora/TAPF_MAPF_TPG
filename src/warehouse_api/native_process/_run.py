@@ -1,4 +1,7 @@
-"""Retain the command, stdout, stderr, exit status, and elapsed wall time."""
+"""中文: 该模块保存原生调用命令, 标准输出, 错误输出, 退出状态和实际耗时, 使上游运行结果可追溯.
+
+English: This module retains native commands, stdout, stderr, exit status and elapsed wall time so upstream results remain traceable.
+"""
 import json
 from pathlib import Path
 import subprocess
@@ -7,9 +10,10 @@ from time import monotonic
 from warehouse_api.contracts import Failure
 
 
-# 中文: 在剩余墙钟预算内运行原生程序并保留原始证据, 集中处理超时和旧输出, 防止失效结果被当成新方案.
-# English: Run a native process within its remaining wall-clock budget and retain evidence,
-# centralizing timeout and stale-output rejection before results are consumed.
+# 中文: run_native 在剩余实际计算时间内运行已编译的上游桥接程序, 清理旧输出并保存命令, 标准输出, 错误输出及退出信息, 让调用可追溯且过期结果不会被当成新方案.
+# English: run_native executes a compiled upstream bridge within the remaining wall-clock budget, removes
+# stale output and retains the command, stdout, stderr and exit details so calls are traceable and
+# expired output cannot become a new plan.
 def run_native(command: list[str], output: Path, *, budget_s: float, request_id: str) -> Failure | None:
     if budget_s <= 0:
         return Failure("TIMEOUT", "Native process budget exhausted", (request_id,))

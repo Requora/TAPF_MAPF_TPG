@@ -6,8 +6,9 @@ with sync_playwright() as playwright:
     browser = playwright.chromium.launch(headless=True)
     page = browser.new_page(viewport={"width": 1440, "height": 1100})
     errors = []
-    # 中文: 收集浏览器异常供最后断言, 避免页面外观正常却隐藏脚本错误.
-    # English: Collect browser errors for a final assertion so a visible page cannot hide script failures.
+    # 中文: pageerror 回调将浏览器报告的脚本异常存入 errors, 让最后的断言能发现页面外观正常时仍存在的错误.
+    # English: The pageerror callback stores browser script errors in errors so the final assertion catches failures
+    # even when the page looks correct.
     page.on("pageerror", lambda error: errors.append(str(error)))
     response = page.goto(sys.argv[1])
     assert response.status == 200
@@ -16,8 +17,10 @@ with sync_playwright() as playwright:
         page.locator('[data-view="flow"]').click()
         assert page.locator(".node").count() == 15
         assert page.locator(".edge.future").count() == 10
-        # 中文: 浏览器回调提取所有节点 ID, 逐一验证选择行为, 防止只测默认节点.
-        # English: Extract all node IDs in the browser so selection is checked beyond the default node.
+        # 中文: evaluate_all 的回调通过 map 逐个读取架构图元素的模块 ID, 让测试循环检查每个模块的选择行为.
+        # 这里的节点是代表软件模块的界面元素, 不是仓库地图中的机器人位置.
+        # English: The evaluate_all callback uses map to read each diagram element's module ID so the test checks
+        # selection for every module. These nodes represent software modules, not robot positions on the warehouse map.
         for node_id in page.locator(".node").evaluate_all("nodes => nodes.map(n => n.dataset.id)"):
             page.locator(f'[data-id="{node_id}"]').click()
             assert page.locator(f'[data-id="{node_id}"]').get_attribute("aria-pressed") == "true"
@@ -34,8 +37,10 @@ with sync_playwright() as playwright:
     page.set_viewport_size({"width": 390, "height": 844})
     page.locator('[data-view="flow"]').click()
     assert not page.evaluate("document.documentElement.scrollWidth > innerWidth")
-    # 中文: 浏览器回调比较内部宽度, 确认小屏架构图能横向滚动而不撑破页面.
-    # English: Compare inner widths to verify that the mobile diagram scrolls inside its container.
+    # 中文: evaluate 的回调比较架构图容器的内容宽度和可见宽度, 让断言确认小屏中存在横向滚动区域.
+    # 上一条断言另行检查整个页面没有横向溢出, 两项检查共同验证架构图只在自己的容器内滚动.
+    # English: The evaluate callback compares the diagram container's content and visible widths to confirm horizontal scrolling.
+    # The preceding assertion separately checks page overflow; together they verify that scrolling stays inside the container.
     assert page.locator(".map-scroll").evaluate("node => node.scrollWidth > node.clientWidth")
     page.screenshot(path="/tmp/warehouse-progress-mobile.png", full_page=True)
     assert not errors, errors
