@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r5 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r6 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
-The published website still shows the earlier fixture snapshot; the local native update has not been published.
+The private website now shows the native-chain evidence at `a1d0d03`, including remote CI and remaining limits.
 
 ## Implemented directories
 

@@ -32,15 +32,16 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["真实最小链已本地跑通", "Real minimal chain runs locally"], ["PR #9 已转草稿. 一车一架直线场景中, 六次原生调用得到 2.0/5.2/8.4 s 的动作开始时间, 8.7 s 完成. 新原生增量尚未纳入 PR.", "PR #9 is draft. Six native calls for one robot/shelf on a straight lane produce action starts at 2.0/5.2/8.4 s and completion at 8.7 s. Native additions are not yet in the PR."]],
-    [["NEXT / 待决定", "NEXT / DECISION PENDING"], ["按真实结果审查", "Review the real result"], ["完整实现超出每 PR 500 行门禁. 等待本次例外或拆分决定, 再更新草稿中的代码. 保留原始输出与可单步检查的重放.", "The complete implementation exceeds the 500-line PR gate. Await an exception or split decision before updating draft code. Preserve raw output and stepwise replay."]],
+    [["NOW / 正在做", "NOW"], ["真实最小链已通过 CI", "Real minimal chain passes CI"], ["PR #9 待 review. 一车一架直线场景中, 六次原生调用得到 2.0/5.2/8.4 s 的动作开始时间, 8.7 s 完成. 原生实现已推送, 远端 CI 构建和 79 项原生测试通过.", "PR #9 awaits review. Six native calls for one robot/shelf on a straight lane produce action starts at 2.0/5.2/8.4 s and completion at 8.7 s. Native code is pushed; remote builds and 79 tests with native binaries pass."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["按真实结果审查", "Review the real result"], ["用户已授权本次行数例外. 远端原生 CI 已通过, 等待 review, 不自行合并. 原始输出与可单步重放保留在 CI artifacts.", "The user authorized this line-limit exception. Native CI passed; review is pending, with no automatic merge. Raw output and stepwise replay are retained in CI artifacts."]],
     [["NOT YET / 尚未完成", "NOT YET"], ["通用仓库与执行闭环", "General warehouse & execution loop"], ["多车, 转弯, 障碍, 联合 TAPF, Runtime, 连续几何, 无限期停车和中央执行器未验证或未实现. 当前证据只覆盖受支持子集.", "Multiple robots, turns, obstacles, joint TAPF, Runtime, continuous geometry, indefinite parking, and central execution remain unverified or absent. Evidence covers only the supported subset."]],
   ];
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
+    [text(["真实原生 CI · HTML/JSON 重放", "Real native CI · HTML/JSON replay"]), `${project.repo}/actions/runs/39366365034`],
     [text(["当前 PR · 变更与 review", "Current PR · changes & review"]), `${project.repo}/pull/9`],
-    [text(["基线 + 本地原生增量", "Base + local native additions"]), `${project.repo}/commit/a0e14f7`],
+    [text(["原生实现验证基线", "Native implementation baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
     [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0009-staged-pipeline.md`],
     [text(["路线图 · 阶段 1—11", "Roadmap · stages 1–11"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/ROADMAP.md`],
   ];

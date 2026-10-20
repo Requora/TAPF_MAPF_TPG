@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r2 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r3 -->
 
 ## 范围与状态
 
@@ -12,7 +12,7 @@
 
 [PR #9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9) 之前只完成 fixture 串联便提前提交. 用户指出后已转为草稿. 用户在收到 500 行例外请求后授权继续同一个 PR. 本次修正纳入原生实现; 后续 PR 仍遵守原限制. 未新建其他 PR, 未合并.
 
-验证源码快照为基线 `a0e14f7` 加本地代码. 源码 SHA256 为 `1f8a35d1c83eedd502342d7f4d7aba3f82335b846752cea5fdf584e9267c170a`. 计算范围为 src, tests, integrations 下排序后的 `.py`, `.cpp`, `.html`, `.txt`, 排除 __pycache__; 每个相对路径和空字节后追加文件字节. 源码哈希独立标识已测试的原生实现, 不受后续文档提交影响.
+验证源码快照为 `a1d0d03b9e1fb7ee711c8ca8b783fa9b1d0885dd`. 源码 SHA256 为 `1f8a35d1c83eedd502342d7f4d7aba3f82335b846752cea5fdf584e9267c170a`. 计算范围为 src, tests, integrations 下排序后的 `.py`, `.cpp`, `.html`, `.txt`, 排除 __pycache__; 每个相对路径和空字节后追加文件字节. 源码哈希独立标识已测试的原生实现, 不受后续文档提交影响.
 
 ## 实现与决策
 
@@ -54,7 +54,7 @@ PYTHONPATH=src:tests python -m native.replay /tmp/tapf-chain-bridges --stock 0 \
 ruff check src tests web/progress/check.py
 ```
 
-实际结果: 启用真实二进制后, 源码 79 项与干净安装包 79 项测试全部通过. Ruff, pip check 和 diff 检查通过. 未配置 WAREHOUSE_NATIVE_BIN 时明确跳过三项原生链路测试. 原生二进制仍是可选包依赖. 独立原生 CI job 构建固定版本上游并上传真实 JSON/HTML 重放. 本提交的远端运行待检查.
+实际结果: 启用真实二进制后, 源码 79 项与干净安装包 79 项测试全部通过. Ruff, pip check 和 diff 检查通过. 未配置 WAREHOUSE_NATIVE_BIN 时明确跳过三项原生链路测试. 原生二进制仍是可选包依赖. 独立原生 CI job 构建固定版本上游并上传真实 JSON/HTML 重放. [远端 CI 39366365034](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39366365034) 的原生构建, 启用二进制的全部 79 项测试和重放命令均通过. [Artifact 12239575773](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39366365034/artifacts/12239575773) 含 HTML/JSON; zip SHA256 为 `d9e55990ca524a89cb324086568380069c9d855226f35a9365a2b8de308b983b`.
 
 | 重放 | 实际结果 |
 | --- | --- |
@@ -82,8 +82,14 @@ WinkTPG 最初因 simulator.h 缺少 unordered_map 而构建失败, 构建参数
 
 历史 fixture 验证在 `4277591` 通过 73 项测试. 更早的脏工作区 wheel 混入旧平铺模块, 干净导出 `c47f4a7` 后通过当时的 72 项测试. 原生 wheel 从新的纯源码目录构建. 历史数量与当前 79 项原生运行分开记录.
 
+自动 review 已对照源码核实: run_native 在 subprocess.run 前拒绝非正剩余预算. 所指的零速到零速等待实际是上游加速/减速原语: [sipp_ip.cpp 第 334-338 行](https://github.com/JingtianYan/WinkTPG-IEEE-TASE/blob/dd96946f225e206de35b041320786eab43210658/src/sipp_ip.cpp#L334-L338) 用 `2*sqrt(1/a_max)` 表达跨一格运动; 在支持的加速度下, 中点为 x+0.5, 速度为 1. 适配器保留该切换点以精确进行 Hermite 插值. 零需求为 BAD_INPUT; 正需求但库存不足为 NO_PLAN.
+
 ## 未验证边界与交付
 
 多机器人冲突/先后关系, 转弯, 障碍, 运动中拼接, 已接受任务进度, 重分配, 联合 TAPF, Runtime 事务, 连续几何, 无限期停车占用, 中央执行和物理后端仍未验证或未实现. 适配器明确拒绝不支持的输入. MotionPlan 是候选, 不是 Accepted.
 
-PR #9 在远端原生 CI 检查期间保持草稿. 用户已同意本 PR 行数例外. 提交时有效代码变更为 1,192 行 (+1,143/-49); 文档和配置在交付时单独披露. 先前私有网页版本描述早期 fixture 快照, 不代表本次新运行. 上述本地 HTML/JSON 是当前原生证据.
+PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已同意本 PR 行数例外. 最终交付在下方分别记录代码, 文档和配置行数. 私有进展网页已更新为 `a1d0d03` 原生证据及远端 CI. 独立重放既保留在本地, 也包含在上述 CI artifact 中.
+
+发布: Sites 返回成功, 保留仅所有者可访问的现有权限. 源码 checkout 为 `/tmp/tapf-chain-site`, 源码 commit 为 `b2bfcbaa6b79cae15f5134d3a3966a8c5b2be6fc`, 版本为 `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_5bb6b11a3b488191bef27287333d8e58`. [私有网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site). 架构页浏览器检查通过双语, 双图, 键盘, 手机布局与无 JS 错误; 已检查桌面/手机截图.
+
+相对 `576e25d` 的变更: 代码 1,193 (+1,144/-49); 文档 383 (+332/-51); 配置 58 (+57/-1). 源码与上游代码未偏离已通过的原生 CI 基线. 未 vendoring 上游或加入参考包. 下一步: 用户 review PR #9; 合并前不开展后续模块.

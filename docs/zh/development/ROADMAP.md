@@ -2,15 +2,15 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r15 -->
+<!-- doc-sync: roadmap / 2026-10-20-r16 -->
 
-状态: PR #8 已合并至 `576e25d`. PR #9 因提前提交 fixture 串联而转为草稿.
+状态: PR #8 已合并至 `576e25d`. PR #9 已修正提前提交的 fixture 串联, 现待 review.
 订单到 TPG 原生链已在本地跑通, 范围为向东单位车道上的一台机器人/一个货架.
 真实分配, 共享编译, MAWPF LaCAM 和 WinkTPG speedSolver 均已参与.
 默认方案含六次原生调用: Lift 2.0 s, Serve 5.2 s, Drop 8.4 s, 8.7 s 完成.
 启用二进制后, 源码和安装包各 79 项测试通过; 未配置二进制则跳过三项原生测试.
 多机器人集成, 联合 TAPF, 连续碰撞/停车验证, Runtime 和执行仍未完成.
-用户已同意本 PR 行数例外. 原生增量纳入 PR #9; 远端原生 CI 待检查.
+用户已同意本 PR 行数例外. 原生增量纳入 PR #9; 远端原生 CI 39366365034 已通过.
 见 [真实轨迹与边界](0009-staged-pipeline.md) 和 [模块架构](../architecture/MODULES.md).
 
 ## 可替换模块

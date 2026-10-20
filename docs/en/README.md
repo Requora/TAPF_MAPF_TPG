@@ -2,7 +2,7 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-20-r15 -->
+<!-- doc-sync: readme / 2026-10-20-r16 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
 Current status: shared contracts, strict JSON shape codec, tested fixtures, replayable orders, shared action timing, and a limited current-task compiler.
@@ -52,6 +52,6 @@ Backend boundary types remain for compatibility; simulator implementation is out
 
 - [Project progress and interactive architecture, private access](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en)
 
-The published website still shows the earlier fixture snapshot; the local native update has not been published.
+The private website now shows the native-chain evidence at `a1d0d03`, including remote CI and remaining limits.
 
 - [Real order-to-TPG planning chain](development/0009-staged-pipeline.md).

@@ -2,15 +2,15 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r15 -->
+<!-- doc-sync: roadmap / 2026-10-20-r16 -->
 
-Status: PR #8 merged at `576e25d`. PR #9 is draft after premature fixture-only submission.
+Status: PR #8 merged at `576e25d`. PR #9 is ready for review after correction of the premature fixture-only submission.
 The order-to-TPG native chain now runs locally for one robot/shelf on an eastbound unit lane.
 Real allocation, shared compilation, MAWPF LaCAM, and WinkTPG speedSolver all participate.
 Six native calls produce the default plan: Lift 2.0 s, Serve 5.2 s, Drop 8.4 s, complete 8.7 s.
 79 source and installed-wheel tests pass with native binaries; three native tests skip when binaries are not configured.
 Multi-robot integration, joint TAPF, continuous collision/parking validation, Runtime, and execution remain incomplete.
-The user approved the line-limit exception for this PR. Native additions are submitted in PR #9; remote native CI is pending.
+The user approved the line-limit exception for this PR. Native additions are submitted in PR #9; remote native CI 39366365034 passed.
 See [real trace and limits](0009-staged-pipeline.md) and [architecture](../architecture/MODULES.md).
 
 ## Replaceable modules

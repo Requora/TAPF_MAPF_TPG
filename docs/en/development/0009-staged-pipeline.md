@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r2 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r3 -->
 
 ## Scope and status
 
@@ -12,7 +12,7 @@ Supported scope is one robot, one grounded shelf, one demand/stock row, and an e
 
 [PR #9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9) was submitted prematurely with fixture wiring only. After the user's correction, it was converted to draft. The user authorized continuing this same PR after the 500-line exception request. The native implementation is now included in this correction; no limit exception is implied for later PRs. No additional PR or merge was made.
 
-Validation source snapshot: base `a0e14f7` plus local code. Source SHA256 is `1f8a35d1c83eedd502342d7f4d7aba3f82335b846752cea5fdf584e9267c170a`, computed over sorted `.py`, `.cpp`, `.html`, and `.txt` files under src, tests, integrations, excluding __pycache__, with each relative path and a null byte before its bytes. The source hash identifies the tested native implementation independently of later documentation commits.
+Validation source snapshot: `a1d0d03b9e1fb7ee711c8ca8b783fa9b1d0885dd`. Source SHA256 is `1f8a35d1c83eedd502342d7f4d7aba3f82335b846752cea5fdf584e9267c170a`, computed over sorted `.py`, `.cpp`, `.html`, and `.txt` files under src, tests, integrations, excluding __pycache__, with each relative path and a null byte before its bytes. The source hash identifies the tested native implementation independently of later documentation commits.
 
 ## Implementation and decisions
 
@@ -54,7 +54,7 @@ PYTHONPATH=src:tests python -m native.replay /tmp/tapf-chain-bridges --stock 0 \
 ruff check src tests web/progress/check.py
 ```
 
-Observed: 79 source tests and 79 clean installed-wheel tests pass with real binaries enabled. Ruff, pip check, and diff checks pass. Without WAREHOUSE_NATIVE_BIN the three native-chain tests are explicitly skipped. Native binaries remain optional package dependencies. A separate native CI job builds the pinned upstreams and uploads the real JSON/HTML replay. Its remote execution is pending at this commit.
+Observed: 79 source tests and 79 clean installed-wheel tests pass with real binaries enabled. Ruff, pip check, and diff checks pass. Without WAREHOUSE_NATIVE_BIN the three native-chain tests are explicitly skipped. Native binaries remain optional package dependencies. A separate native CI job builds the pinned upstreams and uploads the real JSON/HTML replay. [Remote CI 39366365034](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39366365034) passed the native build, all 79 tests with binaries enabled, and the replay command. [Artifact 12239575773](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39366365034/artifacts/12239575773) contains HTML/JSON; zip SHA256 `d9e55990ca524a89cb324086568380069c9d855226f35a9365a2b8de308b983b`.
 
 | Replay | Actual result |
 | --- | --- |
@@ -82,8 +82,14 @@ WinkTPG originally failed to compile because simulator.h lacks unordered_map; th
 
 Historical fixture-only validation passed 73 tests at `4277591`. An earlier dirty-workspace wheel included obsolete flat modules; clean export `c47f4a7` passed the then-current 72 tests. The native wheel was built from a new source-only directory. These historical counts are distinct from the current 79-test native run.
 
+Automated review was checked against source: run_native rejects nonpositive remaining budgets before subprocess.run. The claimed zero-to-zero wait is instead the upstream acceleration/deceleration primitive: [sipp_ip.cpp lines 334-338](https://github.com/JingtianYan/WinkTPG-IEEE-TASE/blob/dd96946f225e206de35b041320786eab43210658/src/sipp_ip.cpp#L334-L338) assigns duration `2*sqrt(1/a_max)` to one-cell travel; its midpoint is x+0.5, speed 1 for the supported acceleration. The adapter retains that switch for exact Hermite interpolation. Zero demand is BAD_INPUT; positive demand with insufficient stock is NO_PLAN.
+
 ## Unverified boundaries and handoff
 
 Multi-robot conflicts/precedence, turns, obstacles, moving splices, accepted task progress, reassignment, joint TAPF, Runtime transactions, continuous geometry, infinite parking occupancy, central execution, and physical backend operation remain unverified or unimplemented. The adapter explicitly rejects unsupported inputs. Its MotionPlan is a candidate, not Accepted.
 
-PR #9 remains draft while remote native CI is checked. The user approved the one-PR line-limit exception. At submission, code changes total 1,192 lines (+1,143/-49); docs and configuration are disclosed separately at handoff. The previous private website version documents the earlier fixture snapshot, not this new run. Local HTML/JSON artifacts above are the current native evidence.
+PR #9 is ready for review after successful remote native CI; it is not merged. The user approved the one-PR line-limit exception. The final handoff records code, docs, and configuration counts separately below. The private progress website is updated with native evidence at `a1d0d03` and remote CI. The standalone replay is available both locally and as the CI artifact above.
+
+Publication: Sites succeeded with the existing owner-only access. Source checkout `/tmp/tapf-chain-site`, source commit `b2bfcbaa6b79cae15f5134d3a3966a8c5b2be6fc`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_5bb6b11a3b488191bef27287333d8e58`. [Private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en). Dashboard browser checks passed both languages, both diagrams, keyboard operation, mobile layout, and no JS errors; desktop/mobile screenshots were inspected.
+
+Diff against `576e25d`: code 1,193 (+1,144/-49); docs 383 (+332/-51); config 58 (+57/-1). Source and upstream code are unchanged since the passing native CI baseline. No upstream vendoring or reference-bundle addition. Next: user review of PR #9; no further module work before merge.

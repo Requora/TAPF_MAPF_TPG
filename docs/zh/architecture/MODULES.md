@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r5 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r6 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 
-已发布网页仍是先前的 fixture 快照; 本地原生更新尚未发布.
+私有网页已更新为 `a1d0d03` 的原生链证据, 包含远端 CI 与未完成边界.
 
 ## 已实现目录
 

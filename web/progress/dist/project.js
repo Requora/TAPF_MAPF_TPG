@@ -1,6 +1,6 @@
 // Curated snapshot. Update with the roadmap and evidence whenever project state changes.
 window.PROJECT = {
-  date: "2026-10-20", evidenceCommit: "a0e14f7 + local", branch: "feat/staged-pipeline",
+  date: "2026-10-20", evidenceCommit: "a1d0d03", branch: "feat/staged-pipeline",
   repo: "https://github.com/Requora/TAPF_MAPF_TPG", current: ["planning", "allocation", "mapf", "tpg", "validation", "native_process"],
   copy: {
     navMap: ["架构", "Architecture"], navWork: ["当前进展", "Progress"],
@@ -9,12 +9,12 @@ window.PROJECT = {
     explore: ["探索系统架构 ↓", "Explore the architecture ↓"], snapshot: ["验证快照 / 非完成率", "EVIDENCE SNAPSHOT / NOT A COMPLETION SCORE"],
     tests: ["源码测试通过 · 安装包也通过 79 项", "source tests passed · 79 also pass in the installed wheel"],
     implemented: ["已有实现的模块", "Modules with implementations"], native: ["已验证的原生求解器集成", "Verified native solver integrations"],
-    snapshotNote: ["本地原生链验证. 一车一架直线场景; 未证明连续碰撞或停车安全.", "Local native chain evidence. One robot/shelf on a straight lane; no continuous collision or parking proof."],
-    focusLabel: ["正在做", "IN FOCUS"], focus: ["PR #9 已转草稿. 真实最小链已在本地跑通; 本次行数例外已获授权, 正在检查远端原生 CI.", "PR #9 is draft. The real minimal chain runs locally; the line-limit exception is authorized and remote native CI is being checked."],
+    snapshotNote: ["本地及远端 CI 原生链验证. 一车一架直线场景; 未证明连续碰撞或停车安全.", "Local and remote CI native chain evidence. One robot/shelf on a straight lane; no continuous collision or parking proof."],
+    focusLabel: ["正在做", "IN FOCUS"], focus: ["PR #9 待 review. 真实最小链已在本地及远端 CI 跑通; 本次行数例外已获授权.", "PR #9 awaits review. The real minimal chain passes locally and in remote CI; the line-limit exception is authorized."],
     mapHeading: ["一张图, 看清整个系统.", "One system. Every connection."], flow: ["目标业务流程", "Target workflow"], imports: ["现有代码依赖", "Current imports"],
     flowNote: ["实线为已本地验证的单车道规划连接; 虚线为计划连接. Order 转 Demand 在重放驱动中完成, Runtime 和执行闭环未实现.", "Solid edges are locally verified single-lane planning calls; dashed edges remain planned. The replay harness converts Order to Demand. Runtime and the execution loop remain absent."],
-    importsNote: ["实线为当前工作树的公开 API 导入. 11 个模块, 16 条依赖; 原生增量已纳入草稿 PR.", "Solid edges show public imports in the current working tree: 11 modules, 16 dependencies. Native additions are included in the draft PR."],
-    ready: ["已有实现 / 查看证据", "Implemented / see evidence"], integrated: ["原生子集已本地验证", "Native subset verified locally"], interface: ["仅接口, 未实现", "Interface only"], planned: ["计划, 未集成", "Planned"], outside: ["边界, 不在范围", "Out of scope"],
+    importsNote: ["实线为当前工作树的公开 API 导入. 11 个模块, 16 条依赖; 原生增量已纳入待 review 的 PR.", "Solid edges show public imports in the current working tree: 11 modules, 16 dependencies. Native additions are included in the PR for review."],
+    ready: ["已有实现 / 查看证据", "Implemented / see evidence"], integrated: ["原生子集已验证", "Native subset verified"], interface: ["仅接口, 未实现", "Interface only"], planned: ["计划, 未集成", "Planned"], outside: ["边界, 不在范围", "Out of scope"],
     edges: ["实线 = 单车道已验证; 虚线 = 计划", "Solid = verified lane; dashed = planned"], mapHelp: ["点击或用 Tab + Enter 选择模块 · 小屏可横向滚动 · 此图不是执行 trace", "Click or use Tab + Enter to select · Scroll horizontally on small screens · Not an execution trace"],
     workHeading: ["把正在做与尚未做, 分开说清.", "Where the work stands."],
     evidenceHeading: ["每个状态, 都有出处.", "Evidence behind the status."],
