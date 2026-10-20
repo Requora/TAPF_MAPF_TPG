@@ -1,6 +1,7 @@
 """Trace stage boundaries, failures, deadlines, and candidate immutability."""
 import copy
 from dataclasses import replace
+from itertools import count
 import unittest
 from unittest.mock import Mock, patch
 
@@ -54,7 +55,7 @@ class StagedPipelineTests(unittest.TestCase):
         self.pipeline.motion_planner.prepare.assert_not_called()
 
     def test_shared_budget_decreases_across_stages(self):
-        with patch("warehouse_api.planning._staged.monotonic", side_effect=range(6)):
+        with patch("warehouse_api.planning._staged.monotonic", side_effect=count()):
             result = self.pipeline.solve(self.request)
         self.assertIsInstance(result, ExecutableProposal)
         self.assertEqual(self.trace[1]["input"].budget_s, 9)
@@ -89,6 +90,20 @@ class StagedPipelineTests(unittest.TestCase):
             self.assertEqual(self.pipeline.solve(replace(self.request, target_end_s=target)).code,
                              "BAD_INPUT")
         self.pipeline.allocator.allocate.assert_not_called()
+
+    def test_matching_request_id_does_not_hide_wrong_jobs(self):
+        self.pipeline.solve(self.request)
+        plan = self.trace[3]["output"]
+        route = plan.routes[0]
+        for routes in ((), (route, route), (replace(route, robot_id="unknown"),),
+                       (replace(route, steps=()),),
+                       (replace(route, steps=tuple(reversed(route.steps))),)):
+            with self.subTest(routes=routes):
+                self.pipeline.path_planner.plan.side_effect = None
+                self.pipeline.path_planner.plan.return_value = replace(plan, routes=routes)
+                self.pipeline.motion_planner.reset_mock()
+                self.assertEqual(self.pipeline.solve(self.request).code, "BAD_INPUT")
+                self.pipeline.motion_planner.prepare.assert_not_called()
 
     def test_stage_exceptions_keep_original_traceback(self):
         self.pipeline.allocator.allocate.side_effect = ValueError("adapter bug")

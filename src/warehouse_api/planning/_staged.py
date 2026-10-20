@@ -50,7 +50,7 @@ class StagedPipeline:
         plan = self.path_planner.plan(PathRequest(assignment.start, jobs, remaining))
         if isinstance(plan, Failure):
             return plan
-        failure = validate_plan(request, plan)
+        failure = validate_plan(request, jobs, plan)
         if failure is not None:
             return failure
         remaining = deadline - monotonic()
