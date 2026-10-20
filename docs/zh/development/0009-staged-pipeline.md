@@ -10,7 +10,7 @@
 本次首个增量在 500 行 PR 限制内提供组合入口.
 真实链路**尚未完成**. 重放中的分配, MAPF, TPG 明确使用测试替身.
 订单发布与任务编译使用已有实现.
-PR: 待创建. 验证基线: `c47f4a7`.
+PR: [#9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9). 验证基线: `c47f4a7`.
 
 ```mermaid
 flowchart LR
@@ -107,9 +107,16 @@ LaCAM, seed 0, 时间限制 5 s, path length 2, max speed 1, rotation steps 1.
 持续维护网页已区分 fixture 组合和缺失的原生阶段.
 现有导入图为 6 节点和 6 条依赖; 目标流程保留 14 节点和 15 条虚线目标连接.
 6 个模块已有实现; 原生适配器集成仍为 0.
-浏览器检查通过两种语言和图, 28 次模块选择, 键盘操作, 手机溢出和 JS 错误检查. 已检查桌面和手机截图. 私有发布待完成. 源码保留在本仓库;
+浏览器检查通过两种语言和图, 28 次模块选择, 键盘操作, 手机溢出和 JS 错误检查. 已检查桌面和手机截图. 私有发布成功. 未对托管登录流程做浏览器测试. 源码保留在本仓库;
 Sites 使用独立 checkout, 保留既有项目和仅所有者访问范围.
 
-交付前补充代码行数和 PR 链接. 等待用户 review 和合并.
+相对 origin/main: 代码 +306/-23 = 329 行, 包括测试和网页; 配置 0.
+文档单独计入 PR 说明. gpt-6-luna / low 双语复核通过技术事实, 相对链接, doc-sync
+和英文标点检查. 等待用户 review 和合并.
 合并后, 用可行分配与固定版本原生适配器替换 fixture 阶段, 保留同一组合入口.
 合并前不提前开发后续 PR.
+
+[私有网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
+Sites 源码 commit: `69456164727f18ac4085eef0c978c3320eea6228`.
+版本: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_f20650b374ec8191bf4832b034aa39e4`.
+原生发布结果为 `succeeded`; 仅所有者访问范围和主仓库 remote 不变.

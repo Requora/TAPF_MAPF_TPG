@@ -32,14 +32,14 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["分阶段组合入口", "Staged composition"], ["PR #8 已合并. 新增 StagedPipeline 与 JSON 重放. 订单源和编译器为真实实现; 分配, MAPF, TPG 为明确标注的 fixture 替身. 本 PR 待 review.", "PR #8 merged. Add StagedPipeline and JSON replay. Order source and compiler are real implementations; allocation, MAPF, and TPG are labeled fixture doubles. This PR awaits review."]],
+    [["NOW / 正在做", "NOW"], ["分阶段组合入口", "Staged composition"], ["基线 PR #8 已合并. 当前 PR #9 新增 StagedPipeline 与 JSON 重放. 订单源和编译器为真实实现; 分配, MAPF, TPG 为明确标注的 fixture 替身. 本 PR 待 review.", "Baseline PR #8 merged. Current PR #9 adds StagedPipeline and JSON replay. Order source and compiler are real implementations; allocation, MAPF, and TPG are labeled fixture doubles. This PR awaits review."]],
     [["NEXT / 待合并后", "NEXT / AFTER MERGE"], ["替换 fixture, 跑通原生链路", "Replace fixtures with native stages"], ["确认本 PR 合并后, 接入可行分配与固定版本 MAPF/TPG 适配器. 保留同一组合入口与逐阶段失败证据. 不提前开发后续 PR.", "After this PR merges, integrate feasible allocation and pinned MAPF/TPG adapters. Retain this composition entry point and stage failure evidence. Do not start later PRs early."]],
     [["NOT YET / 尚未完成", "NOT YET"], ["真实链路与执行闭环", "Native chain and execution loop"], ["真实订单到 TPG 链路尚未跑通. Runtime, 连续几何, 停车验证与中央执行器均未完成. 两个上游已本地构建; 构建成功不等于适配器集成.", "The native order-to-TPG chain is not running. Runtime, continuous geometry, parking validation, and central execution remain absent. Both upstreams built locally; builds do not prove adapter integration."]],
   ];
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
-    [text(["当前 PR · 变更与 review", "Current PR · changes & review"]), `${project.repo}/compare/main...${project.branch}`],
+    [text(["当前 PR · 变更与 review", "Current PR · changes & review"]), `${project.repo}/pull/9`],
     [text(["验证基线 · c47f4a7", "Validation baseline · c47f4a7"]), `${project.repo}/commit/c47f4a7`],
     [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0009-staged-pipeline.md`],
     [text(["路线图 · 阶段 1—11", "Roadmap · stages 1–11"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/ROADMAP.md`],

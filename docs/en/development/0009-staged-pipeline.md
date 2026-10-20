@@ -10,7 +10,7 @@ The user prioritizes running the order-to-TPG chain. PR #8 is merged at `576e25d
 This first increment provides the composition entry point within the 500-line PR limit.
 The native chain is **not complete**. Allocation, MAPF, and TPG in the replay are explicit
 test doubles. Order release and task compilation use existing implementations.
-PR: pending creation. Verification baseline: `c47f4a7`.
+PR: [#9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9). Verification baseline: `c47f4a7`.
 
 ```mermaid
 flowchart LR
@@ -108,9 +108,16 @@ No action-aware native chain, continuous geometry, splice safety, parking, or TA
 The maintained website now distinguishes fixture composition from missing native stages.
 Current imports show 6 nodes and 6 dependencies; the target flow retains 14 nodes and 15
 dashed target connections. Six modules have implementations; native adapter integrations remain 0.
-Browser QA passed both languages and diagrams, 28 module selections, keyboard input, mobile overflow, and JS errors. Desktop and mobile screenshots were inspected. Private deployment is pending. Source remains in this repository;
+Browser QA passed both languages and diagrams, 28 module selections, keyboard input, mobile overflow, and JS errors. Desktop and mobile screenshots were inspected. Private deployment succeeded. Hosted login was not browser-tested. Source remains in this repository;
 Sites uses a separate checkout and preserves the existing project and owner-only access.
 
-Code count and PR link will be recorded before handoff. Await user review and merge.
+Against origin/main: code +306/-23 = 329 lines, including tests and website; configuration 0.
+Documentation is counted separately in the PR description. Bilingual review by gpt-6-luna / low passed
+for facts, relative links, doc-sync, and English punctuation. Await user review and merge.
 After merge, replace the fixture stages with feasible allocation and pinned native adapters,
 keeping the same composition entry point. Do not start later PRs before merge.
+
+[Private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
+Sites source commit: `69456164727f18ac4085eef0c978c3320eea6228`.
+Version: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_f20650b374ec8191bf4832b034aa39e4`.
+Native publication result: `succeeded`; owner-only access and the main repository remote are unchanged.
