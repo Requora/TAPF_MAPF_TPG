@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r6 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r8 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -107,41 +107,47 @@ REST 请求 `copilot-pull-request-reviewer[bot]` 与 GraphQL `requestReviewsByLo
 
 ## DeepSeek 自动审查
 
-用户要求将自动 code review 改为 DeepSeek V4.1 Flash 1017.
-[官方 API 文档](https://api-docs.deepseek.com/)指定当前调用名为 `deepseek-flash`,
-由 DeepSeek-V4.1-Flash-1017 提供服务. 使用高推理强度, 最多生成 65536 tokens (含推理).
-模型调用名是供应商别名, 不是本仓库固定的不可变版本; 日志记录响应 model 和 usage.
-Key 仅存入 Actions Secret `DEEPSEEK_API_KEY`, 不进入源码或模型输入.
-已从 ruleset `25432822` 移除 Copilot 自动审查规则; 其余分支保护保持不变.
+用户要求接入 DeepSeek V4.1 Flash 1017, 自动将中文 review 意见发布到 PR 对应代码行.
+调研后复用 [PR-Agent](https://github.com/The-PR-Agent/pr-agent), 替换自写 API 和评论发布脚本.
+另一候选 [Serge](https://github.com/huggingface/serge)也支持自有 OpenAI 兼容接口与行内评论,
+但其默认 Action 使用评论指令触发; PR-Agent 已提供 PR 新建/push 触发与中文配置, 更符合本次需求.
+[PR-Agent 模型配置](https://docs.pr-agent.ai/usage-guide/changing_a_model/)支持自有模型接口,
+[review 配置](https://docs.pr-agent.ai/tools/review/)提供 `inline_key_issues`, 不需要自行实现行号定位和发布.
 
-流程: PR 新建或 push -> GitHub 文本 patch + 基线 AGENTS.md/contracts -> DeepSeek -> COMMENT review.
-工作流无 checkout, 不运行 PR 代码, 不批准或合并 PR. 仅处理同仓库 PR, fork PR 跳过.
-PR 工作流本身仍可由具有仓库写权限的人修改, 且可读取注入的 Key 和 GitHub token.
-这些贡献者属于凭据信任边界; 仅跳过 fork 不能防止恶意仓库写入者泄露凭据. 输入内容按不可信数据处理.
-每次请求前后核对 head/base 和打开状态. 过期结果不发布; 相同 head/base/model 已有机器人 review 时跳过.
-缺少 Key, 超过 160000 字符输入, 输出为空或截断均明确失败. 无 patch 的文件列为遗漏.
-仅审查 GitHub 提供的文本 patch 及两份基线文件, 不声明完整仓库分析或执行测试.
-发布内容包含 commit 和运行链接, 完整正文统一替换 @ 字符以避免提及通知, 并在发布前检查 50000 字符限制.
+上游版本为 PR-Agent 0.48.0, commit `981344be2755e303df501e18e3f60b848a188a80`, MIT 许可证.
+使用官方预构建 `0.48.0-github_action` 镜像, 固定运行时 digest:
+`sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d`.
+通过 Docker Registry 查询 digest, 并用 `gh attestation verify oci://index.docker.io/pragent/pr-agent@sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d --repo The-PR-Agent/pr-agent` 验证上游构建证明, exit 0.
+本仓库不 vendoring 或重建上游代码; GitHub Actions 拉取固定镜像运行. 本地无需新增项目依赖.
 
-新增 6 项模拟 API 测试, 验证 COMMENT 绑定 commit, 缺 Key/fork 拒绝,
-旧结果/截断拒绝, 重复运行跳过, 文件缺失/输入过大拒绝, 遗漏文件名提及处理和最终正文长度限制.
-源码 67 项测试和 Ruff 已通过; 嵌入工作流的 Python 单独通过编译和 Ruff 检查.
-这些测试不替代真实 DeepSeek 调用. 实际运行结果将在 PR 中记录.
-首次真实运行 `39348625815` 收到不完整或空响应并拒绝发布. 输出预算从 8192 提高至 16384,
-新增 model, usage, finish_reason 和内容长度诊断, 后续结果在 PR 中记录.
-第二次运行 `39348844596` 确认 finish_reason=length, 16384 个 completion tokens 全为 reasoning,
-正文长度为 0. 按 [API 文档](https://api-docs.deepseek.com/api/create-chat-completion/)的思考模式默认预算改为 65536, 保留 high 推理强度.
-第三次运行 [39349073708](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39349073708) 成功发布
-[真实 review](https://github.com/Requora/TAPF_MAPF_TPG/pull/7#pullrequestreview-5579478108), 绑定 `d24384f`.
-响应 model=deepseek-flash, finish_reason=stop, prompt_tokens=24273, completion_tokens=57196,
-其中 reasoning_tokens=56754, 正文 963 字符. 这验证了真实调用与 GitHub 发布链路.
-审查指出 3 项问题. 仓库写权限属于凭据信任边界的现有设计保留, 不声称隔离恶意仓库写入者.
-另外两项已修正: 对包含遗漏文件名的完整正文统一处理 @, 并检查最终正文长度, 避免额外内容导致发布失败.
-已增加并通过上述失败场景的模拟 API 回归测试; 修正提交的远端 CI 和 review 结果将在 PR 中记录.
-初次本地查询发现没有 node, 因此使用标准库 Python, 未增加运行时依赖.
+流程: 同仓库 PR 新建或 push -> PR-Agent 获取 diff 和项目规则 -> DeepSeek -> 中文摘要与行内意见.
+仅启用 `/review`, 关闭自动 describe 和 improve, 不增加额外模型任务. `inline_key_issues=true`, `response_language=zh-CN`.
+通过 OpenAI 兼容路由调用 `deepseek-flash`, endpoint 为 `https://api.deepseek.com`.
+[DeepSeek 官方文档](https://api-docs.deepseek.com/)说明该别名当前由 DeepSeek-V4.1-Flash-1017 提供服务; 别名不是不可变版本.
+按用户反馈优先速度, 使用 low 推理强度. 输入预算 16000 tokens, 输出预算 16384 tokens, 单次 AI 超时 180 秒,
+不重试超时或耗尽输出的同一模型, 不配置备用模型. 工作流最长 6 分钟, 实际耗时和调用信息在运行详情中记录.
+这些限制控制等待和成本, 不保证固定延迟或完整仓库覆盖. 输入过大时由上游管理 diff 预算并报告覆盖限制.
+
+Key 仅存入 Actions Secret `DEEPSEEK_API_KEY`. 工作流不 checkout 或执行 PR 仓库代码, 不批准或合并 PR.
+fork PR 跳过. 同仓库写权限用户仍可修改工作流, 属于凭据信任边界; 不声称隔离恶意仓库写入者.
+上游负责评论定位, 去重和发布确认; 无法发布到行内的意见保留在摘要. review 失败使 Action 失败.
+Copilot 自动审查规则已从 ruleset `25432822` 移除, 其余分支保护保持不变.
+
+验证区分配置检查和真实运行. 已核对上游固定版本中的配置项与触发逻辑, YAML 解析通过.
+删除自写审查脚本及其专用模拟测试后, 原有 61 项源码和安装后 wheel 测试通过, Ruff 和 diff 检查通过.
+PR-Agent 的真实中文行内发布和耗时仍需实测, 结果将在 PR 中记录; 不能用旧脚本的成功代替上游集成验证.
+
+历史诊断: 自写脚本首次运行 `39348625815` 因不完整输出拒绝发布. 第二次 `39348844596`
+确认 16384 个生成 token 全用于推理, 正文为 0. 提高至 65536 后,
+[运行 39349073708](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39349073708)在约 4 分钟内成功发布
+[review](https://github.com/Requora/TAPF_MAPF_TPG/pull/7#pullrequestreview-5579478108), 绑定 `d24384f`.
+该次 model=deepseek-flash, finish_reason=stop, prompt_tokens=24273, completion_tokens=57196,
+reasoning_tokens=56754. 过大的输入和 high 推理预算导致等待较长, 因此改为复用上游并降低推理强度.
+旧脚本发现的两项发布问题曾修复; 其后运行 `39349634654` 和 `39349679929` 因提交更新或方案替换取消.
+这些记录是旧实现的证据, 不代表当前 PR-Agent 的性能或验证结果.
 
 ## 行数与下一步
 
-相对 main 的代码和工作流变更合计 +453/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
+相对 main 的代码和工作流变更合计 +271/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
 等待用户 review 和合并. 之后按阶段 5 推进库存/需求可行的最小分配增量,
 仍暂缓重分配和多任务队列.

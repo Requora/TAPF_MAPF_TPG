@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r6 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r8 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
 Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -109,41 +109,47 @@ Automatic review recovery remains unverified; quota or successful responses alon
 
 ## DeepSeek automatic review
 
-The user requested switching automatic code review to DeepSeek V4.1 Flash 1017.
-The [official API documentation](https://api-docs.deepseek.com/) specifies the current call name `deepseek-flash`,
-served by DeepSeek-V4.1-Flash-1017. Use high reasoning effort and at most 65536 generated tokens, including reasoning.
-The model name is a provider alias, not an immutable version pinned by this repository; log the response model and usage.
-Store the key only in Actions Secret `DEEPSEEK_API_KEY`, never in source or model input.
-Removed the Copilot automatic-review rule from ruleset `25432822`; other branch protections remain unchanged.
+The user requested DeepSeek V4.1 Flash 1017 with automatic Chinese review findings on the corresponding PR lines.
+After research, reuse [PR-Agent](https://github.com/The-PR-Agent/pr-agent) instead of maintaining custom API and comment-publication code.
+The alternative [Serge](https://github.com/huggingface/serge) also supports custom OpenAI-compatible endpoints and inline comments,
+but its default Action uses comment commands; PR-Agent already provides PR open/push triggers and Chinese configuration, matching this task.
+[PR-Agent model configuration](https://docs.pr-agent.ai/usage-guide/changing_a_model/) supports custom endpoints,
+and [review configuration](https://docs.pr-agent.ai/tools/review/) provides `inline_key_issues`, avoiding custom line mapping and publication.
 
-Flow: PR open or push -> GitHub text patches + base AGENTS.md/contracts -> DeepSeek -> COMMENT review.
-The workflow has no checkout, executes no PR code, and does not approve or merge PRs. Same-repository PRs only; skip forks.
-Users with repository write access can modify the PR workflow and read the injected key and GitHub token.
-These contributors are within the credential trust boundary; skipping forks does not prevent malicious repository writers from exposing credentials. Treat input content as untrusted data.
-Check head/base and open state before and after the request. Never publish stale output; skip an existing bot review for the same head/base/model.
-Missing keys, inputs above 160000 characters, and empty or truncated output fail explicitly. List files without patches as omissions.
-Review only GitHub text patches and the two base files; do not claim full repository analysis or executed tests.
-Published output includes the commit and run link; replace @ characters throughout the final body to prevent mentions and check its 50000-character limit before publication.
+The upstream version is PR-Agent 0.48.0, commit `981344be2755e303df501e18e3f60b848a188a80`, under the MIT license.
+Use the official prebuilt `0.48.0-github_action` image with the pinned runtime digest:
+`sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d`.
+Resolve the digest through Docker Registry and verify upstream build provenance with `gh attestation verify oci://index.docker.io/pragent/pr-agent@sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d --repo The-PR-Agent/pr-agent`, exit 0.
+This repository does not vendor or rebuild upstream code; GitHub Actions pulls and runs the pinned image. No new local project dependency.
 
-Six new fake-API tests cover COMMENT commit binding, missing-key/fork rejection, stale/truncated output rejection,
-duplicate-run skipping, missing files/oversized input rejection, omitted-filename mention handling, and the final body limit.
-All 67 source tests and Ruff pass; embedded workflow Python separately passes compilation and Ruff.
-These tests do not replace a real DeepSeek call. Record actual run results in the PR.
-The first real run `39348625815` received an incomplete or empty response and refused publication. Raise the output budget
-from 8192 to 16384 and log model, usage, finish_reason, and content length; record subsequent results in the PR.
-The second run `39348844596` confirmed finish_reason=length: all 16384 completion tokens were reasoning, with zero content characters.
-Set the budget to the thinking-mode default of 65536 from the [API documentation](https://api-docs.deepseek.com/api/create-chat-completion/), retaining high reasoning effort.
-The third run [39349073708](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39349073708) successfully published
-[a real review](https://github.com/Requora/TAPF_MAPF_TPG/pull/7#pullrequestreview-5579478108) attached to `d24384f`.
-Response model=deepseek-flash, finish_reason=stop, prompt_tokens=24273, completion_tokens=57196,
-including reasoning_tokens=56754, with 963 content characters. This verifies the real API and GitHub publication path.
-The review reported three issues. Retain the documented repository-writer credential trust boundary; do not claim isolation from malicious repository writers.
-The other two issues are fixed: the workflow replaces @ throughout the complete body, including omitted filenames, and checks its final length so appended content cannot exceed the publication limit.
-Fake-API regression coverage for these failure scenarios is added and passes; remote CI and review results for the fix commit will be recorded in the PR.
-The initial local lookup found no node, so the implementation uses standard-library Python without new runtime dependencies.
+Flow: same-repository PR open or push -> PR-Agent fetches diff and project rules -> DeepSeek -> Chinese summary and inline findings.
+Enable only `/review`; disable automatic describe and improve to avoid extra model tasks. Set `inline_key_issues=true` and `response_language=zh-CN`.
+Call `deepseek-flash` through the OpenAI-compatible route at `https://api.deepseek.com`.
+[DeepSeek documentation](https://api-docs.deepseek.com/) states that this alias currently serves DeepSeek-V4.1-Flash-1017; the alias is not immutable.
+Prioritize speed after user feedback with low reasoning effort. Set input budget 16000 tokens, output budget 16384 tokens, and AI timeout 180 seconds.
+Do not retry the same model after timeout or output exhaustion, and configure no fallback model. The workflow timeout is 6 minutes; run details record actual timing and calls.
+These limits bound waiting and cost, not fixed latency or full-repository coverage. Upstream manages the diff budget and reports coverage limits when input is too large.
+
+Store the key only in Actions Secret `DEEPSEEK_API_KEY`. The workflow does not check out or execute PR repository code, approve, or merge PRs.
+Skip fork PRs. Same-repository writers can still modify the workflow and are within the credential trust boundary; no isolation from malicious repository writers is claimed.
+Upstream handles comment anchors, deduplication, and publication verification; findings that cannot be published inline remain in the summary. Review failures fail the Action.
+The Copilot automatic-review rule has been removed from ruleset `25432822`; other branch protections remain unchanged.
+
+Distinguish configuration checks from real execution. Checked configuration keys and trigger logic in the pinned upstream version; YAML parsing passes.
+After removing the custom review script and its dedicated fake-API tests, all existing 61 source and installed-wheel tests, Ruff, and diff checks pass.
+Actual PR-Agent Chinese inline publication and timing remain to be measured and will be recorded in the PR; old-script success is not upstream integration evidence.
+
+Historical diagnosis: the first custom-script run `39348625815` refused incomplete output. The second run `39348844596`
+confirmed all 16384 generated tokens were reasoning, with no content. After increasing the budget to 65536,
+[run 39349073708](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39349073708) successfully published a
+[review](https://github.com/Requora/TAPF_MAPF_TPG/pull/7#pullrequestreview-5579478108) attached to `d24384f` in about four minutes.
+That response reported model=deepseek-flash, finish_reason=stop, prompt_tokens=24273, completion_tokens=57196,
+and reasoning_tokens=56754. Large input and high reasoning caused long waits, motivating upstream reuse and lower reasoning effort.
+Two publication issues in the old script were fixed; subsequent runs `39349634654` and `39349679929` were cancelled because of a new commit or implementation replacement.
+These records describe the old implementation, not current PR-Agent performance or verification.
 
 ## Line counts and next step
 
-Against main: code and workflow changes total +453/-9, including tests and the entire YAML; embedded code is not exempted as configuration. Documentation is counted separately.
+Against main: code and workflow changes total +271/-9, including tests and the entire YAML; embedded code is not exempted as configuration. Documentation is counted separately.
 Wait for user review and merge. Then pursue the smallest stage 5 allocation increment with stock/demand feasibility,
 while continuing to defer reassignment and multi-task queues.
