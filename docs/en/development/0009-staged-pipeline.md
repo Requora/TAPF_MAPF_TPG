@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r6 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r7 -->
 
 ## Scope and status
 
@@ -110,7 +110,7 @@ Seven inline comments were checked against the current source and pinned upstrea
 
 Validation: `PYTHONPATH=src:tests python3 -m unittest planning.test_staged -v` passed all 9 tests. Ruff and diff checks passed. Direct checks confirmed budgets 0/-1 return TIMEOUT without launching a nonexistent executable or creating files; zero stock returns NO_PLAN and zero demand returns BAD_INPUT. Native scope, continuous safety limits, PR status, and website evidence baseline remain unchanged.
 
-The user added a rule to root AGENTS.md: every function needs Chinese and English comments or a docstring explaining its purpose, why the function is needed, and why the work is necessary; update these explanations when the function changes. Root AGENTS.md remains a Chinese-only rules file.
+The user added a rule to root AGENTS.md: every function, class, and method needs Chinese and English comments or a docstring near its definition explaining its purpose, why it is needed, and why the work is necessary; update these explanations when it changes. Class documentation does not replace documentation for each method. Root AGENTS.md remains a Chinese-only rules file.
 
 [Review-fix CI at 990b3f1](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39372553744) passed static checks, installed-wheel tests, real native tests, and CI gate.
 

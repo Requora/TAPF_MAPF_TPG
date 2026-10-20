@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r6 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r7 -->
 
 ## 范围与状态
 
@@ -110,7 +110,7 @@ PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已�
 
 验证: `PYTHONPATH=src:tests python3 -m unittest planning.test_staged -v` 的 9 项测试全部通过. Ruff 和 diff 检查通过. 直接检查确认预算 0/-1 返回 TIMEOUT, 不启动不存在的可执行文件且不创建文件; 零库存为 NO_PLAN, 零需求为 BAD_INPUT. 原生范围, 连续安全边界, PR 状态及网页证据基线不变.
 
-用户追加约定已写入根目录 AGENTS.md: 每个函数使用中英文注释或 docstring, 说明用途, 函数存在的必要性和执行这项工作的原因; 函数变化时同步注释. 根目录 AGENTS.md 仍仅保留中文规则文件.
+用户追加约定已写入根目录 AGENTS.md: 每个函数, 每个类及类的每个方法都在定义附近使用中英文注释或 docstring, 说明用途, 存在的必要性和执行这项工作的原因; 修改时同步注释. 类的说明不能替代其各个方法的说明. 根目录 AGENTS.md 仍仅保留中文规则文件.
 
 [Review 修正 CI, 990b3f1](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39372553744) 的静态检查, 安装包测试, 真实原生测试和 CI gate 全部通过.
 
