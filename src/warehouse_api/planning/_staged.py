@@ -23,9 +23,11 @@ class StagedPipeline:
         self.compiler = compiler
         self.path_planner = path_planner
         self.motion_planner = motion_planner
+        self.last_trace: list[tuple[str, object, object]] = []
 
     def solve(self, request: PlanningRequest) -> ExecutableProposal | Failure:
         started = monotonic()
+        self.last_trace = []
         failure = validate_request(request)
         if failure is not None:
             return failure
@@ -36,18 +38,23 @@ class StagedPipeline:
         remaining = deadline - monotonic()
         if remaining <= 0:
             return timeout
-        draft = self.allocator.allocate(replace(assignment, budget_s=remaining))
+        allocation_request = replace(assignment, budget_s=remaining)
+        draft = self.allocator.allocate(allocation_request)
+        self.last_trace.append(("allocation", allocation_request, draft))
         if isinstance(draft, Failure):
             return draft
         if monotonic() >= deadline:
             return timeout
         jobs = self.compiler.compile_jobs(assignment, draft)
+        self.last_trace.append(("compilation", (assignment, draft), jobs))
         if isinstance(jobs, Failure):
             return jobs
         remaining = deadline - monotonic()
         if remaining <= 0:
             return timeout
-        plan = self.path_planner.plan(PathRequest(assignment.start, jobs, remaining))
+        path_request = PathRequest(assignment.start, jobs, remaining)
+        plan = self.path_planner.plan(path_request)
+        self.last_trace.append(("mapf", path_request, plan))
         if isinstance(plan, Failure):
             return plan
         failure = validate_plan(request, jobs, plan)
@@ -56,9 +63,11 @@ class StagedPipeline:
         remaining = deadline - monotonic()
         if remaining <= 0:
             return timeout
-        motion = self.motion_planner.prepare(MotionRequest(
+        motion_request = MotionRequest(
             assignment.start, jobs, plan, request.target_end_s, remaining,
-        ))
+        )
+        motion = self.motion_planner.prepare(motion_request)
+        self.last_trace.append(("tpg", motion_request, motion))
         if isinstance(motion, Failure):
             return motion
         if monotonic() >= deadline:

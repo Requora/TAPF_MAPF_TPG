@@ -2,15 +2,16 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r14 -->
+<!-- doc-sync: roadmap / 2026-10-20-r15 -->
 
-状态: PR #8 已合并至 `576e25d`. 用户现在优先要求跑通订单到 TPG 链路.
-本 PR 先增加 StagedPipeline 组合入口, 再逐个补齐适配器. fixture 重放使用真实订单源
-和编译器; 分配, MAPF, TPG 仍为测试替身. 真实链路尚未跑通.
-共用预算, 失败短路和过期路径拒绝已在 `4277591` 验证, 源码与安装包各 73 项测试通过.
-两个上游已本地构建; 不代表适配器集成. Runtime 接受, 连续安全和停车验证均未实现.
-见 [组合验证](0009-staged-pipeline.md) 和 [模块架构](../architecture/MODULES.md).
-保留每 PR 500 行代码限制. 等待当前 PR review 和合并后才能继续下一 PR.
+状态: PR #8 已合并至 `576e25d`. PR #9 因提前提交 fixture 串联而转为草稿.
+订单到 TPG 原生链已在本地跑通, 范围为向东单位车道上的一台机器人/一个货架.
+真实分配, 共享编译, MAWPF LaCAM 和 WinkTPG speedSolver 均已参与.
+默认方案含六次原生调用: Lift 2.0 s, Serve 5.2 s, Drop 8.4 s, 8.7 s 完成.
+启用二进制后, 源码和安装包各 79 项测试通过; 未配置二进制则跳过三项原生测试.
+多机器人集成, 联合 TAPF, 连续碰撞/停车验证, Runtime 和执行仍未完成.
+用户已同意本 PR 行数例外. 原生增量纳入 PR #9; 远端原生 CI 待检查.
+见 [真实轨迹与边界](0009-staged-pipeline.md) 和 [模块架构](../architecture/MODULES.md).
 
 ## 可替换模块
 
@@ -33,7 +34,7 @@ flowchart TD
     B -->|Observation| R
 ```
 
-图中描述目标设计, 尚未完成真实集成. 后端位于本次工作范围之外.
+图中描述完整目标设计. 单车道规划子集已本地跑通, 完整闭环尚未完成. 后端位于本次工作范围之外.
 测试可提供固定观测和替身. 通过构造函数注入选择实现.
 新增算法不应要求改动 Runtime 或公开请求字段. 原生依赖保持可选.
 
@@ -59,26 +60,26 @@ flowchart TD
 | 10 | Runtime 事务与分支 | 不重复预留, 幂等提交, 拒绝过期结果, 保护 Lift, 到期分支优先 |
 | 11 | 中央执行器与集成重放 | 精确 Hermite 切片, 保留切换节点, 动作只启动一次, 事件去重 |
 
-集成上游前先定义并测试适配器支持的子集.
+扩展上游集成前先定义并测试适配器支持的子集.
 不支持的边中间起步, 载货交接, 几何, 循环旋转或动作语义必须明确拒绝,
 不能默默简化问题. 中间适配器 PR 不必声称所有阶段均可运行.
 共享验证器和停车要求满足之前, 不接受任何可执行方案.
 
 ## 上游候选
 
-检查日期为 2026-10-19. 以下是调研候选, 尚未通过集成验证.
+检查日期为 2026-10-19. 以下为调研候选; MAWPF/WinkTPG 的单车道子集现已本地集成验证, 不代表通用支持.
 
 | 候选 | 证据与建议用途 | 适配工作 / 限制 |
 | --- | --- | --- |
-| [MAWPF](https://github.com/HirokiNagai-39/mawpf) | C++17; CLI 可选 LaCAM, PIBT, LNS2 或 PP; MIT | 首个 MAPF 系列. 转换图/状态/任务, 展开跨格移动, 导出资源先后关系. 仓库动作需检查支持能力. |
-| [WinkTPG](https://github.com/JingtianYan/WinkTPG-IEEE-TASE) | C++20 和 Boost; 路径文件输入, CSV 输出; 模式 1 为 WinkTPG, 0 为 TPG | 首个运动规划系列. 补充物理动作, 精确拼接和全车队停车检查. 检查的文件树中未发现许可证文件; 再分发前需明确使用条款. |
+| [MAWPF](https://github.com/HirokiNagai-39/mawpf) | C++17; CLI 可选 LaCAM, PIBT, LNS2 或 PP; MIT | 单车道图/状态/任务转换和动作支持检查已本地运行. 多机器人路径, 障碍, 转弯, 跨格移动和资源先后关系仍未完成. |
+| [WinkTPG](https://github.com/JingtianYan/WinkTPG-IEEE-TASE) | C++20 和 Boost; 路径文件输入, CSV 输出; 模式 1 为 WinkTPG, 0 为 TPG | 单车道物理动作和精确 Hermite 拼接已本地运行. 多机器人运动和连续全车队停车检查仍未完成. 检查的文件树中未发现许可证文件; 再分发前需明确使用条款. |
 | [libMultiRobotPlanning](https://github.com/whoenig/libMultiRobotPlanning) | C++14; CBS/ECBS, CBS-TA/ECBS-TA, 最小费用分配与次优分配枚举; MIT | 分配和联合 TAPF 实验. 目标分配示例不表达 SKU 选择, 货架服务或队列锁. |
 
-检查的 commits (引入构建时再次固定):
+检查的 commits (原生构建已固定 MAWPF 和 WinkTPG):
 
 - MAWPF: `0cdb8e43797aff3781e4cd3ddb2c6d7d36f3df17`.
 - WinkTPG: `dd96946f225e206de35b041320786eab43210658`.
-- libMultiRobotPlanning: `4c75fa20c435c440d8b6bd6dc81668ddc7396ba0`.
+- libMultiRobotPlanning: `4c75fa20c435c440d8b6bd6dc81668ddc7296ba0`.
 
 分配先测试具有明确可行边的最小费用机器人/任务匹配.
 仓库专用代码仍需选择可行货架, 拣选项, 工作站和归还位置.
@@ -86,7 +87,7 @@ flowchart TD
 先在每个机器人一个目标的受限场景中与联合 CBS-TA 比较,
 再扩展到多动作仓库任务. 这是计划中的实验, 不表示 CBS-TA 已支持完整 API.
 
-阶段 8 已有分阶段组合入口的 fixture 验证. 原生分阶段链路和联合 TAPF 集成仍为计划.
+阶段 8 已本地验证真实单车道分阶段链路. 通用原生集成和联合 TAPF 仍为计划.
 
 ## 可观察性
 

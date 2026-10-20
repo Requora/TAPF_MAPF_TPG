@@ -12,16 +12,16 @@ with sync_playwright() as playwright:
     for language in ("zh-CN", "en"):
         assert page.locator("html").get_attribute("lang") == language
         page.locator('[data-view="flow"]').click()
-        assert page.locator(".node").count() == 14
-        assert page.locator(".edge.future").count() == 15
+        assert page.locator(".node").count() == 15
+        assert page.locator(".edge.future").count() == 10
         for node_id in page.locator(".node").evaluate_all("nodes => nodes.map(n => n.dataset.id)"):
             page.locator(f'[data-id="{node_id}"]').click()
             assert page.locator(f'[data-id="{node_id}"]').get_attribute("aria-pressed") == "true"
             assert page.locator("#inspector a").get_attribute("href").startswith("https://github.com/Requora/")
         page.locator('[data-view="imports"]').click()
-        assert page.locator(".node").count() == 6
+        assert page.locator(".node").count() == 11
         assert page.locator(".edge.future").count() == 0
-        assert page.locator(".edge").count() == 6
+        assert page.locator(".edge").count() == 16
         page.locator('[data-id="order_source"]').focus()
         page.keyboard.press("Enter")
         assert page.locator('[data-id="order_source"]').get_attribute("aria-pressed") == "true"
@@ -34,4 +34,4 @@ with sync_playwright() as playwright:
     page.screenshot(path="/tmp/warehouse-progress-mobile.png", full_page=True)
     assert not errors, errors
     browser.close()
-print("PASS: two languages, both diagrams, 28 module selections, keyboard, mobile layout, no JS errors")
+print("PASS: two languages, both diagrams, 30 module selections, keyboard, mobile layout, no JS errors")

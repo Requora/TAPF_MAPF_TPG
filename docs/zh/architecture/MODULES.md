@@ -2,9 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r4 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r5 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
+
+已发布网页仍是先前的 fixture 快照; 本地原生更新尚未发布.
 
 ## 已实现目录
 
@@ -27,6 +29,23 @@ src/warehouse_api/
     __init__.py
     _timing.py
     _validation.py
+  allocation/
+    __init__.py
+    _single_shelf.py
+  mapf/
+    __init__.py
+    _mawpf.py
+    _validation.py
+  tpg/
+    __init__.py
+    _winktpg.py
+    _validation.py
+  validation/
+    __init__.py
+    _single_lane.py
+  native_process/
+    __init__.py
+    _run.py
   planning/
     __init__.py
     _staged.py
@@ -36,6 +55,8 @@ src/warehouse_api/
     _current_task.py
     _validation.py
 tests/
+  native/
+  native_process/
   planning/
   serialization/fixtures/
   task_compiler/
@@ -57,6 +78,16 @@ flowchart LR
     Compiler --> Durations[action_timing]
     Orders[order_source] --> Contracts
     Durations --> Contracts
+    Allocation[allocation] --> Contracts
+    Allocation --> Validation[validation: supported subset]
+    MAPF[mapf] --> Contracts
+    MAPF --> Validation
+    MAPF --> Native[native_process]
+    TPG[tpg] --> Contracts
+    TPG --> Validation
+    TPG --> Native
+    Validation --> Contracts
+    Native --> Contracts
 ```
 
 | 模块 | 公开 API | 职责 |
@@ -65,7 +96,12 @@ flowchart LR
 | order_source | ReplayOrderSource, generate_orders | 发布和生成订单 |
 | task_compiler | CurrentTaskCompiler | 编译受支持的当前任务和新绑定 |
 | action_timing | action_duration_s, action_duration_ticks | 共用动作耗时 |
-| planning | StagedPipeline | 共用预算组合注入的阶段; 已通过 fixture 串联验证 |
+| planning | StagedPipeline | 共用预算组合注入的阶段并记录真实 trace; 原生单车道链路已本地验证 |
+| allocation | SingleShelfAllocator | 唯一可行货架/机器人; 从需求生成 Pick |
+| mapf | NativeMawpfPlanner | 固定版本 LaCAM 输出转为相邻移动和动作引用 |
+| tpg | NativeWinkTpgPlanner | 固定版本 speedSolver 原语转为 Hermite 节点和动作静止段 |
+| validation | check_single_lane, check_jobs, check_assignment | 支持范围检查; 连续 Validator 未实现 |
+| native_process | run_native | 进程预算与原始证据保留 |
 | serialization | dumps, loads, from_data, to_data | JSON 结构转换 |
 
 跨模块只从包入口或 contracts 导入. 例如编译器调用
@@ -77,7 +113,7 @@ flowchart LR
 公开入口使用明确的职责名称, 如 `from warehouse_api.task_compiler import CurrentTaskCompiler`.
 旧包导入需要按下表迁移, 不保留旧名称别名. 类名和函数名不变.
 内部 Python `__module__` 路径已改变; 不保证历史 pickle 或内部模块导入兼容.
-公开 JSON 契约不变. StagedPipeline 已组合四个注入阶段. 重放中的分配, MAPF, TPG 为测试替身. 未实现 Runtime 接受或原生链路. 见 [组合验证](../development/0009-staged-pipeline.md).
+公开 JSON 契约不变. StagedPipeline 已组合四个注入阶段. 原生重放在受支持单位车道使用真实分配, MAWPF 和 WinkTPG. 旧 fixture 重放保留为组合测试. 未实现 Runtime 接受. 见 [组合验证](../development/0009-staged-pipeline.md).
 
 
 | 旧名称 | 新名称 |
@@ -93,10 +129,7 @@ flowchart LR
 
 | 计划目录 | contracts 中的接口 | 状态 |
 | --- | --- | --- |
-| allocation/ | Allocator | 接口已定义 |
-| mapf/ | PathPlanner | 接口已定义 |
-| tpg/ | MotionPlanner | 接口已定义 |
-| validation/ | Validator | 连续验证接口已定义 |
+| validation/ | Validator | 输入范围检查已实现; 连续验证仅接口 |
 | runtime/ | Runtime | 事务与原子提交接口已定义 |
 | execution/ | CentralExecutor | 执行接口已定义 |
 
@@ -109,4 +142,4 @@ flowchart LR
 拒绝反向依赖, 跨模块内部导入和跨模块星号导入; 同时验证公开导出.
 检查覆盖相对导入及别名, 在源码和安装后的 wheel 中均运行.
 它不拦截动态导入或运行时属性访问, 也不是 Python 沙箱.
-业务 fixture 证明重构后的已有行为, 不证明真实求解器或执行安全.
+原生测试运行真实上游并解析检查 Hermite 运动学界限, 不证明连续碰撞或无限期停车安全. 原生增量在 PR 行数决定前保留在本地.

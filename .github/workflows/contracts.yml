@@ -56,10 +56,40 @@ jobs:
           print("Contract imports, class and method annotations passed")
           PY
 
+  native:
+    name: Real MAWPF and WinkTPG chain
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: sudo apt-get update && sudo apt-get install -y cmake libboost-system-dev libboost-program-options-dev libboost-filesystem-dev
+      - name: Fetch pinned upstreams
+        run: |
+          git clone https://github.com/HirokiNagai-39/mawpf.git "$RUNNER_TEMP/mawpf"
+          git -C "$RUNNER_TEMP/mawpf" checkout 0cdb8e43797aff3781e4cd3ddb2c6d7d36f3df17
+          git clone https://github.com/JingtianYan/WinkTPG-IEEE-TASE.git "$RUNNER_TEMP/winktpg"
+          git -C "$RUNNER_TEMP/winktpg" checkout dd96946f225e206de35b041320786eab43210658
+      - name: Build adapters and run real chain
+        run: |
+          cmake -S integrations/native -B "$RUNNER_TEMP/native-build" -DMAWPF_SOURCE_DIR="$RUNNER_TEMP/mawpf" -DWINKTPG_SOURCE_DIR="$RUNNER_TEMP/winktpg"
+          cmake --build "$RUNNER_TEMP/native-build" -j 2
+          python -m pip install .
+          WAREHOUSE_NATIVE_BIN="$RUNNER_TEMP/native-build" python -I -m unittest discover -s tests -v
+          PYTHONPATH=tests python -m native.replay "$RUNNER_TEMP/native-build" --output "$RUNNER_TEMP/native-chain.json" --html "$RUNNER_TEMP/native-chain.html"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-chain-evidence
+          path: |
+            ${{ runner.temp }}/native-chain.json
+            ${{ runner.temp }}/native-chain.html
+
   required:
     name: CI gate
     if: ${{ always() }}
-    needs: [lint, test]
+    needs: [lint, test, native]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -67,6 +97,8 @@ jobs:
         env:
           LINT_RESULT: ${{ needs.lint.result }}
           TEST_RESULT: ${{ needs.test.result }}
+          NATIVE_RESULT: ${{ needs.native.result }}
         run: |
           test "$LINT_RESULT" = success
           test "$TEST_RESULT" = success
+          test "$NATIVE_RESULT" = success

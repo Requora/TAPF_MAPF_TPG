@@ -15,6 +15,11 @@ DEPENDENCIES = {
     "action_timing": {"contracts"},
     "task_compiler": {"contracts", "serialization", "action_timing"},
     "planning": {"contracts"},
+    "validation": {"contracts"},
+    "allocation": {"contracts", "validation"},
+    "native_process": {"contracts"},
+    "mapf": {"contracts", "validation", "native_process"},
+    "tpg": {"contracts", "validation", "native_process"},
 }
 EXPORTS = {
     "serialization": {"dumps", "loads", "from_data", "to_data"},
@@ -22,6 +27,11 @@ EXPORTS = {
     "action_timing": {"action_duration_s", "action_duration_ticks"},
     "task_compiler": {"CurrentTaskCompiler"},
     "planning": {"StagedPipeline"},
+    "validation": {"check_single_lane", "check_jobs", "check_assignment"},
+    "allocation": {"SingleShelfAllocator"},
+    "native_process": {"run_native"},
+    "mapf": {"NativeMawpfPlanner"},
+    "tpg": {"NativeWinkTpgPlanner"},
 }
 
 

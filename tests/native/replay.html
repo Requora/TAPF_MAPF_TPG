@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>真实订单到 TPG 重放 / Native chain replay</title>
+<style>
+body{font:16px/1.65 system-ui;color:#302d27;background:#f7f4ed;max-width:1040px;margin:auto;padding:32px}h1{font-size:32px}small,.muted{color:#746d61}button,input,select{font:inherit}button{padding:8px 16px;background:#fff;border:1px solid #cabfae;border-radius:8px;cursor:pointer}button:focus-visible,summary:focus-visible{outline:3px solid #a86138}section{background:#fffaf3;border:1px solid #e2d8ca;border-radius:16px;padding:24px;margin:20px 0}svg{width:100%;height:auto}input{width:100%}table{border-collapse:collapse;width:100%;font-size:14px}td,th{padding:9px;text-align:left;border-bottom:1px solid #e2d8ca}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}summary{cursor:pointer}.stats{display:flex;gap:30px;flex-wrap:wrap}output{font-variant-numeric:tabular-nums}.badge{color:#426847}#robot{fill:#a86138}#shelf{fill:none;stroke:#716357;stroke-width:3}a{color:#885534}@media(max-width:600px){body{padding:16px}section{padding:16px}.scroll{overflow:auto}}
+</style>
+<header><small>WAREHOUSE / ACTUAL NATIVE EXECUTION TRACE</small><h1>订单 → 分配 → 编译 → MAPF → TPG</h1>
+<p>真实运行重放 / Actual native planning replay. 没有求解器替身 / No solver doubles.</p>
+<p class="muted">范围 / Scope: 1 robot, 1 shelf, eastbound unit lane. 未提交 Runtime, 未证明连续碰撞或停车安全 / No Runtime acceptance or continuous collision/parking proof.</p></header>
+<section><strong id="status"></strong><p id="failure"></p><div class="stats"><span>订单数量 / Units: <b id="quantity"></b></span><span>原生调用 / Native calls: <b id="calls"></b></span><span>完成 / Finish: <b id="finish"></b></span></div></section>
+<section id="playback"><svg viewBox="0 0 940 160" aria-label="Robot and shelf on the route"><g id="lane"></g><rect id="shelf" x="-17" y="46" width="34" height="34" rx="3"/><circle id="robot" cx="0" cy="90" r="15"/></svg>
+<label for="time">仿真时间 / Simulation time</label><input id="time" type="range" min="0" step="any" value="0">
+<p><button id="previous">← 上一节点 / Previous</button> <button id="next">下一节点 / Next →</button> <button id="play">播放 / Play</button></p>
+<div class="stats"><output id="clock"></output><output id="position"></output><output id="speed"></output><output id="action"></output></div></section>
+<section><h2>动作与资源 / Actions and resources</h2><div class="scroll"><table><thead><tr><th>动作 / Action</th><th>位置 / Node</th><th>开始 / Start</th><th>耗时 / Duration</th><th>资源 / Resource</th><th>StepRef</th></tr></thead><tbody id="actions"></tbody></table></div></section>
+<section><h2>实际模块输入输出 / Actual stage I/O</h2><div id="stages"></div></section>
+<section><h2>上游原始证据 / Native evidence</h2><p>包含真实命令, 预算, 退出码, 原始状态和速度 / Commands, budgets, exit codes, raw states and speeds.</p><div id="raw"></div></section>
+<script id="evidence" type="application/json">__EVIDENCE__</script>
+<script>
+const data = JSON.parse(document.querySelector('#evidence').textContent);
+const $ = id => document.getElementById(id);
+const escape = value => String(value).replace(/[&<>"']/g, char => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[char]));
+
+function detail(parent, title, value) {
+  const block = document.createElement('details');
+  const summary = document.createElement('summary');
+  const content = document.createElement('pre');
+  summary.textContent = title;
+  content.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+  block.append(summary, content);
+  parent.append(block);
+}
+
+$('status').textContent = data.status;
+$('quantity').textContent = data.orders[0].items[0].quantity;
+$('calls').textContent = Object.values(data.native_evidence).reduce((sum, files) =>
+  sum + Object.keys(files).filter(name => name.endsWith('.run.json')).length, 0);
+for (const [name, input, output] of data.trace) {
+  detail($('stages'), name, { input, output });
+}
+for (const [stage, files] of Object.entries(data.native_evidence)) {
+  for (const name of Object.keys(files).sort()) {
+    detail($('raw'), stage + ' / ' + name, files[name]);
+  }
+}
+detail($('raw'), 'Upstream commits and binary SHA256', {
+  sources: data.sources, binaries: data.binaries, seed: data.seed
+});
+
+if (!data.result.motion) {
+  $('playback').hidden = true;
+  $('failure').textContent = JSON.stringify(data.result);
+  $('finish').textContent = 'rejected';
+} else {
+  const segment = data.result.motion.common_prefix[0];
+  const knots = segment.knots;
+  const jobs = data.trace.find(row => row[0] === 'compilation')[2][0].actions;
+  const duration = knots.at(-1).time_s;
+  const end = knots.at(-1).pose.x_m;
+  const canvas = $('lane').ownerSVGElement;
+  const px = x => 30 + x / end * (canvas.clientWidth - 60);
+  $('finish').textContent = duration.toFixed(3) + ' s';
+  $('time').max = duration;
+
+  function layout() {
+    canvas.setAttribute('viewBox', `0 0 ${canvas.clientWidth} 160`);
+    $('lane').innerHTML = `<path d="M30 90H${canvas.clientWidth - 30}" stroke="#d5c9b8" stroke-width="5"/>`;
+    $('lane').innerHTML += data.model.nodes.map(node =>
+      `<circle cx="${px(node.position.x_m)}" cy="90" r="4" fill="#8c8375"/>
+       <text x="${px(node.position.x_m)}" y="130" text-anchor="middle">${escape(node.id)}</text>`
+    ).join('');
+  }
+  layout();
+  window.addEventListener('resize', () => { layout(); render(); });
+  $('actions').innerHTML = jobs.map((action, index) => `<tr>
+    <td>${action.kind}</td><td>${escape(action.target_node)}</td>
+    <td>${segment.actions[index].start_s.toFixed(3)} s</td><td>${action.duration_s.toFixed(3)} s</td>
+    <td>${escape(action.resource_ids.join(', '))}</td>
+    <td>${escape(action.step.task_id)}:${action.step.step_index}</td></tr>`).join('');
+
+  function render() {
+    const time = +$('time').value;
+    let index = knots.findIndex(knot => knot.time_s > time);
+    if (index < 1) index = knots.length - 1;
+    const left = knots[index - 1], right = knots[index];
+    const dt = right.time_s - left.time_s;
+    const s = Math.max(0, Math.min(1, (time - left.time_s) / dt));
+    const x0 = left.pose.x_m, x1 = right.pose.x_m;
+    const v0 = left.velocity.vx_mps, v1 = right.velocity.vx_mps;
+    const a = 2*x0 - 2*x1 + dt*(v0 + v1);
+    const b = -3*x0 + 3*x1 - dt*(2*v0 + v1);
+    const c = dt*v0;
+    const x = ((a*s + b)*s + c)*s + x0;
+    const speed = (3*a*s*s + 2*b*s + c) / dt;
+    $('robot').setAttribute('cx', px(x));
+    const lifted = time >= segment.actions[0].start_s + jobs[0].duration_s - 1e-9;
+    const dropped = time >= segment.actions[2].start_s + jobs[2].duration_s - 1e-9;
+    $('shelf').setAttribute('transform', `translate(${px(dropped ? end : lifted ? x : 1)},0)`);
+    $('clock').textContent = time.toFixed(3) + ' s';
+    $('position').textContent = 'x = ' + x.toFixed(3) + ' m';
+    $('speed').textContent = 'v = ' + speed.toFixed(3) + ' m/s';
+    const active = segment.actions.findIndex((action, i) =>
+      time >= action.start_s && time < action.start_s + jobs[i].duration_s - 1e-9);
+    $('action').textContent = active < 0 ? '移动或等待 / Move or hold' : jobs[active].kind;
+  }
+  $('time').oninput = render;
+  $('next').onclick = () => {
+    $('time').value = (knots.find(knot => knot.time_s > +$('time').value + 1e-8) || knots.at(-1)).time_s;
+    render();
+  };
+  $('previous').onclick = () => {
+    $('time').value = ([...knots].reverse().find(knot => knot.time_s < +$('time').value - 1e-8) || knots[0]).time_s;
+    render();
+  };
+  let timer = null;
+  $('play').onclick = () => {
+    if (timer) { clearInterval(timer); timer = null; return; }
+    if (+$('time').value >= duration) $('time').value = 0;
+    timer = setInterval(() => {
+      $('time').value = Math.min(duration, +$('time').value + 0.04);
+      render();
+      if (+$('time').value >= duration) { clearInterval(timer); timer = null; }
+    }, 40);
+  };
+  render();
+}
+</script>
+</html>

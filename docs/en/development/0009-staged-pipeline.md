@@ -1,125 +1,89 @@
-# Staged planning and fixture replay
+# Real order-to-TPG planning chain
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r1 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r2 -->
 
 ## Scope and status
 
-The user prioritizes running the order-to-TPG chain. PR #8 is merged at `576e25d`.
-This first increment provides the composition entry point within the 500-line PR limit.
-The native chain is **not complete**. Allocation, MAPF, and TPG in the replay are explicit
-test doubles. Order release and task compilation use existing implementations.
-PR: [#9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9). Verification baseline: `4277591`.
+The native planning chain now runs locally: order release -> feasible allocation -> shared compilation -> upstream MAWPF -> upstream WinkTPG -> candidate MotionPlan. No solver test doubles are used in `tests/native/replay.py`.
 
-```mermaid
-flowchart LR
-    O[ReplayOrderSource] -->|Order to Demand: fixture harness| A[Allocator fixture]
-    A -->|TaskDelta| C[CurrentTaskCompiler]
-    C -->|RobotJobs / PathRequest| M[MAPF fixture]
-    M -->|FleetPlan / MotionRequest| T[TPG fixture]
-    T -->|MotionPlan| P[Candidate proposal only]
-```
+Supported scope is one robot, one grounded shelf, one demand/stock row, and an eastbound unit-spaced lane. The robot starts at node 0, reaches pickup, station, and a later empty return slot. All headings are zero, all starts are at rest, and obstacles are absent. Unsupported constraints return `UNSUPPORTED`; insufficient stock returns `NO_PLAN`. This is a narrow real integration, not a general warehouse solver or an execution loop.
+
+[PR #9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9) was submitted prematurely with fixture wiring only. After the user's correction, it was converted to draft. The user authorized continuing this same PR after the 500-line exception request. The native implementation is now included in this correction; no limit exception is implied for later PRs. No additional PR or merge was made.
+
+Validation source snapshot: base `a0e14f7` plus local code. Source SHA256 is `1f8a35d1c83eedd502342d7f4d7aba3f82335b846752cea5fdf584e9267c170a`, computed over sorted `.py`, `.cpp`, `.html`, and `.txt` files under src, tests, integrations, excluding __pycache__, with each relative path and a null byte before its bytes. The source hash identifies the tested native implementation independently of later documentation commits.
 
 ## Implementation and decisions
 
-`planning.StagedPipeline` receives four Protocol implementations through its constructor.
-It calls allocation, compilation, routing, and motion preparation in order. It creates a
-candidate `ExecutableProposal`; it never accepts a plan or changes a ledger.
-Runtime and continuous validation remain absent. The type name does not prove execution safety.
+```mermaid
+flowchart LR
+    O[ReplayOrderSource] -->|Order -> Demand: replay harness| A[SingleShelfAllocator]
+    A -->|TaskDelta| C[CurrentTaskCompiler]
+    C -->|RobotJobs / PathRequest| M[NativeMawpfPlanner / LaCAM]
+    M -->|FleetPlan / MotionRequest| T[NativeWinkTpgPlanner / speedSolver]
+    T -->|Exact knots + action holds| P[Candidate MotionPlan]
+```
 
-The pipeline imports only contracts. Existing DTOs and public signatures are unchanged.
-One wall-clock deadline covers all stages, including compilation. Each budgeted stage receives
-the remaining time. Synchronous calls cannot be interrupted here; successful late results are
-discarded. Stage failures preserve their original code, message, and related IDs. Exceptions
-propagate with their traceback. A path result for a different request stops before motion. Robot coverage and ordered Do references must match the compiled jobs.
-Input and path-identity rules live in `planning/_validation.py`.
+All public planning messages still use contracts.py. StagedPipeline injects each independent stage, shares one deadline, checks path/action identity, and retains the actual stage inputs/results in `last_trace`. Only Runtime may accept a candidate; Runtime is not implemented.
 
-Order-to-Demand conversion belongs to the replay harness until Runtime exists. The fixture
-allocator returns one predefined task. Fixture motion contains holds for compiled action durations;
-it is neither a speed solver nor a safety validator. No solver algorithms were implemented here.
+SingleShelfAllocator selects the only supported feasible robot/shelf, checks available SKU quantity, and creates picks from the released demand. Task IDs derive from the request ID. It does not reserve stock or optimize matching. Existing tasks, locked queues, and general allocation are unsupported by this allocator.
+
+MAWPF is called for each action target. Its actual states become adjacent Move steps plus compiled Do references. WinkTPG consumes those chosen moves and returns its actual speed primitives for each leg. Each leg ends at rest so the compiled action can run. The adapter retains acceleration switches, including the midpoint of a zero-to-zero triangular primitive, as Hermite knots. It adds stationary time to reach a simulation tick before starting each action. Compiled duration and StepRef are preserved. The already stopped single robot receives an explicit hold tail.
+
+`validation` currently owns supported-subset input/business checks, not the continuous Validator implementation. MAPF and TPG own local native-output validation. `native_process` retains commands, request IDs, budgets, elapsed time, exit codes, stdout, stderr, and raw outputs. TimeoutExpired is the only caught process exception, mapped to TIMEOUT after the child is killed by subprocess.run; unexpected errors keep their traceback. Old output files cannot satisfy a new call.
 
 ## Verification and replay
 
+First clone the upstream URLs below and check out their exact commits. CMake verifies commits and rejects tracked source changes. In this environment CMake is in `/home/yimin/miniconda3/envs/lacam-tapf/bin`; Boost 1.85.0 and GCC 13.3.0 were used. Upstream sources remain outside this repository.
+
 ```bash
-PYTHONPATH=src python -m unittest discover -s tests -v
-PYTHONPATH=src:tests python -m planning.replay > /tmp/staged-fixture-trace.json
+cmake -S integrations/native -B /tmp/tapf-chain-bridges \
+  -DMAWPF_SOURCE_DIR=/tmp/tapf-chain-mawpf \
+  -DWINKTPG_SOURCE_DIR=/tmp/tapf-chain-winktpg \
+  -DCMAKE_PREFIX_PATH=/home/yimin/miniconda3/envs/lacam-tapf
+cmake --build /tmp/tapf-chain-bridges -j 4
+WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges PYTHONPATH=src python -m unittest discover -s tests -v
+PYTHONPATH=src:tests python -m native.replay /tmp/tapf-chain-bridges \
+  --output /tmp/tapf-real-chain.json --html /tmp/tapf-real-chain.html
+PYTHONPATH=src:tests python -m native.replay /tmp/tapf-chain-bridges \
+  --quantity 3 --stock 3 --station 4 --destination 8 \
+  --output /tmp/tapf-real-chain-changed.json --html /tmp/tapf-real-chain-changed.html
+PYTHONPATH=src:tests python -m native.replay /tmp/tapf-chain-bridges --stock 0 \
+  --output /tmp/tapf-real-chain-rejected.json --html /tmp/tapf-real-chain-rejected.html
 ruff check src tests web/progress/check.py
-# Build the wheel from a clean checkout, install it in a fresh environment, then:
-python -I -m unittest discover -s tests -v
-python -m pip check
 ```
 
-Observed: 73 source tests and 73 clean installed-wheel tests pass; Ruff and pip check pass.
-The new cases cover all four failure boundaries, all deadline checkpoints, decreasing budgets,
-compiler rejection, stale path identity, input snapshots, result JSON round trips, and exceptions.
-The replay records each stage's implementation label, inputs or compiled output, and result.
-Wall-clock budget fields vary between runs; the fixture proposal is repeatable.
+Observed: 79 source tests and 79 clean installed-wheel tests pass with real binaries enabled. Ruff, pip check, and diff checks pass. Without WAREHOUSE_NATIVE_BIN the three native-chain tests are explicitly skipped. Native binaries remain optional package dependencies. A separate native CI job builds the pinned upstreams and uploads the real JSON/HTML replay. Its remote execution is pending at this commit.
 
-| Trace stage | Observed result |
+| Replay | Actual result |
 | --- | --- |
-| Orders | O requests one X; harness supplies one available shelf item |
-| Allocation fixture | Task T bound to robot A; Lift, Serve, Drop |
-| Real compiler | Three actions, each 0.3 s, with StepRef and resource IDs |
-| MAPF fixture | Do, Move(out), Do, Move(return), Do |
-| TPG fixture | Action starts at 0.0, 4.3, 8.6 s; prefix ends at 8.9 s; hold tail ends at 9.9 s |
-| Acceptance | Not performed; no Runtime or continuous safety evidence |
+| One unit, pickup 1, station 3, return 5 | Six successful native process calls; Lift at 2.0 s, Serve at 5.2 s, Drop at 8.4 s; completion 8.7 s; terminal speed zero |
+| Three units, station 4, return 8 | Actual native path changes; service duration 0.7 s instead of 0.3 s; starts 2.0/5.9/10.7 s; completion 11.0 s |
+| Stock zero | NO_PLAN at allocation; no native calls |
+| Second robot | UNSUPPORTED |
+| Real sleeping subprocess | TIMEOUT recorded; no successful result consumed |
+| Exit zero without output | BACKEND_ERROR; stale output was removed |
 
-An initial wheel test failed because the workspace's ignored build directory retained old
-flat modules, including `_codec_validation.py`. Rebuilding from `git archive c47f4a7` into
-a new directory removed the stale build inputs; all 72 installed tests then passed.
-The first Ruff attempt found no module in the base Python environment. A temporary isolated
-environment supplied Ruff 0.14.0 and the wheel tools. No project dependency was added.
+Tests analytically check Hermite speed and acceleration extrema on every interval of the default replay, exact action holds, reference order, tick alignment, end pose, zero terminal speed, and tail splice. These checks are not continuous collision or indefinite parking validation. Input snapshots remain unchanged. JSON evidence contains executable SHA256 values, actual stage outputs, and the complete raw native records.
 
-Review follow-up at `4277591`: reject missing, duplicate, or unknown route robots and missing/reordered actions even when the request ID matches. The clock test now uses an unbounded counter. A reported missing post-compilation deadline check was already present and is covered by the deadline test.
+The standalone HTML replay uses the returned Hermite knots, not sampled invented paths. It supports time scrubbing, previous/next knots, playback, action/resource inspection, native output expansion, and a rejection view. Browser QA passed six-call and action-table checks, step control, terminal speed, mobile overflow, and rejection display. Desktop/mobile screenshots were inspected. The moving shelf illustration is derived from scheduled action completion, not backend observations.
 
-## Upstream probes and limits
+## Upstream provenance and failures
 
-These are separate build/run probes, not adapter integration or the fixture chain.
-Sources remain outside this repository in `/tmp/tapf-chain-mawpf` and `/tmp/tapf-chain-winktpg`.
-
-| Source | Pinned commit | License / result |
+| Source | Commit | License / integration |
 | --- | --- | --- |
-| [MAWPF](https://github.com/HirokiNagai-39/mawpf) | `0cdb8e43797aff3781e4cd3ddb2c6d7d36f3df17` | MIT; built; one-agent scenario probe rejected with `invalid N, check instance` |
-| [WinkTPG](https://github.com/JingtianYan/WinkTPG-IEEE-TASE) | `dd96946f225e206de35b041320786eab43210658` | No license file found; no upstream code redistributed; built with the include flag below |
+| [MAWPF](https://github.com/HirokiNagai-39/mawpf) | `0cdb8e43797aff3781e4cd3ddb2c6d7d36f3df17` | MIT; actual LaCAM routes exported by a thin wrapper |
+| [WinkTPG](https://github.com/JingtianYan/WinkTPG-IEEE-TASE) | `dd96946f225e206de35b041320786eab43210658` | No license file found; no upstream source/binaries redistributed; actual speedSolver primitives exported |
 
-Build commands, after checking out the pinned sources:
+The MAWPF stock scenario loader returned `invalid N` because its U indexing omits the omega dimension. The wrapper selects the correct zero-speed/east-facing vertices by their explicit attributes and sets the borrowed graph's ownership flag, which that upstream constructor leaves uninitialized. No search algorithm was rewritten.
 
-```bash
-cmake -S /tmp/tapf-chain-mawpf -B /tmp/tapf-chain-mawpf/build -DCMAKE_BUILD_TYPE=Release
-cmake --build /tmp/tapf-chain-mawpf/build -j 4
-cmake -S /tmp/tapf-chain-winktpg -B /tmp/tapf-chain-winktpg/build \
-  -DCMAKE_PREFIX_PATH=/home/yimin/miniconda3/envs/lacam-tapf \
-  '-DCMAKE_CXX_FLAGS=-include unordered_map'
-cmake --build /tmp/tapf-chain-winktpg/build -j 4
-```
+WinkTPG originally failed to compile because simulator.h lacks unordered_map; the build adds `-include unordered_map`. Its CLI CSV is statistics, so the wrapper calls speedSolver and exports start time, cost, and start/end speeds directly. An initial infinite planning horizon overflowed an upstream integer bound; the wrapper now uses the finite path length. The upstream simEnv is only an initial-state container: no simulator step or new simulator/backend implementation was added.
 
-Use CMake from `/home/yimin/miniconda3/envs/lacam-tapf/bin` in this environment.
-The initial WinkTPG build failed because `simulator.h` lacks an `unordered_map` include.
-The compiler flag fixes this local build without changing upstream source.
-Boost 1.85.0 and GCC 13.3.0 were used. A separate path `(0,0)` through `(4,0)` was
-run with `tpg -p path.txt -m 1 -o winktpg.csv`, delay type 0. The CSV reports
-success 1 and solution cost 4.5. It is statistics output, not an API MotionPlan.
-MAWPF input was a 5-by-1 open map and scenario start `(0,0)`, goal `(4,0)`, one agent,
-LaCAM, seed 0, time limit 5 s, path length 2, max speed 1, rotation steps 1.
-Logs are in `/tmp/tapf-chain-native-smoke/`; no successful MAWPF path was produced.
-No action-aware native chain, continuous geometry, splice safety, parking, or TAPF replacement is verified.
+Historical fixture-only validation passed 73 tests at `4277591`. An earlier dirty-workspace wheel included obsolete flat modules; clean export `c47f4a7` passed the then-current 72 tests. The native wheel was built from a new source-only directory. These historical counts are distinct from the current 79-test native run.
 
-## Website, review, and next step
+## Unverified boundaries and handoff
 
-The maintained website now distinguishes fixture composition from missing native stages.
-Current imports show 6 nodes and 6 dependencies; the target flow retains 14 nodes and 15
-dashed target connections. Six modules have implementations; native adapter integrations remain 0.
-Browser QA passed both languages and diagrams, 28 module selections, keyboard input, mobile overflow, and JS errors. Desktop and mobile screenshots were inspected. Private deployment succeeded. Hosted login was not browser-tested. Source remains in this repository;
-Sites uses a separate checkout and preserves the existing project and owner-only access.
+Multi-robot conflicts/precedence, turns, obstacles, moving splices, accepted task progress, reassignment, joint TAPF, Runtime transactions, continuous geometry, infinite parking occupancy, central execution, and physical backend operation remain unverified or unimplemented. The adapter explicitly rejects unsupported inputs. Its MotionPlan is a candidate, not Accepted.
 
-Against origin/main: code +331/-24 = 355 lines, including tests and website; configuration 0.
-Documentation is counted separately in the PR description. Bilingual review by gpt-6-luna / low passed
-for facts, relative links, doc-sync, and English punctuation. Await user review and merge.
-After merge, replace the fixture stages with feasible allocation and pinned native adapters,
-keeping the same composition entry point. Do not start later PRs before merge.
-
-[Private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
-Sites source commit: `69456164737f18ac4085eef0c978c3320eea6228`.
-Version: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_7476d6902a6081919ad00fdf3b669ed5`.
-Native publication result: `succeeded`; owner-only access and the main repository remote are unchanged.
+PR #9 remains draft while remote native CI is checked. The user approved the one-PR line-limit exception. At submission, code changes total 1,192 lines (+1,143/-49); docs and configuration are disclosed separately at handoff. The previous private website version documents the earlier fixture snapshot, not this new run. Local HTML/JSON artifacts above are the current native evidence.
