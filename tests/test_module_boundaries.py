@@ -14,12 +14,14 @@ DEPENDENCIES = {
     "order_source": {"contracts"},
     "action_timing": {"contracts"},
     "task_compiler": {"contracts", "serialization", "action_timing"},
+    "planning": {"contracts"},
 }
 EXPORTS = {
     "serialization": {"dumps", "loads", "from_data", "to_data"},
     "order_source": {"ReplayOrderSource", "generate_orders"},
     "action_timing": {"action_duration_s", "action_duration_ticks"},
     "task_compiler": {"CurrentTaskCompiler"},
+    "planning": {"StagedPipeline"},
 }
 
 
