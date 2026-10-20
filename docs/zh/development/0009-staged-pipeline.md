@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r5 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r6 -->
 
 ## 范围与状态
 
@@ -92,7 +92,7 @@ PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已�
 
 发布: Sites 返回成功, 保留仅所有者可访问的现有权限. 源码 checkout 为 `/tmp/tapf-chain-site`, 源码 commit 为 `b2bfcbaa6b79cae15f5134d3a3966a8c5b2be6fc`, 版本为 `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_5bb6b11a3b488191bef27287333d8e58`. [私有网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site). 架构页浏览器检查通过双语, 双图, 键盘, 手机布局与无 JS 错误; 已检查桌面/手机截图.
 
-相对 `576e25d` 的变更: 代码 1,193 (+1,144/-49); 文档 424 (+373/-51); 配置 58 (+57/-1). 生产源码和上游构建配置未偏离已通过的原生 CI 基线; 下述 review 跟进仅修改测试时钟. 未 vendoring 上游或加入参考包. 下一步: 用户 review PR #9; 合并前不开展后续模块.
+相对 `576e25d` 的变更: 代码 1,193 (+1,144/-49); 文档 429 (+378/-51); 配置 58 (+57/-1). 生产源码和上游构建配置未偏离已通过的原生 CI 基线; 下述 review 跟进仅修改测试时钟. 未 vendoring 上游或加入参考包. 下一步: 用户 review PR #9; 合并前不开展后续模块.
 
 ## Review 跟进, 2026-10-20
 
@@ -113,3 +113,5 @@ PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已�
 用户追加约定已写入根目录 AGENTS.md: 每个函数使用中英文注释或 docstring, 说明用途, 函数存在的必要性和执行这项工作的原因; 函数变化时同步注释. 根目录 AGENTS.md 仍仅保留中文规则文件.
 
 [Review 修正 CI, 990b3f1](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39372553744) 的静态检查, 安装包测试, 真实原生测试和 CI gate 全部通过.
+
+用户追加 TDD 开发要求: Red -> Green -> Refactor; 先确认测试因缺少目标行为而失败, 再最小实现, 最后保持测试通过进行重构. 修复 bug 先增加复现问题的回归测试. 本次仅修改规则和双语记录, diff 检查通过, 未重跑代码测试.

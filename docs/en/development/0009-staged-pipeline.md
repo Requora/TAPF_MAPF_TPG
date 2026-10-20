@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r5 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r6 -->
 
 ## Scope and status
 
@@ -92,7 +92,7 @@ PR #9 is ready for review after successful remote native CI; it is not merged. T
 
 Publication: Sites succeeded with the existing owner-only access. Source checkout `/tmp/tapf-chain-site`, source commit `b2bfcbaa6b79cae15f5134d3a3966a8c5b2be6fc`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_5bb6b11a3b488191bef27287333d8e58`. [Private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en). Dashboard browser checks passed both languages, both diagrams, keyboard operation, mobile layout, and no JS errors; desktop/mobile screenshots were inspected.
 
-Diff against `576e25d`: code 1,193 (+1,144/-49); docs 424 (+373/-51); config 58 (+57/-1). Production source and upstream build configuration are unchanged since the passing native CI baseline; the review follow-up below only changes a test clock. No upstream vendoring or reference-bundle addition. Next: user review of PR #9; no further module work before merge.
+Diff against `576e25d`: code 1,193 (+1,144/-49); docs 429 (+378/-51); config 58 (+57/-1). Production source and upstream build configuration are unchanged since the passing native CI baseline; the review follow-up below only changes a test clock. No upstream vendoring or reference-bundle addition. Next: user review of PR #9; no further module work before merge.
 
 ## Review follow-up, 2026-10-20
 
@@ -113,3 +113,5 @@ Validation: `PYTHONPATH=src:tests python3 -m unittest planning.test_staged -v` p
 The user added a rule to root AGENTS.md: every function needs Chinese and English comments or a docstring explaining its purpose, why the function is needed, and why the work is necessary; update these explanations when the function changes. Root AGENTS.md remains a Chinese-only rules file.
 
 [Review-fix CI at 990b3f1](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39372553744) passed static checks, installed-wheel tests, real native tests, and CI gate.
+
+The user added TDD: Red -> Green -> Refactor. First confirm the test fails because the target behavior is missing, then implement the minimum change, and finally refactor while keeping tests green. Bug fixes start with a reproducing regression test. This update changes only rules and bilingual records; diff checks pass and code tests were not rerun.
