@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r3 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r4 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
 Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -97,8 +97,14 @@ A read-only subscription query for the signed-in account TachikakaMin returned
 `access_type_sku=free_limited_copilot` and zero premium request entitlement; Requora had zero seats.
 The account query used the undocumented `copilot_internal/user` diagnostic endpoint,
 which is not a project dependency. [Official documentation](https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review)
-confirms that Copilot Free excludes code review. An eligible subscription or organization-paid access
+confirms that Copilot Free excludes code review. At that time, an eligible subscription or organization-paid access
 is needed before verifying an actual trigger. No subscription was purchased or organization-paid usage enabled.
+
+Retest after entitlement activation: the account now reports `free_educational_quota` with 200 premium entitlement.
+The [official plan table](https://docs.github.com/en/copilot/get-started/plans) includes code review for students.
+Empty commit `0a68b6a` was pushed and CI passed; push and renewed manual requests still produced no review events.
+The earlier Free-plan diagnosis describes the earlier state and does not explain the missing trigger after activation.
+Automatic review recovery remains unverified; quota or successful responses alone do not prove recovery.
 
 ## Line counts and next step
 

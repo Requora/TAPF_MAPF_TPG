@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r3 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r4 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -95,8 +95,14 @@ REST 请求 `copilot-pull-request-reviewer[bot]` 与 GraphQL `requestReviewsByLo
 当前登录账号 TachikakaMin 的只读订阅查询返回 `access_type_sku=free_limited_copilot`,
 高级请求额度为 0; Requora 组织席位数为 0. 账号查询使用非公开稳定契约的
 `copilot_internal/user` 诊断端点, 不作为项目依赖. [官方说明](https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review)
-确认 Copilot Free 不包含 code review. 需先获得对应订阅或组织付费使用资格,
+确认 Copilot Free 不包含 code review. 当时需先获得对应订阅或组织付费使用资格,
 再验证实际触发; 本次没有购买订阅或启用组织付费使用.
+
+资格更新后的复测: 当前账号已返回 `free_educational_quota`, 高级额度 200.
+[官方套餐表](https://docs.github.com/en/copilot/get-started/plans)列明学生套餐包含 code review.
+空提交 `0a68b6a` 已推送且 CI 通过; push 和重新发出的手动请求仍未产生 review 事件.
+此前 Free 套餐的诊断仅描述当时状态, 不能解释升级后仍未触发的问题.
+目前自动 review 恢复尚未验证, 不能仅凭额度或成功响应宣称已恢复.
 
 ## 行数与下一步
 
