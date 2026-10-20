@@ -19,6 +19,9 @@ from warehouse_api.task_compiler import CurrentTaskCompiler
 from warehouse_api.tpg import NativeWinkTpgPlanner
 
 
+# 中文: 构造可调订单数量与目标位置的直线场景, 为原生集成提供显式输入, 便于检查需求变化是否真正传到求解器.
+# English: Build a lane scenario with variable quantities and destinations so native integration can
+# show that changed demand reaches the actual solvers.
 def scenario(*, quantity=1, stock=1, station=3, destination=5):
     body = Polygon((Point2(-0.2, -0.2), Point2(0.2, -0.2), Point2(0.2, 0.2), Point2(-0.2, 0.2)))
     places = (Place("pickup", "storage", "n1", 0, "pickup"),
@@ -45,6 +48,9 @@ def scenario(*, quantity=1, stock=1, station=3, destination=5):
     return orders, model, request
 
 
+# 中文: 运行真实分配到 TPG 并收集阶段和原生文件, 用不可变快照检查防止污染, 让可视化依赖真实执行证据.
+# English: Run real allocation through TPG and collect stage/native evidence while checking input
+# immutability so visualization is grounded in actual solver execution.
 def run(binary_directory: Path, **parameters):
     orders, model, request = scenario(**parameters)
     before = copy.deepcopy((model, request))

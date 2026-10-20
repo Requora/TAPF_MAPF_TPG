@@ -7,6 +7,9 @@ from warehouse_api.contracts import (
 from warehouse_api.action_timing import action_duration_s
 
 
+# 中文: 检查契约形状, 耗时配置及模型引用, 在编译入口集中发现静态错误, 让算法主体只做转换.
+# English: Validate contract shape, timing and static references at the compiler boundary so the
+# compilation algorithm can focus on conversion.
 def validate_model(model: WorldModel, sim_dt_s: float) -> None:
     from_data(WorldModel, to_data(model))
     action_duration_s(Lift("timing-check"), model.action_times, sim_dt_s=sim_dt_s)
@@ -23,6 +26,9 @@ def validate_model(model: WorldModel, sim_dt_s: float) -> None:
             raise ValueError(f"place {place.id}: unknown node or resource")
 
 
+# 中文: 检查续接状态, 旧任务进度与动作锁, 为候选叠加建立可信基线, 避免草稿掩盖既有状态错误.
+# English: Validate splice state, accepted progress and action locks before overlaying a candidate
+# so a draft cannot hide errors in existing state.
 def validate_request(
     model: WorldModel, request: AssignmentRequest, draft: TaskDelta,
 ) -> Failure | None:
@@ -81,6 +87,9 @@ def validate_request(
     return None
 
 
+# 中文: 只允许空闲机器人绑定唯一新任务, 保持旧任务和锁不变, 明确拒绝尚未支持的队列编辑.
+# English: Allow only unique new-task bindings on idle robots so existing progress and locks are
+# preserved and unsupported queue edits are explicit.
 def validate_candidate_bindings(
     model: WorldModel, request: AssignmentRequest, draft: TaskDelta,
 ) -> Failure | None:
@@ -126,6 +135,9 @@ def validate_candidate_bindings(
     return None
 
 
+# 中文: 检查未完成任务的动作形状, 货架归属和取架前置条件, 结合候选占用集合防止重复争抢货架.
+# English: Check unfinished task shape, shelf ownership and lift preconditions against candidate
+# claims so concurrent tasks cannot take the same shelf.
 def validate_current_task(
     progress: TaskProgress, robot_id: str, objects: dict[str, ObjectSpec],
     locations: dict[str, ObjectState], carried: dict[str, str], claimed: set[str],
@@ -151,18 +163,27 @@ def validate_current_task(
     return None
 
 
+# 中文: 要求货架落地位姿只匹配一个存储位, 避免模糊目标被任意选择, 保证 Lift 有确定物理位置.
+# English: Require one exact storage-pose match so Lift receives a deterministic physical target
+# instead of an arbitrary ambiguous location.
 def validate_lift_target(step: Lift, matches: list[Place]) -> Failure | None:
     if len(matches) != 1:
         return Failure("UNSUPPORTED", "Lift requires one exact storage pose match", (step.object_id,))
     return None
 
 
+# 中文: 检查服务或归还位置存在且类型正确, 在生成动作前拒绝业务目标错误, 防止把存储位当工作站.
+# English: Check that a service or return place exists with the required kind so compilation cannot
+# treat storage as a station or vice versa.
 def validate_place(place: Place | None, place_id: str, kind: str) -> Failure | None:
     if place is None or place.kind != kind:
         return Failure("BAD_INPUT", f"Expected a known {kind} place", (place_id,))
     return None
 
 
+# 中文: 拒绝载货机器人没有剩余任务的候选, 保持货架携带与作业责任一致, 避免把载货状态当空闲处理.
+# English: Reject a carried shelf without remaining jobs so carrying state keeps an accountable task
+# instead of being treated as idle.
 def validate_carried_jobs(
     jobs: dict[str, RobotJobs], carried: dict[str, str],
 ) -> Failure | None:

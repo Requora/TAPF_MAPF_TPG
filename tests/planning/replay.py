@@ -14,6 +14,9 @@ from warehouse_api.serialization import dumps
 from warehouse_api.task_compiler import CurrentTaskCompiler
 
 
+# 中文: 装配订单源和真实编译器以及显式求解器替身, 为编排单测隔离阶段边界, 此结果不作为原生算法证据.
+# English: Wire an order source and real compiler to explicit solver doubles so orchestration tests
+# isolate stage boundaries without claiming native algorithm evidence.
 def scenario():
     model, accepted = fixture()
     model = replace(
@@ -38,11 +41,17 @@ def scenario():
     motion = Mock(spec=MotionPlanner)
     compiler = CurrentTaskCompiler(model, sim_dt_s=0.1)
 
+    # 中文: 记录分配请求并返回固定草稿, 为编排测试提供可控阶段结果, 无库存选择或优化算法.
+    # English: Record the allocation request and return a fixed draft so orchestration has a
+    # controlled stage result rather than inventory selection or optimization.
     def allocate(request):
         trace.append({"stage": "allocation", "implementation": "fixture",
                       "input": request, "output": draft})
         return draft
 
+    # 中文: 把编译动作放入固定路线并记录输入输出, 验证动作引用传递, 不执行真实路径搜索.
+    # English: Place compiled actions on a fixed route and record I/O so tests verify reference
+    # propagation without performing route search.
     def plan(request):
         trace.append({"stage": "compile", "implementation": "CurrentTaskCompiler",
                       "output": request.jobs})
@@ -55,6 +64,9 @@ def scenario():
                       "input": request, "output": result})
         return result
 
+    # 中文: 从传入动作构造可追踪时间段, 检查编排保留耗时和引用, 不声称这条 fixture曲线具有物理安全性.
+    # English: Construct traceable segments from supplied actions so orchestration can check
+    # duration and reference propagation without claiming physical safety for fixture curves.
     def prepare(request):
         time = start.join_state.time_s
         zero = Twist2(0, 0, 0)

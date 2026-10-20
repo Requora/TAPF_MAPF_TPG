@@ -4,6 +4,9 @@ from math import isclose, isfinite
 from warehouse_api.contracts import Do, Failure, MotionRequest, Move, WorldModel
 
 
+# 中文: 校验路径连续性, 动作引用和目标位置, 在调用原生速度规划前明确支持范围, 防止为错误路线生成看似有效的曲线.
+# English: Check route continuity, action references and targets before native timing so an
+# incorrect route cannot acquire a plausible-looking motion curve.
 def check_route(model: WorldModel, request: MotionRequest, sim_dt_s: float) -> Failure | None:
     plan = request.fleet_plan
     if not isfinite(sim_dt_s) or sim_dt_s <= 0:
@@ -13,6 +16,8 @@ def check_route(model: WorldModel, request: MotionRequest, sim_dt_s: float) -> F
     if len(plan.routes) != 1 or plan.routes[0].robot_id != model.robots[0].id or plan.before:
         return Failure("UNSUPPORTED", "TPG subset requires a single route without cross-robot precedence", ())
     edges = {edge.id: edge for edge in model.edges}
+    # 中文: 按 x 找到车道起点, 为连续性检查提供确定的首节点.
+    # English: Select minimum x as the lane start so continuity checks begin at a known node.
     current = min(model.nodes, key=lambda node: node.position.x_m).id
     index = 0
     for step in plan.routes[0].steps:
@@ -34,6 +39,9 @@ def check_route(model: WorldModel, request: MotionRequest, sim_dt_s: float) -> F
     return None
 
 
+# 中文: 检查上游每格速度原语的时间和运动学一致性, 为精确 Hermite 转换建立前提, 拒绝不能表达的原生输出.
+# English: Check timing and kinematic consistency of each upstream cell primitive so exact Hermite
+# conversion only consumes representable native output.
 def check_profile(rows: list[tuple[float, ...]], moves: int) -> Failure | None:
     failure = Failure("BACKEND_ERROR", "WinkTPG profile violates the supported motion primitives", ())
     if len(rows) != moves or not rows or rows[0][2] != 0 or rows[-1][3] != 0:

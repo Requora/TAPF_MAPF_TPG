@@ -7,6 +7,9 @@ from warehouse_api.contracts import (
 from warehouse_api.action_timing import action_duration_s
 
 
+# 中文: 统一编译每台机器人的一个当前或新任务, 把业务决定变为物理动作, 保护旧进度和锁而不承担安全验收.
+# English: Compile one current or new task per robot into physical actions while protecting progress
+# and locks; this layer does not perform safety acceptance.
 class CurrentTaskCompiler:
     """SharedCompiler subset: one Lift/Serve/Drop task per robot.
 
@@ -14,6 +17,9 @@ class CurrentTaskCompiler:
     failures return Failure. This compiler does not validate executable safety.
     """
 
+    # 中文: 调用模型校验并建立节点和位置索引, 将静态查找准备集中在输入边界, 避免每个动作重复解析场景.
+    # English: Validate the model and build node/place indexes once so action compilation can
+    # resolve static targets without repeatedly parsing the scene.
     def __init__(self, model: WorldModel, *, sim_dt_s: float):
         validation.validate_model(model, sim_dt_s)
         self.model = model
@@ -21,6 +27,9 @@ class CurrentTaskCompiler:
         self.nodes = {node.id: node for node in model.nodes}
         self.places = {place.id: place for place in model.places}
 
+    # 中文: 校验旧快照和候选绑定后只编译未完成动作, 使用共用耗时并保留 StepRef, 避免重规划重复执行或改变锁定责任.
+    # English: Validate snapshots and bindings, then compile unfinished actions with shared
+    # durations and StepRefs so replanning cannot repeat work or change locked ownership.
     def compile_jobs(
         self, request: AssignmentRequest, draft: TaskDelta,
     ) -> tuple[RobotJobs, ...] | Failure:
@@ -38,6 +47,8 @@ class CurrentTaskCompiler:
         tasks = {progress.task.id: progress for progress in request.tasks}
         owners = {task_id: queue.robot_id for queue in request.queues
                   for task_id in queue.task_ids}
+        # 中文: 只在局部映射中叠加新任务, 原请求及正式任务进度都不会被写回.
+        # English: Overlay new tasks only in local maps; never write into the request or accepted progress.
         tasks.update((task.id, TaskProgress(task, 0, False)) for task in draft.tasks)
         owners.update((task_id, queue.robot_id) for queue in draft.queues
                       for task_id in queue.task_ids)
@@ -56,6 +67,8 @@ class CurrentTaskCompiler:
             shelf = steps[0].object_id
             claimed.add(shelf)
             actions = []
+            # 中文: next_step 已是续接时刻的投影结果, 从这里开始即可, 不能再推进一次.
+            # English: next_step is already projected to the splice; do not advance that progress again.
             for index in range(progress.next_step, len(steps)):
                 step = steps[index]
                 target = self._target(step, locations[shelf].ground_pose)
@@ -73,6 +86,9 @@ class CurrentTaskCompiler:
             return failure
         return tuple(jobs.values())
 
+    # 中文: 把 Lift 的实际落地位姿或 Serve/Drop 的业务位置解析为 Place, 集中目标解释, 防止下游各自猜节点和朝向.
+    # English: Resolve a grounded Lift pose or a Serve/Drop location to a Place so downstream
+    # solvers do not guess target nodes and headings independently.
     def _target(self, step: TaskAction, ground_pose: Pose2 | None) -> Place | Failure:
         if isinstance(step, Lift):
             matches = [place for place in self.model.places

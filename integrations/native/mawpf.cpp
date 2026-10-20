@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iomanip>
 
+// 中文: 装配固定版本 LaCAM 并导出真实状态, 用薄入口绕过旧 CLI索引问题, 不重写路径搜索.
+// English: Run pinned LaCAM and export actual states through a thin entry point that avoids old CLI indexing without rewriting search.
 int main(int argc, char** argv) {
     if (argc != 6) return 2;
     Graph graph(argv[1], 2, 1, 1);

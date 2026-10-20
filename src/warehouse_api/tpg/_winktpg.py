@@ -12,13 +12,22 @@ from warehouse_api.validation import check_jobs, check_single_lane
 from ._validation import check_profile, check_route
 
 
+# 中文: 把真实 WinkTPG 原语转换为公共连续轨迹, 独立于路径选择保留物理动作时序, 当前仅支持单车直线子集.
+# English: Convert real WinkTPG primitives to public continuous motion while preserving action
+# timing independently of route selection, within the single-lane subset.
 class NativeWinkTpgPlanner:
+    # 中文: 保存静态模型, 原生程序路径和仿真步长, 为轨迹转换确定统一单位及 tick 对齐规则, 不隐式读取运行状态.
+    # English: Store the model, executable path and timestep so trajectory conversion has explicit
+    # units and tick alignment without hidden runtime state.
     def __init__(self, model: WorldModel, executable: str, *, sim_dt_s: float):
         self.model = model
         self.executable = str(Path(executable).resolve())
         self.sim_dt_s = sim_dt_s
         self.last_run_directory: Path | None = None
 
+    # 中文: 沿选定路线生成原生速度曲线, 保留加减速切换并插入完整动作静止段, 让编译语义在真实时间轴上成立.
+    # English: Time the chosen route with native profiles, preserving acceleration switches and
+    # complete stationary actions so compiled semantics survive on the physical timeline.
     def prepare(self, request: MotionRequest) -> MotionPlan | Failure:
         failure = (check_single_lane(self.model, request.start) or check_jobs(self.model, request.jobs)
                    or check_route(self.model, request, self.sim_dt_s))
@@ -54,6 +63,8 @@ class NativeWinkTpgPlanner:
             for x, (start, duration, v0, v1) in zip(path, rows):
                 if origin + start > knots[-1].time_s + 1e-8:
                     knots.append(Knot(origin + start, Pose2(x, 0, 0), Twist2(v0, 0, 0)))
+                # 中文: 上游零速到零速表示加速跨一格再减速, 中点是必须保留的真实切换点.
+                # English: Zero-to-zero crosses one cell by accelerating then braking; keep the true midpoint switch.
                 if v0 == v1 == 0:
                     knots.append(Knot(origin + start + duration / 2, Pose2(x + 0.5, 0, 0), Twist2(1, 0, 0)))
                 knots.append(Knot(origin + start + duration, Pose2(x + 1, 0, 0), Twist2(v1, 0, 0)))

@@ -9,12 +9,21 @@ from ._validation import (
 from warehouse_api.contracts import Item, Order
 
 
+# 中文: 按仿真时间一次性发布订单, 用可重置游标支持复现实验, 不承担库存预留或机器人分配.
+# English: Release each order once by simulation time with a resettable cursor so experiments are
+# reproducible without mixing demand release and allocation.
 class ReplayOrderSource:
     """Implement OrderSource with an inclusive, monotonic release cursor."""
 
+    # 中文: 通过统一 reset 路径建立初始订单序列, 让构造和重放采用相同校验及归一化规则.
+    # English: Initialize through reset so construction and replay use the same validation and
+    # normalization rules.
     def __init__(self, orders: tuple[Order, ...] = ()) -> None:
         self.reset(orders)
 
+    # 中文: 先校验再合并 SKU并排序订单, 全部成功后重置游标, 避免非法新序列破坏旧重放状态.
+    # English: Validate, merge repeated SKUs and sort orders before resetting the cursor so an
+    # invalid replacement cannot destroy the old replay state.
     def reset(self, orders: tuple[Order, ...]) -> None:
         """Validate all orders before replacing the current replay state."""
         validate_orders(orders)
@@ -25,10 +34,15 @@ class ReplayOrderSource:
                 quantities[item.sku] = quantities.get(item.sku, 0) + item.quantity
             items = tuple(Item(sku, quantity) for sku, quantity in sorted(quantities.items()))
             normalized.append(Order(order.id, order.released_at_s, items, order.due_at_s))
+        # 中文: 排序键用发布时间和 ID 消除同刻歧义, 保证订单重放顺序稳定.
+        # English: Order by release time and ID so simultaneous releases replay deterministically.
         self._orders = tuple(sorted(normalized, key=lambda order: (order.released_at_s, order.id)))
         self._cursor = 0
         self._until_s = 0.0
 
+    # 中文: 返回截止时刻首次到期的订单并推进游标, 使重复调用不重复发布, 且非法时间不改变已发布进度.
+    # English: Return newly due orders and advance the cursor so repeated calls do not duplicate
+    # demand and invalid times preserve release progress.
     def release(self, until_s: float) -> tuple[Order, ...]:
         """Return each due order once; invalid calls leave the cursor intact."""
         validate_release_time(until_s, self._until_s)
@@ -41,6 +55,9 @@ class ReplayOrderSource:
         return released
 
 
+# 中文: 用私有随机数发生器生成带种子的订单, 隔离全局随机状态, 让需求实验可按参数和 Python 版本复现.
+# English: Generate seeded orders with a private RNG so experiments are reproducible for the same
+# parameters and Python version without altering global randomness.
 def generate_orders(
     *,
     seed: int,

@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r7 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r8 -->
 
 ## Scope and status
 
@@ -92,7 +92,7 @@ PR #9 is ready for review after successful remote native CI; it is not merged. T
 
 Publication: Sites succeeded with the existing owner-only access. Source checkout `/tmp/tapf-chain-site`, source commit `b2bfcbaa6b79cae15f5134d3a3966a8c5b2be6fc`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_5bb6b11a3b488191bef27287333d8e58`. [Private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en). Dashboard browser checks passed both languages, both diagrams, keyboard operation, mobile layout, and no JS errors; desktop/mobile screenshots were inspected.
 
-Diff against `576e25d`: code 1,193 (+1,144/-49); docs 429 (+378/-51); config 58 (+57/-1). Production source and upstream build configuration are unchanged since the passing native CI baseline; the review follow-up below only changes a test clock. No upstream vendoring or reference-bundle addition. Next: user review of PR #9; no further module work before merge.
+Before annotation, diff against `576e25d`: code 1,193 (+1,144/-49); docs 429 (+378/-51); config 58 (+57/-1). Before annotation, production source and upstream build configuration were unchanged since the passing native CI baseline; the earlier review follow-up only changed a test clock. No upstream vendoring or reference-bundle addition. Next: user review of PR #9; no further module work before merge.
 
 ## Review follow-up, 2026-10-20
 
@@ -115,3 +115,15 @@ The user added a rule to root AGENTS.md: every function, class, and method needs
 [Review-fix CI at 990b3f1](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39372553744) passed static checks, installed-wheel tests, real native tests, and CI gate.
 
 The user added TDD: Red -> Green -> Refactor. First confirm the test fails because the target behavior is missing, then implement the minimum change, and finally refactor while keeping tests green. Bug fixes start with a reproducing regression test. This update changes only rules and bilingual records; diff checks pass and code tests were not rerun.
+
+## Bilingual code explanations, 2026-10-20
+
+As requested, bilingual explanations now cover 154 production definitions and 111 test definitions, including functions, classes, and each method. Comments sit near definitions and explain responsibilities and design reasons. Both C++ native entry points and functions/callbacks in the website and replay scripts are also documented. Protocol comments identify interface contracts without presenting Runtime or backend declarations as implementations.
+
+Suggested reading order: `StagedPipeline.solve` in `planning/_staged.py` shows stage connections; `allocation/_single_shelf.py` explains task creation; `task_compiler/_current_task.py` explains conversion into actions; `mapf/_mawpf.py` and `tpg/_winktpg.py` explain actual upstream conversions; use `contracts.py` to look up stage messages. Additional bilingual comments explain snapshots, candidates, and progress protection at key orchestration and compilation steps.
+
+Relative to `6f054fa`, 34 code files add only 911 comment lines, with no executable statement changes. These comments count toward raw code diff size. The ASTs of all 30 Python files match the baseline exactly; every non-Python diff line was also checked to be an added comment. No artificial failing tests were added because comments introduce no new behavior.
+
+Validation: both native bridges rebuilt successfully; the unittest command above passed all 79 tests using the rebuilt binaries. Ruff, `node --check` for both JavaScript scripts, and `git diff --check` passed. The documentation subagent checked bilingual meaning and interface/implementation boundaries. Published website content, interaction, and evidence status are unchanged, so no republication is needed. These checks do not expand the previously stated planning or safety validation scope.
+
+After annotation, the total PR diff against `576e25d` is: code 2,104 (+2,055/-49), docs 453 (+402/-51), configuration 58 (+57/-1). This follows the user-authorized line-limit exception for PR #9 without expanding functional scope.

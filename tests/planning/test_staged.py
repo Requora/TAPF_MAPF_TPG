@@ -10,10 +10,19 @@ from warehouse_api.contracts import ExecutableProposal, Failure, SharedCompiler
 from warehouse_api.serialization import dumps, loads
 
 
+# 中文: 测试阶段连接, 预算和失败传播, 独立于原生算法定位编排错误, 防止半套候选继续进入下游.
+# English: Test stage wiring, budgets and failure propagation independently of native algorithms so
+# partial or failed candidates cannot continue downstream.
 class StagedPipelineTests(unittest.TestCase):
+    # 中文: 为每个用例建立独立流水线和 trace, 防止 mock调用历史或候选状态影响其他断言.
+    # English: Create an independent pipeline and trace per test so mock history and candidate state
+    # cannot contaminate other assertions.
     def setUp(self):
         self.model, self.request, self.pipeline, self.trace = scenario()
 
+    # 中文: 核对完整 fixture链的顺序, 动作耗时和输入不变, 保护公共接口传递, 不以此证明原生集成.
+    # English: Check fixture stage order, action timing and input immutability to protect interface
+    # propagation without treating fixtures as native integration evidence.
     def test_full_fixture_chain_preserves_actions_and_snapshots(self):
         before = copy.deepcopy((self.model, self.request))
         result = self.pipeline.solve(self.request)
@@ -32,6 +41,9 @@ class StagedPipelineTests(unittest.TestCase):
         self.assertEqual(loads(ExecutableProposal, dumps(result)), result)
         self.assertEqual(self.pipeline.solve(self.request), result)
 
+    # 中文: 逐阶段注入 Failure并检查后续未调用, 保证失败原因原样传播, 防止在无效输入上继续求解.
+    # English: Inject Failure at each stage and check downstream calls stop so diagnostics survive
+    # and invalid results cannot trigger further solving.
     def test_each_failure_stops_downstream_calls_and_preserves_diagnostics(self):
         for failed_stage in range(4):
             with self.subTest(stage=failed_stage):
@@ -40,11 +52,16 @@ class StagedPipelineTests(unittest.TestCase):
                 calls = [pipeline.allocator.allocate, pipeline.compiler.compile_jobs,
                          pipeline.path_planner.plan, pipeline.motion_planner.prepare]
                 failure = Failure("UNSUPPORTED", "deliberate stage rejection", ("shelf",))
+                # 中文: 替身回调忽略入参并返回指定失败, 单独检验编排的停止与传播行为.
+                # English: Return the injected failure for any arguments to isolate orchestration stop behavior.
                 calls[failed_stage].side_effect = lambda *args: failure
                 self.assertIs(pipeline.solve(request), failure)
                 for call in calls[failed_stage + 1:]:
                     call.assert_not_called()
 
+    # 中文: 制造编译层拒绝的草稿, 检查路径与运动阶段未启动, 保护共享语义检查的门禁作用.
+    # English: Use a compiler-rejected draft to check that path and motion stages never start,
+    # preserving compilation as a semantic boundary.
     def test_compiler_rejection_blocks_native_boundaries(self):
         draft = self.pipeline.allocator.allocate(self.request.assignment)
         self.pipeline.allocator.allocate.side_effect = None
@@ -54,6 +71,9 @@ class StagedPipelineTests(unittest.TestCase):
         self.pipeline.path_planner.plan.assert_not_called()
         self.pipeline.motion_planner.prepare.assert_not_called()
 
+    # 中文: 使用递增时钟核对阶段剩余预算, 防止各求解器重新获得完整预算, 让总规划时间有共同上限.
+    # English: Use an increasing clock to check remaining stage budgets so each solver cannot
+    # restart the full planning allowance.
     def test_shared_budget_decreases_across_stages(self):
         with patch("warehouse_api.planning._staged.monotonic", side_effect=count()):
             result = self.pipeline.solve(self.request)
@@ -63,6 +83,9 @@ class StagedPipelineTests(unittest.TestCase):
         self.assertEqual(self.trace[4]["input"].budget_s, 6)
         self.assertEqual(self.request.assignment.budget_s, 10)
 
+    # 中文: 在每个阶段边界模拟到期并持续返回到期时间, 验证及时停止及迟到结果丢弃, 不依赖有限时钟迭代器.
+    # English: Expire the clock at each boundary with an unbounded expired tail so stopping and
+    # late-result rejection are tested without iterator exhaustion.
     def test_deadline_before_each_stage_and_after_motion(self):
         for expired_call in range(1, 6):
             with self.subTest(expired_call=expired_call):
@@ -73,6 +96,9 @@ class StagedPipelineTests(unittest.TestCase):
                 self.assertEqual(result.code, "TIMEOUT")
                 self.assertEqual(len(trace), [1, 2, 2, 4, 5][expired_call - 1])
 
+    # 中文: 让路径返回旧请求 ID, 确认 TPG不会使用过期路线, 防止不同轮规划的数据混接.
+    # English: Return an old request ID from routing and check motion is blocked so results from
+    # different planning rounds cannot be mixed.
     def test_stale_path_result_stops_motion(self):
         self.pipeline.solve(self.request)
         plan = self.trace[3]["output"]
@@ -82,6 +108,9 @@ class StagedPipelineTests(unittest.TestCase):
         self.assertEqual(self.pipeline.solve(self.request).code, "STALE_REQUEST")
         self.pipeline.motion_planner.prepare.assert_not_called()
 
+    # 中文: 在入口提交非法预算或目标时间, 检查分配器未运行, 避免明知无效的请求消耗求解资源.
+    # English: Submit invalid budgets or horizons and check allocation never starts so malformed
+    # requests consume no solving resources.
     def test_bad_budget_and_target_do_not_start_allocation(self):
         for budget in (0, -1, float("nan"), float("inf")):
             request = replace(self.request, assignment=replace(self.request.assignment, budget_s=budget))
@@ -91,6 +120,9 @@ class StagedPipelineTests(unittest.TestCase):
                              "BAD_INPUT")
         self.pipeline.allocator.allocate.assert_not_called()
 
+    # 中文: 在请求 ID 正确时替换机器人或动作序列, 验证仍拒绝并停止 TPG, 防止仅凭请求标签信任错误路线.
+    # English: Alter robot coverage or action order under a valid request ID so identity alone
+    # cannot make a mismatched route reach TPG.
     def test_matching_request_id_does_not_hide_wrong_jobs(self):
         self.pipeline.solve(self.request)
         plan = self.trace[3]["output"]
@@ -105,6 +137,9 @@ class StagedPipelineTests(unittest.TestCase):
                 self.assertEqual(self.pipeline.solve(self.request).code, "BAD_INPUT")
                 self.pipeline.motion_planner.prepare.assert_not_called()
 
+    # 中文: 让适配器抛出开发错误, 检查异常原样传播且后续停止, 防止宽泛容错掩盖实现缺陷.
+    # English: Raise a programming error in an adapter and check it propagates while later stages
+    # stop so broad recovery cannot hide implementation defects.
     def test_stage_exceptions_keep_original_traceback(self):
         self.pipeline.allocator.allocate.side_effect = ValueError("adapter bug")
         with self.assertRaisesRegex(ValueError, "adapter bug"):

@@ -7,6 +7,9 @@ from time import monotonic
 from warehouse_api.contracts import Failure
 
 
+# 中文: 在剩余墙钟预算内运行原生程序并保留原始证据, 集中处理超时和旧输出, 防止失效结果被当成新方案.
+# English: Run a native process within its remaining wall-clock budget and retain evidence,
+# centralizing timeout and stale-output rejection before results are consumed.
 def run_native(command: list[str], output: Path, *, budget_s: float, request_id: str) -> Failure | None:
     if budget_s <= 0:
         return Failure("TIMEOUT", "Native process budget exhausted", (request_id,))

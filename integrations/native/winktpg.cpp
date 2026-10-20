@@ -3,6 +3,8 @@
 #include <speed_solver.h>
 #include <iomanip>
 
+// 中文: 将所选直线路线交给 speedSolver并导出原语, 为 Python精确转换提供证据, 不执行模拟器步进.
+// English: Run speedSolver on the chosen lane route and export primitives for exact Python conversion without stepping a simulator.
 int main(int argc, char** argv) {
     if (argc != 4) return 2;
     std::ifstream input(argv[1]);

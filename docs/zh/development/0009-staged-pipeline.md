@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r7 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r8 -->
 
 ## 范围与状态
 
@@ -92,7 +92,7 @@ PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已�
 
 发布: Sites 返回成功, 保留仅所有者可访问的现有权限. 源码 checkout 为 `/tmp/tapf-chain-site`, 源码 commit 为 `b2bfcbaa6b79cae15f5134d3a3966a8c5b2be6fc`, 版本为 `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_5bb6b11a3b488191bef27287333d8e58`. [私有网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site). 架构页浏览器检查通过双语, 双图, 键盘, 手机布局与无 JS 错误; 已检查桌面/手机截图.
 
-相对 `576e25d` 的变更: 代码 1,193 (+1,144/-49); 文档 429 (+378/-51); 配置 58 (+57/-1). 生产源码和上游构建配置未偏离已通过的原生 CI 基线; 下述 review 跟进仅修改测试时钟. 未 vendoring 上游或加入参考包. 下一步: 用户 review PR #9; 合并前不开展后续模块.
+补注释前, 相对 `576e25d` 的变更: 代码 1,193 (+1,144/-49); 文档 429 (+378/-51); 配置 58 (+57/-1). 补注释前, 生产源码和上游构建配置未偏离已通过的原生 CI 基线; 前一轮 review 跟进仅修改测试时钟. 未 vendoring 上游或加入参考包. 下一步: 用户 review PR #9; 合并前不开展后续模块.
 
 ## Review 跟进, 2026-10-20
 
@@ -115,3 +115,15 @@ PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已�
 [Review 修正 CI, 990b3f1](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39372553744) 的静态检查, 安装包测试, 真实原生测试和 CI gate 全部通过.
 
 用户追加 TDD 开发要求: Red -> Green -> Refactor; 先确认测试因缺少目标行为而失败, 再最小实现, 最后保持测试通过进行重构. 修复 bug 先增加复现问题的回归测试. 本次仅修改规则和双语记录, diff 检查通过, 未重跑代码测试.
+
+## 双语代码说明, 2026-10-20
+
+按用户要求, 已为 154 个生产定义和 111 个测试定义补充双语说明, 覆盖函数, 类和各个方法. 说明贴近定义, 解释职责与设计原因. 两个 C++ 原生入口, 网页和重放脚本的函数及回调也已补充. Protocol 注释明确它只是接口契约, 不把 Runtime 或后端声明描述为已实现.
+
+建议按以下顺序阅读: `planning/_staged.py` 的 `StagedPipeline.solve` 展示阶段连接; `allocation/_single_shelf.py` 解释任务来源; `task_compiler/_current_task.py` 解释任务如何成为动作; `mapf/_mawpf.py` 和 `tpg/_winktpg.py` 解释真实上游转换; `contracts.py` 查询各阶段消息. 编排和编译中的关键步骤另有双语说明, 解释快照, 候选和进度保护.
+
+相对 `6f054fa`, 34 个代码文件仅新增 911 行注释, 无可执行语句改动. 这些注释计入代码原始变更行数. 30 个 Python 文件的 AST 与基线完全相同; 非 Python 差异也逐行确认仅添加注释. 注释修改不引入新行为, 因此没有人为编造失败测试.
+
+验证: 两个原生桥接重新构建成功; 使用重建二进制运行上述 unittest 命令, 79 项全部通过. Ruff, 两个 JavaScript 脚本的 `node --check` 和 `git diff --check` 通过. 文档 subagent 已核对双语含义和接口/实现边界. 已发布网页的内容, 交互和证据状态未变, 本次无需重新发布. 这些检查不扩大此前声明的规划或安全验证范围.
+
+补注释后, PR 相对 `576e25d` 的总变更为: 代码 2,104 (+2,055/-49), 文档 453 (+402/-51), 配置 58 (+57/-1). 本轮继续使用用户已授权的 PR #9 行数例外, 不扩大功能范围.
