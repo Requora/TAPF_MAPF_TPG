@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r6 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r7 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 
-私有网页已更新为 `a1d0d03` 的原生链证据, 包含远端 CI 与未完成边界.
+私有网页同步 PR #9 已合并状态和 `b2a3f77` 的目标分配实验, 保留原生链 CI 与未完成边界.
 
 ## 已实现目录
 
@@ -142,4 +142,10 @@ flowchart LR
 拒绝反向依赖, 跨模块内部导入和跨模块星号导入; 同时验证公开导出.
 检查覆盖相对导入及别名, 在源码和安装后的 wheel 中均运行.
 它不拦截动态导入或运行时属性访问, 也不是 Python 沙箱.
-原生测试运行真实上游并解析检查 Hermite 运动学界限, 不证明连续碰撞或无限期停车安全. 原生增量已按获授权的行数例外纳入 PR #9, 等待 review.
+原生测试运行真实上游并解析检查 Hermite 运动学界限, 不证明连续碰撞或无限期停车安全. PR #9 已合并至 `04d4cda`.
+
+## 联合目标分配实验边界
+
+`tests/tapf/` 和 `integrations/tapf/` 运行固定版本 libMultiRobotPlanning 的 assignment, CBS 与 CBS-TA. 实验复用 `native_process.run_native`, 不新增生产模块或模块依赖. 两台点机器人在同一格图上的目标分配总代价为 6/8, 联合结果为 6.
+
+实验 JSON 是研究证据, 不作为新的公共 DTO, 不返回 ExecutableProposal. 目标业务图中的联合 TAPF 连接仍为计划. SKU, Lift/Serve/Drop, 共享编译器, TPG, Runtime 和连续安全尚未接入该实验. 见 [开发记录与真实重放](../development/0010-native-tapf-comparison.md).

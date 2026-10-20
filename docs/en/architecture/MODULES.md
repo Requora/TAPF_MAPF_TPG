@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r6 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r7 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
-The private website now shows the native-chain evidence at `a1d0d03`, including remote CI and remaining limits.
+The private website tracks merged PR #9 and the goal-assignment experiment at `b2a3f77`, retaining native-chain CI and remaining limits.
 
 ## Implemented directories
 
@@ -149,4 +149,10 @@ It rejects reverse dependencies, cross-module internal imports, and cross-module
 star imports; it also checks public exports. Relative imports and aliases are
 covered, both in source and installed wheels. It does not intercept dynamic
 imports or runtime attribute access and is not a Python sandbox.
-Native tests exercise real upstreams and exact Hermite kinematic bounds. They do not establish continuous collision or indefinite parking safety. Native additions are included in PR #9 under the authorized line-limit exception and await review.
+Native tests exercise real upstreams and exact Hermite kinematic bounds. They do not establish continuous collision or indefinite parking safety. PR #9 merged at `04d4cda`.
+
+## Joint goal-assignment experiment boundary
+
+`tests/tapf/` and `integrations/tapf/` run pinned libMultiRobotPlanning assignment, CBS and CBS-TA. The experiment reuses `native_process.run_native` without adding production modules or module dependencies. Two point robots on the same grid have fixed-assignment total costs 6/8 and joint cost 6.
+
+Experimental JSON is research evidence, not a new public DTO; it returns no ExecutableProposal. Joint TAPF connections in the target workflow remain planned. SKU, Lift/Serve/Drop, the shared compiler, TPG, Runtime and continuous safety are not connected to this experiment. See [development record and real replay](../development/0010-native-tapf-comparison.md).

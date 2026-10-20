@@ -1,0 +1,95 @@
+# Real goal assignment and CBS-TA comparison
+
+[中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
+
+<!-- doc-sync: native-tapf-comparison / 2026-10-20-r1 -->
+
+## Scope and sources
+
+PR #9 was confirmed merged by the user; the remote baseline is `04d4cda44f3ad9a78bed2f53946c5524702239c6`.
+This increment uses branch `feat/native-tapf-comparison`, with implementation evidence at `b2a3f77`. The PR link will be added after creation.
+Status: real upstream goal-assignment experiment verified, not a completed joint warehouse pipeline.
+Warehouse planning APIs, DTOs, dependency graph and single-lane support remain unchanged. The process utility adds an optional cwd argument to isolate native side files. The 500-line limit applies.
+
+Upstream [libMultiRobotPlanning](https://github.com/whoenig/libMultiRobotPlanning/tree/4c75fa20c435c440d8b6bd6dc81668ddc7296ba0)
+is pinned at `4c75fa20c435c440d8b6bd6dc81668ddc7296ba0`, under the MIT license.
+`integrations/tapf/CMakeLists.txt` directly builds the unmodified assignment, cbs and cbs_ta examples.
+The build checks the commit and tracked-file differences; upstream code and binaries are not copied into this repository.
+C++14, Boost program_options and yaml-cpp are build dependencies. PyYAML 6.0.3 reads research output only and is not a package runtime dependency.
+
+## Decisions and real trace
+
+The case uses two point robots; each unit-grid move or wait costs one tick. The main corridor runs from `(0,0)` to `(4,0)`,
+with only `(2,1)` available as a passing bay. Starts are `(0,0)` and `(1,0)`; both robots may select `(3,0)` or `(4,0)`.
+The independent-distance matrix is `[[3,4],[2,3]]`; both complete matchings cost 6.
+
+| Plan | agent0 goal | agent1 goal | Native total path cost |
+| --- | --- | --- | --- |
+| Fixed assignment 0 + CBS | (3,0) | (4,0) | 6 |
+| Fixed assignment 1 + CBS | (4,0) | (3,0) | 8 |
+| Joint CBS-TA search | (3,0) | (4,0) | 6 |
+
+The local native assignment program selected fixed assignment 1. Tie order may vary with implementation/environment; tests do not require a particular tie choice.
+CBS runs both assignments, and CBS-TA is compared with their minimum cost. This verifies the optimum for this case, not a general performance advantage.
+The actual fixed-assignment-1 trace below can be inspected step by step in the HTML:
+
+| tick | agent0 | agent1 |
+| --- | --- | --- |
+| 0 | (0,0) | (1,0) |
+| 1 | (1,0) | (2,0) |
+| 2 | (2,0) | (2,1) |
+| 3 | (3,0) | (2,0) |
+| 4 | (4,0) | (3,0) |
+
+The research validation module independently checks starts, goal eligibility, adjacent moves/waits, obstacles, contiguous time,
+vertex conflicts, opposing edge swaps, retained goal occupancy and reported costs. Endpoints remain stationary beyond the latest arrival, so the discrete terminal state needs no infinite checking loop.
+This does not validate robot shapes, continuous collisions between samples or physical stopping.
+The experiment calls only the public `native_process.run_native` and adds only the process utility's optional cwd argument, with no new warehouse planning API or incompatible DTO.
+
+## Validation and replay
+
+Install CMake, a C++ compiler, Boost program_options, yaml-cpp and PyYAML 6.0.3 first.
+Local versions are GCC 13.3.0, Boost 1.85.0 and yaml-cpp 0.8.0.
+Local CMake is in `/home/yimin/miniconda3/envs/lacam-tapf/bin`; local configuration also uses
+`-DCMAKE_PREFIX_PATH=/home/yimin/miniconda3/envs/lacam-tapf`.
+
+```bash
+git clone https://github.com/whoenig/libMultiRobotPlanning.git /tmp/warehouse-tapf-upstream
+git -C /tmp/warehouse-tapf-upstream checkout 4c75fa20c435c440d8b6bd6dc81668ddc7296ba0
+cmake -S integrations/tapf -B /tmp/warehouse-tapf-pinned \
+  -DLMRP_SOURCE_DIR=/tmp/warehouse-tapf-upstream -DCMAKE_BUILD_TYPE=Release
+cmake --build /tmp/warehouse-tapf-pinned -j 2
+WAREHOUSE_TAPF_BIN=/tmp/warehouse-tapf-pinned PYTHONPATH=src:tests \
+  python -m unittest tapf.test_comparison -v
+PYTHONPATH=src:tests python -m tapf.replay /tmp/warehouse-tapf-pinned \
+  --output /tmp/warehouse-tapf-evidence-new
+```
+
+Each replay requires a new or empty output directory. It holds inputs, YAML/stdout/stderr/run.json for four calls and side files in per-call subdirectories,
+comparison.json and an offline replay.html. The summary retains the upstream commit, license, binary SHA256,
+a 10 s budget per call and `seed: null` (no random generation). Errors retain their traceback.
+Local results: 6/8/6, four exit codes of 0 and 86 passing source tests.
+Without native binaries, 86 tests run in total: 82 pass and four explicitly skip; ordinary tests do not need PyYAML.
+CI adds an independent native experiment job, required by the CI gate, and uploads the complete evidence directory.
+Desktop/mobile replay checks pass: real passing-bay positions at tick 2, three panels, step buttons, keyboard and no overflow. The progress website check.py passes; desktop/mobile screenshots of both pages were inspected. A wheel built from clean source passes 86 tests in Python 3.14 isolated mode; pip check passes. Ruff, JavaScript syntax and diff checks pass. Remote CI results will be added after submission.
+
+## Failure record and limits
+
+TDD Red: the new tests first failed because `tapf.replay` did not exist. After implementation, the real native test and four discrete checks passed.
+An additional regression first showed that a nonempty directory continued to invoke a nonexistent binary, raising FileNotFoundError;
+the fix raises FileExistsError before any call and preserves prior evidence, passing the sixth test.
+The first regression attempt under the default Python exposed missing PyYAML; the configured environment then reproduced the target behavior.
+The first local build failed with an unnamespaced yaml-cpp linker name; using the exported `yaml-cpp::yaml-cpp` target fixed it.
+A real run found CBS-TA writing searchGraph.dot in the working directory. A new regression first failed because cwd was unsupported; the process utility then gained the parameter and records its child directory. The seventh new test passes, native side files stay in the evidence directory, and the caller directory is unchanged.
+CMake/Node were absent from the default PATH; existing tools were used by absolute path without changing upstream sources.
+
+Warehouse SKU, shelf selection, Lift/Serve/Drop, locks, shared compilation, TPG, Runtime, execution and continuous safety are not connected to this experiment.
+Full enumeration of two goals is only this case's reference; it adds no general solver and makes no large-scale optimality claim.
+Only after user review and merge of this PR will the next increment design a restricted mapping from joint goal results into shared warehouse contracts.
+
+## Website, line counts and delivery
+
+The progress website records merged PR #9 and the experiment boundary; joint workflow connections remain dashed.
+The warehouse native-adapter integration count remains 2; the isolated goal experiment is not counted as a third warehouse adapter.
+Website source is reviewed in this PR and published from a separate Sites checkout to the same private site.
+Deployment results, final line counts and the PR link will be recorded after completion.
