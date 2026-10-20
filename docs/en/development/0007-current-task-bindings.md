@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r4 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r5 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
 Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -106,8 +106,33 @@ Empty commit `0a68b6a` was pushed and CI passed; push and renewed manual request
 The earlier Free-plan diagnosis describes the earlier state and does not explain the missing trigger after activation.
 Automatic review recovery remains unverified; quota or successful responses alone do not prove recovery.
 
+
+## DeepSeek automatic review
+
+The user requested switching automatic code review to DeepSeek V4.1 Flash 1017.
+The [official API documentation](https://api-docs.deepseek.com/) specifies the current call name `deepseek-flash`,
+served by DeepSeek-V4.1-Flash-1017. Use high reasoning effort and at most 8192 output tokens.
+The model name is a provider alias, not an immutable version pinned by this repository; log the response model and usage.
+Store the key only in Actions Secret `DEEPSEEK_API_KEY`, never in source or model input.
+Removed the Copilot automatic-review rule from ruleset `25432822`; other branch protections remain unchanged.
+
+Flow: PR open or push -> GitHub text patches + base AGENTS.md/contracts -> DeepSeek -> COMMENT review.
+The workflow has no checkout, executes no PR code, and does not approve or merge PRs. Same-repository PRs only; skip forks.
+Users with repository write access can modify the PR workflow and read the injected key and GitHub token.
+These contributors are within the credential trust boundary; skipping forks does not prevent malicious repository writers from exposing credentials. Treat input content as untrusted data.
+Check head/base and open state before and after the request. Never publish stale output; skip an existing bot review for the same head/base/model.
+Missing keys, inputs above 160000 characters, and empty or truncated output fail explicitly. List files without patches as omissions.
+Review only GitHub text patches and the two base files; do not claim full repository analysis or executed tests.
+Published output includes the commit and run link, and replaces @ characters to prevent model-generated mention notifications.
+
+Five new fake-API tests cover COMMENT commit binding, missing-key/fork rejection, stale/truncated output rejection,
+duplicate-run skipping, and missing files/oversized input rejection.
+All 66 source tests and Ruff pass; embedded workflow Python separately passes compilation and Ruff.
+These tests do not replace a real DeepSeek call. Record actual run results in the PR.
+The initial local lookup found no node, so the implementation uses standard-library Python without new runtime dependencies.
+
 ## Line counts and next step
 
-Against main: code +209/-9, including tests; disclose documentation lines separately in the PR, with configuration unchanged.
+Against main: code and workflow changes total +437/-9, including tests and the entire YAML; embedded code is not exempted as configuration. Documentation is counted separately.
 Wait for user review and merge. Then pursue the smallest stage 5 allocation increment with stock/demand feasibility,
 while continuing to defer reassignment and multi-task queues.

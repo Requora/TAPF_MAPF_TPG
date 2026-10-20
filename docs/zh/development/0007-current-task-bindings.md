@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r4 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r5 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -104,8 +104,33 @@ REST 请求 `copilot-pull-request-reviewer[bot]` 与 GraphQL `requestReviewsByLo
 此前 Free 套餐的诊断仅描述当时状态, 不能解释升级后仍未触发的问题.
 目前自动 review 恢复尚未验证, 不能仅凭额度或成功响应宣称已恢复.
 
+
+## DeepSeek 自动审查
+
+用户要求将自动 code review 改为 DeepSeek V4.1 Flash 1017.
+[官方 API 文档](https://api-docs.deepseek.com/)指定当前调用名为 `deepseek-flash`,
+由 DeepSeek-V4.1-Flash-1017 提供服务. 使用高推理强度, 最多输出 8192 tokens.
+模型调用名是供应商别名, 不是本仓库固定的不可变版本; 日志记录响应 model 和 usage.
+Key 仅存入 Actions Secret `DEEPSEEK_API_KEY`, 不进入源码或模型输入.
+已从 ruleset `25432822` 移除 Copilot 自动审查规则; 其余分支保护保持不变.
+
+流程: PR 新建或 push -> GitHub 文本 patch + 基线 AGENTS.md/contracts -> DeepSeek -> COMMENT review.
+工作流无 checkout, 不运行 PR 代码, 不批准或合并 PR. 仅处理同仓库 PR, fork PR 跳过.
+PR 工作流本身仍可由具有仓库写权限的人修改, 且可读取注入的 Key 和 GitHub token.
+这些贡献者属于凭据信任边界; 仅跳过 fork 不能防止恶意仓库写入者泄露凭据. 输入内容按不可信数据处理.
+每次请求前后核对 head/base 和打开状态. 过期结果不发布; 相同 head/base/model 已有机器人 review 时跳过.
+缺少 Key, 超过 160000 字符输入, 输出为空或截断均明确失败. 无 patch 的文件列为遗漏.
+仅审查 GitHub 提供的文本 patch 及两份基线文件, 不声明完整仓库分析或执行测试.
+发布内容包含 commit 和运行链接, 并替换 @ 字符以避免模型输出触发提及通知.
+
+新增 5 项模拟 API 测试, 验证 COMMENT 绑定 commit, 缺 Key/fork 拒绝,
+旧结果/截断拒绝, 重复运行跳过, 文件缺失/输入过大拒绝.
+源码 66 项测试和 Ruff 已通过; 嵌入工作流的 Python 单独通过编译和 Ruff 检查.
+这些测试不替代真实 DeepSeek 调用. 实际运行结果将在 PR 中记录.
+初次本地查询发现没有 node, 因此使用标准库 Python, 未增加运行时依赖.
+
 ## 行数与下一步
 
-相对 main: 代码 +209/-9, 包含测试; 文档行数在 PR 中单独披露, 配置不变.
+相对 main 的代码和工作流变更合计 +437/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
 等待用户 review 和合并. 之后按阶段 5 推进库存/需求可行的最小分配增量,
 仍暂缓重分配和多任务队列.
