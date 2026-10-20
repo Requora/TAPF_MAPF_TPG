@@ -132,7 +132,7 @@ PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已�
 
 本轮处理用户新增的四条意见: [一车一架子集](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321797946), [公共路径](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321824388), [逐个编译目标](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321829109), [缺少主语](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321859405). 四条意见均成立. 本轮重写分配器和 MAPF 适配器的类, 方法及排序回调说明, 明确输入, 输出, 执行动作的主体和设计原因.
 
-分配器说明现在明确: 它只接受一台机器人, 一个货架和一条商品需求, 并生成搬运, 工作站服务和归还任务. MAPF 说明现在明确: PathRequest 是模块间的请求类型; plan 读取已经编译好的动作, 逐段规划到动作目标节点的路线. Move 表示沿地图边移动, Do 表示执行原任务步骤. 本轮删除了容易误解为访问权限的“公共路径”说法, 并解释上游格子序号如何对应地图节点 ID.
+分配器说明现在明确: 它只接受一台机器人, 一个货架和一条商品需求, 并生成搬运, 工作站服务和归还任务. MAPF 说明现在明确: PathRequest 是模块间的请求类型; plan 读取已经编译好的动作, 逐段规划到动作目标节点的路线. Move 表示沿地图边移动, Do 表示执行原任务步骤. 本轮删除了容易误解为访问权限的 "公共路径" 说法, 并解释上游格子序号如何对应地图节点 ID.
 
 AGENTS.md 新增要求: 中英文注释必须有明确主语, 并在附近解释所用名词, 缩写和项目术语的含义及作用. 本轮将规则应用于上述被 review 的两个文件, 未声称已按新规则重审全仓库.
 
