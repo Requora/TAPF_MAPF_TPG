@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-19-r1 -->
+<!-- doc-sync: current-task-bindings / 2026-10-19-r2 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
 Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -21,6 +21,9 @@ types `5c3ffe789c8f43061961fd89bb7c217781ecda259ddb8c26c8c5d06c7d601b05`.
 Original repository code using only the standard library; no upstream dependency or native solver added.
 
 ## Decisions and observable behavior
+
+Review addition: AGENTS.md requires each completed PR to explain its objective, implementation,
+rationale, and completion verification to the user. Verification must include actual evidence and unverified boundaries.
 
 - `TaskDelta.tasks` accepts only new definitions. IDs already present in the request return CONFLICT,
   including completed tasks. There is no historical ledger to detect ID reuse outside the request.

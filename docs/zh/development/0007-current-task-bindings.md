@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-19-r1 -->
+<!-- doc-sync: current-task-bindings / 2026-10-19-r2 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -21,6 +21,9 @@ SHA256: 指南 `f13bb9275af485e8dcc2ae47e76db411bf8b38581175dd71a14b50f5b8713e7f
 仓库原创代码, 仅使用标准库; 未引入上游依赖或原生求解器.
 
 ## 决策与可观察行为
+
+Review 补充: AGENTS.md 要求每个 PR 完成后向用户说明要做什么, 怎么做的,
+为什么这样做, 以及如何验证完成. 验证说明包含实际证据和未验证边界.
 
 - `TaskDelta.tasks` 仅允许新定义. 与 request 中任务 ID 冲突时返回 CONFLICT,
   包括已完成任务. 没有历史账本, 不能检查 request 之外的历史 ID 复用.
