@@ -10,7 +10,7 @@ The user prioritizes running the order-to-TPG chain. PR #8 is merged at `576e25d
 This first increment provides the composition entry point within the 500-line PR limit.
 The native chain is **not complete**. Allocation, MAPF, and TPG in the replay are explicit
 test doubles. Order release and task compilation use existing implementations.
-PR: [#9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9). Verification baseline: `c47f4a7`.
+PR: [#9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9). Verification baseline: `4277591`.
 
 ```mermaid
 flowchart LR
@@ -32,7 +32,7 @@ The pipeline imports only contracts. Existing DTOs and public signatures are unc
 One wall-clock deadline covers all stages, including compilation. Each budgeted stage receives
 the remaining time. Synchronous calls cannot be interrupted here; successful late results are
 discarded. Stage failures preserve their original code, message, and related IDs. Exceptions
-propagate with their traceback. A path result for a different request stops before motion.
+propagate with their traceback. A path result for a different request stops before motion. Robot coverage and ordered Do references must match the compiled jobs.
 Input and path-identity rules live in `planning/_validation.py`.
 
 Order-to-Demand conversion belongs to the replay harness until Runtime exists. The fixture
@@ -50,7 +50,7 @@ python -I -m unittest discover -s tests -v
 python -m pip check
 ```
 
-Observed: 72 source tests and 72 clean installed-wheel tests pass; Ruff and pip check pass.
+Observed: 73 source tests and 73 clean installed-wheel tests pass; Ruff and pip check pass.
 The new cases cover all four failure boundaries, all deadline checkpoints, decreasing budgets,
 compiler rejection, stale path identity, input snapshots, result JSON round trips, and exceptions.
 The replay records each stage's implementation label, inputs or compiled output, and result.
@@ -70,6 +70,8 @@ flat modules, including `_codec_validation.py`. Rebuilding from `git archive c47
 a new directory removed the stale build inputs; all 72 installed tests then passed.
 The first Ruff attempt found no module in the base Python environment. A temporary isolated
 environment supplied Ruff 0.14.0 and the wheel tools. No project dependency was added.
+
+Review follow-up at `4277591`: reject missing, duplicate, or unknown route robots and missing/reordered actions even when the request ID matches. The clock test now uses an unbounded counter. A reported missing post-compilation deadline check was already present and is covered by the deadline test.
 
 ## Upstream probes and limits
 
@@ -111,13 +113,13 @@ dashed target connections. Six modules have implementations; native adapter inte
 Browser QA passed both languages and diagrams, 28 module selections, keyboard input, mobile overflow, and JS errors. Desktop and mobile screenshots were inspected. Private deployment succeeded. Hosted login was not browser-tested. Source remains in this repository;
 Sites uses a separate checkout and preserves the existing project and owner-only access.
 
-Against origin/main: code +306/-23 = 329 lines, including tests and website; configuration 0.
+Against origin/main: code +331/-24 = 355 lines, including tests and website; configuration 0.
 Documentation is counted separately in the PR description. Bilingual review by gpt-6-luna / low passed
 for facts, relative links, doc-sync, and English punctuation. Await user review and merge.
 After merge, replace the fixture stages with feasible allocation and pinned native adapters,
 keeping the same composition entry point. Do not start later PRs before merge.
 
 [Private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
-Sites source commit: `69456164727f18ac4085eef0c978c3320eea6228`.
+Sites source commit: `69456164737f18ac4085eef0c978c3320eea6228`.
 Version: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_f20650b374ec8191bf4832b034aa39e4`.
 Native publication result: `succeeded`; owner-only access and the main repository remote are unchanged.

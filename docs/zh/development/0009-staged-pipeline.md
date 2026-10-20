@@ -10,7 +10,7 @@
 本次首个增量在 500 行 PR 限制内提供组合入口.
 真实链路**尚未完成**. 重放中的分配, MAPF, TPG 明确使用测试替身.
 订单发布与任务编译使用已有实现.
-PR: [#9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9). 验证基线: `c47f4a7`.
+PR: [#9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9). 验证基线: `4277591`.
 
 ```mermaid
 flowchart LR
@@ -32,7 +32,7 @@ flowchart LR
 一个墙钟截止时间覆盖所有阶段, 包含编译耗时. 有预算字段的阶段收到剩余时间.
 此处不能中断同步调用; 超时后返回的成功结果会被丢弃.
 阶段失败保留原始错误码, 说明和关联 ID. 异常保留 traceback 向外抛出.
-路径结果属于其他请求时, 在运动阶段前停止.
+路径结果属于其他请求时, 在运动阶段前停止. 机器人覆盖和有序 Do 引用必须与编译任务一致.
 输入和路径身份规则放在 `planning/_validation.py`.
 
 Runtime 实现前, Order 转 Demand 只在重放驱动中完成. 分配 fixture 返回一个预定义任务.
@@ -50,7 +50,7 @@ python -I -m unittest discover -s tests -v
 python -m pip check
 ```
 
-实际结果: 源码 72 项与干净安装包 72 项测试通过; Ruff 和 pip check 通过.
+实际结果: 源码 73 项与干净安装包 73 项测试通过; Ruff 和 pip check 通过.
 新增用例覆盖四个失败边界, 所有截止时间检查点, 递减预算, 编译拒绝,
 过期路径身份, 输入快照, 结果 JSON 往返和异常传播.
 重放记录各阶段的实现标签, 输入或编译输出, 以及结果.
@@ -70,6 +70,8 @@ python -m pip check
 消除旧构建输入后, 安装包 72 项测试全部通过.
 首次 Ruff 检查发现基础 Python 环境未安装该模块. 临时隔离环境提供 Ruff 0.14.0
 及 wheel 工具, 未增加项目依赖.
+
+Review 修正在 `4277591`: 即使请求 ID 一致, 也拒绝缺失, 重复或未知机器人及缺失/乱序动作. 时钟测试改用无限计数器. Review 提及的编译后截止检查已存在, 并由截止时间测试覆盖.
 
 ## 上游探测与边界
 
@@ -110,13 +112,13 @@ LaCAM, seed 0, 时间限制 5 s, path length 2, max speed 1, rotation steps 1.
 浏览器检查通过两种语言和图, 28 次模块选择, 键盘操作, 手机溢出和 JS 错误检查. 已检查桌面和手机截图. 私有发布成功. 未对托管登录流程做浏览器测试. 源码保留在本仓库;
 Sites 使用独立 checkout, 保留既有项目和仅所有者访问范围.
 
-相对 origin/main: 代码 +306/-23 = 329 行, 包括测试和网页; 配置 0.
+相对 origin/main: 代码 +331/-24 = 355 行, 包括测试和网页; 配置 0.
 文档单独计入 PR 说明. gpt-6-luna / low 双语复核通过技术事实, 相对链接, doc-sync
 和英文标点检查. 等待用户 review 和合并.
 合并后, 用可行分配与固定版本原生适配器替换 fixture 阶段, 保留同一组合入口.
 合并前不提前开发后续 PR.
 
 [私有网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
-Sites 源码 commit: `69456164727f18ac4085eef0c978c3320eea6228`.
+Sites 源码 commit: `69456164737f18ac4085eef0c978c3320eea6228`.
 版本: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_f20650b374ec8191bf4832b034aa39e4`.
 原生发布结果为 `succeeded`; 仅所有者访问范围和主仓库 remote 不变.

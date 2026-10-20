@@ -1,15 +1,15 @@
 // Curated snapshot. Update with the roadmap and evidence whenever project state changes.
 window.PROJECT = {
-  date: "2026-10-20", evidenceCommit: "c47f4a7", branch: "feat/staged-pipeline",
+  date: "2026-10-20", evidenceCommit: "4277591", branch: "feat/staged-pipeline",
   repo: "https://github.com/Requora/TAPF_MAPF_TPG", current: ["planning"],
   copy: {
     navMap: ["架构", "Architecture"], navWork: ["当前进展", "Progress"],
     headline: ["让系统的每一步,\n都看得见.", "Every part.\nA clearer picture."],
     intro: ["从订单到安全执行, 看清模块如何连接, 哪些能力已有证据, 哪些仍待实现. 一个持续维护的研究项目窗口.", "From orders to safe execution. See how the pieces connect, what the evidence supports, and what remains to be built."],
     explore: ["探索系统架构 ↓", "Explore the architecture ↓"], snapshot: ["验证快照 / 非完成率", "EVIDENCE SNAPSHOT / NOT A COMPLETION SCORE"],
-    tests: ["源码测试通过 · 安装包也通过 72 项", "source tests passed · 72 also pass in the installed wheel"],
+    tests: ["源码测试通过 · 安装包也通过 73 项", "source tests passed · 73 also pass in the installed wheel"],
     implemented: ["已有实现的模块", "Modules with implementations"], native: ["已验证的原生求解器集成", "Verified native solver integrations"],
-    snapshotNote: ["基于 c47f4a7. Fixture 验证不等于端到端安全验证.", "Based on c47f4a7. Fixture checks do not establish end-to-end safety."],
+    snapshotNote: ["基于 4277591. Fixture 验证不等于端到端安全验证.", "Based on 4277591. Fixture checks do not establish end-to-end safety."],
     focusLabel: ["正在做", "IN FOCUS"], focus: ["PR #9: 组合入口与 fixture 链路验证, 待 review. 基线 PR #8 已合并.", "PR #9: composition and fixture wiring, awaiting review. Baseline PR #8 merged."],
     mapHeading: ["一张图, 看清整个系统.", "One system. Every connection."], flow: ["目标业务流程", "Target workflow"], imports: ["现有代码依赖", "Current imports"],
     flowNote: ["这是目标流程. 组合入口已用 fixture 串联, 分配/MAPF/TPG 实现仍未接入. 虚线保留为目标连接; 点击模块查看状态与 API.", "Target design. Composition runs with fixtures; allocation/MAPF/TPG implementations remain absent. Dashed edges retain target status. Select a module for APIs and evidence."],
@@ -75,7 +75,7 @@ window.PROJECT = {
     ["allocation", "task_compiler", "TaskDelta", "M900 310H960", 930, 245],
     ["task_compiler", "mapf", "RobotJobs → PathRequest", "M1085 365V480", 1085, 420],
     ["mapf", "tpg", "FleetPlan → MotionRequest", "M960 535H900", 930, 607],
-    ["tpg", "planning", "MotionPlan", "M775 480V405H565V365", 725, 399],
+    ["tpg", "planning", "MotionPlan", "M775 480V405H565V365", 735, 399],
     ["planning", "runtime", "ExecutableProposal", "M465 365V395H255V365", 365, 389],
     ["runtime", "validation", "check_proposal", "M225 365V440H465V480", 330, 434],
     ["validation", "runtime", "Failure[]", "M340 535H300V460H190V365", 270, 454],

@@ -7,7 +7,7 @@
 状态: PR #8 已合并至 `576e25d`. 用户现在优先要求跑通订单到 TPG 链路.
 本 PR 先增加 StagedPipeline 组合入口, 再逐个补齐适配器. fixture 重放使用真实订单源
 和编译器; 分配, MAPF, TPG 仍为测试替身. 真实链路尚未跑通.
-共用预算, 失败短路和过期路径拒绝已在 `c47f4a7` 验证, 源码与安装包各 72 项测试通过.
+共用预算, 失败短路和过期路径拒绝已在 `4277591` 验证, 源码与安装包各 73 项测试通过.
 两个上游已本地构建; 不代表适配器集成. Runtime 接受, 连续安全和停车验证均未实现.
 见 [组合验证](0009-staged-pipeline.md) 和 [模块架构](../architecture/MODULES.md).
 保留每 PR 500 行代码限制. 等待当前 PR review 和合并后才能继续下一 PR.
@@ -78,7 +78,7 @@ flowchart TD
 
 - MAWPF: `0cdb8e43797aff3781e4cd3ddb2c6d7d36f3df17`.
 - WinkTPG: `dd96946f225e206de35b041320786eab43210658`.
-- libMultiRobotPlanning: `4c75fa20c435c440d8b6bd6dc81668ddc7296ba0`.
+- libMultiRobotPlanning: `4c75fa20c435c440d8b6bd6dc81668ddc7396ba0`.
 
 分配先测试具有明确可行边的最小费用机器人/任务匹配.
 仓库专用代码仍需选择可行货架, 拣选项, 工作站和归还位置.

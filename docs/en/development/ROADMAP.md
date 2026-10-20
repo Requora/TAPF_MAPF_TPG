@@ -8,7 +8,7 @@ Status: PR #8 merged at `576e25d`. The user now prioritizes the order-to-TPG cha
 This PR adds StagedPipeline before filling the individual adapters. The real order source
 and compiler run in a fixture replay; allocation, MAPF, and TPG remain test doubles.
 The native chain is not complete. Shared budgets, short-circuit failures, and stale path rejection
-are verified at `c47f4a7` (72 source and installed-wheel tests).
+are verified at `4277591` (73 source and installed-wheel tests).
 Both upstreams were built locally; this is not adapter integration. Runtime acceptance,
 continuous safety, and parking validation remain unimplemented.
 See [composition evidence](0009-staged-pipeline.md) and [architecture](../architecture/MODULES.md).
@@ -83,7 +83,7 @@ Inspected commits (freeze again when a build is introduced):
 
 - MAWPF: `0cdb8e43797aff3781e4cd3ddb2c6d7d36f3df17`.
 - WinkTPG: `dd96946f225e206de35b041320786eab43210658`.
-- libMultiRobotPlanning: `4c75fa20c435c440d8b6bd6dc81668ddc7296ba0`.
+- libMultiRobotPlanning: `4c75fa20c435c440d8b6bd6dc81668ddc7396ba0`.
 
 For assignment, first test min-cost robot/job matching with explicit feasible
 edges. Warehouse-specific code must select feasible shelves, picks, stations

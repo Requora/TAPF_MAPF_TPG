@@ -40,7 +40,7 @@ function render() {
   const locale = lang ? "en" : "zh";
   const evidence = [
     [text(["当前 PR · 变更与 review", "Current PR · changes & review"]), `${project.repo}/pull/9`],
-    [text(["验证基线 · c47f4a7", "Validation baseline · c47f4a7"]), `${project.repo}/commit/c47f4a7`],
+    [text(["验证基线 · 4277591", "Validation baseline · 4277591"]), `${project.repo}/commit/4277591`],
     [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0009-staged-pipeline.md`],
     [text(["路线图 · 阶段 1—11", "Roadmap · stages 1–11"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/ROADMAP.md`],
   ];
