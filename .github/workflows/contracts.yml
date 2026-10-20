@@ -86,10 +86,37 @@ jobs:
             ${{ runner.temp }}/native-chain.json
             ${{ runner.temp }}/native-chain.html
 
+  native_tapf:
+    name: Real assignment, CBS and CBS-TA comparison
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: sudo apt-get update && sudo apt-get install -y cmake libboost-program-options-dev libyaml-cpp-dev
+      - name: Fetch pinned MIT upstream
+        run: |
+          git clone https://github.com/whoenig/libMultiRobotPlanning.git "$RUNNER_TEMP/lmrp"
+          git -C "$RUNNER_TEMP/lmrp" checkout 4c75fa20c435c440d8b6bd6dc81668ddc7296ba0
+      - name: Build and compare real solvers
+        run: |
+          cmake -S integrations/tapf -B "$RUNNER_TEMP/tapf-build" -DLMRP_SOURCE_DIR="$RUNNER_TEMP/lmrp" -DCMAKE_BUILD_TYPE=Release
+          cmake --build "$RUNNER_TEMP/tapf-build" -j 2
+          python -m pip install . PyYAML==6.0.3
+          WAREHOUSE_TAPF_BIN="$RUNNER_TEMP/tapf-build" python -I -m unittest discover -s tests -p test_comparison.py -v
+          PYTHONPATH=tests python -m tapf.replay "$RUNNER_TEMP/tapf-build" --output "$RUNNER_TEMP/tapf-evidence"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tapf-comparison-evidence
+          path: ${{ runner.temp }}/tapf-evidence
+
   required:
     name: CI gate
     if: ${{ always() }}
-    needs: [lint, test, native]
+    needs: [lint, test, native, native_tapf]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -98,7 +125,9 @@ jobs:
           LINT_RESULT: ${{ needs.lint.result }}
           TEST_RESULT: ${{ needs.test.result }}
           NATIVE_RESULT: ${{ needs.native.result }}
+          TAPF_RESULT: ${{ needs.native_tapf.result }}
         run: |
           test "$LINT_RESULT" = success
           test "$TEST_RESULT" = success
           test "$NATIVE_RESULT" = success
+          test "$TAPF_RESULT" = success
