@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0008-module-boundaries.md) | [English](../../en/development/0008-module-boundaries.md)
 
-<!-- doc-sync: module-boundaries-log / 2026-10-20-r3 -->
+<!-- doc-sync: module-boundaries-log / 2026-10-20-r4 -->
 
 ## Scope and sources
 
@@ -120,10 +120,67 @@ with patch.object(action_timing, 'action_duration_s', lambda: None):
 PYTHON
 ```
 
+## Project progress and architecture website
+
+[Open the private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site) / [English](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
+This is a manually maintained snapshot, not an execution trace or live GitHub dashboard.
+The evidence baseline is `a785121`.
+
+The user requested this maintained website as an addition to the current PR. Source lives in
+`web/progress/`, using buildless static HTML/CSS/JS. Warm colors, whitespace, and clear hierarchy
+draw on Apple/OpenAI's minimal visual style without using their brand marks.
+The page supports Chinese/English switching, horizontal diagram scrolling on phones, and mouse
+or keyboard module selection. Details show responsibilities, implemented scope, missing work,
+inputs/outputs, and source links. It distinguishes 5 modules with implementations, 7 interface-only
+modules, 1 planned joint TAPF module, and 1 out-of-scope backend. These counts are not completion scores.
+
+The target workflow has 14 nodes and 15 planned connections, all dashed. The current code graph
+has 5 nodes and 5 actual import dependencies, drawn solid. Current work, allocation work deferred
+until merge, and the missing execution loop are shown separately. The page explicitly states that
+the PR is unmerged, native solver integrations number 0, and continuous safety is unverified.
+AGENTS now requires upkeep of status, diagrams, evidence, both languages, deployment, and checks.
+
+Local verification:
+
+```bash
+# Start static preview in another terminal; choose a free port if occupied.
+python -m http.server 38167 --bind 127.0.0.1 --directory web/progress/dist
+# Playwright is only a website development tool, not a warehouse_api runtime dependency.
+/tmp/warehouse-web-tools/bin/python web/progress/check.py http://127.0.0.1:38167
+/tmp/warehouse-ci-check/bin/ruff check web/progress/check.py
+```
+
+Observed output: `PASS: two languages, both diagrams, 28 module selections, keyboard, mobile layout, no JS errors`.
+Manually inspected 1440 px desktop and 390 px mobile screenshots. No page-level horizontal overflow;
+the mobile diagram scrolls horizontally. Screenshots are stored at
+`/tmp/warehouse-progress-desktop.png` and `/tmp/warehouse-progress-mobile.png`.
+Also inspected the English flow diagram. Fixed edge labels hidden behind nodes and checked again.
+Initial fixed port 8765 was occupied, so switched to automatically assigned port 38167.
+The service on the original port was neither modified nor stopped.
+
+Private publication succeeded with project_id `appgprj_6ad6c9324f348191aab84e8bfffe6102`.
+Sites source commit: `614a297632fd55a9ff72d925e7b22bf47ed38fc3`.
+version_id: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_8ecaeb4ba3e48191aaf1a5b746d33f6d`.
+The native tool returned `succeeded`; access scope was unchanged. Local browser verification and
+hosted publication success are separate evidence. Hosted login flow was not browser-tested.
+No scheduled updates or external connectors were added.
+
+Maintenance entry points: content and graph data in `dist/project.js`, progress and evidence
+presentation in `dist/app.js`, styling in `dist/style.css`, and page structure in `dist/index.html`.
+Update the snapshot date, baseline, status, and evidence together. After PR merge, update the
+awaiting-review text and baseline everywhere rather than changing a single status label.
+
+For later publishing, reuse the project_id in `web/progress/.openai/hosting.json`. Follow the Sites
+skill to fetch this Site and open its remote source with the source helper in a separate empty
+directory. Sync reviewed website files from this repository. After checks, use that source helper
+to commit, push, and package, then publish with the existing private audience. Never run a helper
+that manages the Sites Git remote inside the main repository. Pass credentials through stdin only;
+do not write them to disk.
+
 ## Line counts and next step
 
-With Git rename detection, code and tests against origin/main are +141/-17, or 158 changed lines.
-Without rename detection, the count is +1605/-1481, including entire moved files.
-Moves do not compress or rewrite algorithms. Docs are counted separately; no configuration changes.
+With Git rename detection, code and tests against origin/main are +473/-17, or 490 changed lines.
+Without rename detection, the count is +1937/-1481, including entire moved files.
+Moves do not compress or rewrite algorithms. Docs are counted separately, plus 8 configuration lines for Sites hosting and a Git ignore exception for static source. All 332 website and browser-check lines count as code.
 After submission, await user review and merge before starting the smallest increment
 in the separate allocation module.

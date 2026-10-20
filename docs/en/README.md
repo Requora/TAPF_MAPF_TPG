@@ -2,7 +2,7 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-20-r12 -->
+<!-- doc-sync: readme / 2026-10-20-r13 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
 Current status: shared contracts, strict JSON shape codec, tested fixtures, replayable orders, shared action timing, and a limited current-task compiler.
@@ -49,3 +49,5 @@ Backend boundary types remain for compatibility; simulator implementation is out
 
 - [Module directories, public APIs, and dependency graph](architecture/MODULES.md)
 - [Module split: compatibility and verification](development/0008-module-boundaries.md)
+
+- [Project progress and interactive architecture, private access](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en)

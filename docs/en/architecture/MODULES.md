@@ -2,7 +2,9 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r2 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r3 -->
+
+[Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
 ## Implemented directories
 

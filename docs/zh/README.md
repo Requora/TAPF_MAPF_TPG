@@ -2,7 +2,7 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-20-r12 -->
+<!-- doc-sync: readme / 2026-10-20-r13 -->
 
 依据 Warehouse API 0.7 英文规范构建模块化仓库规划系统.
 当前提供共享契约, 严格 JSON 结构 codec, 已测试的 fixture, 可重放订单源, 共用动作耗时和受限当前任务编译器.
@@ -49,3 +49,5 @@ ruff check src tests
 
 - [模块目录, 公开 API 与依赖图](architecture/MODULES.md)
 - [模块拆分: 兼容性与验证](development/0008-module-boundaries.md)
+
+- [项目进展与交互架构网页, 私有访问](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site)
