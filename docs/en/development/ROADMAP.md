@@ -2,14 +2,13 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-19-r10 -->
+<!-- doc-sync: roadmap / 2026-10-20-r13 -->
 
-Status: PR #6 merged at `412ec32`. Stage 3 orders and stage 4 shared action timing are implemented.
-The current-task compiler has fixture verification. This PR supports binding new tasks to idle robots,
-preserves existing progress and bindings, and awaits review. Reassignment and multi-task queues remain unsupported.
-Retain API 0.7. Stages 5-11 remain planned.
-See the [review decision](0005-candidate-queues.md), [current-task compiler](0006-current-task-compiler.md),
-and [new-task bindings](0007-current-task-bindings.md).
+Status: PR #7 merged at `6dbed6c`. Stage 3 orders and stage 4 current-task compilation and new bindings have fixture verification.
+At the user's request, this PR first organizes module directories, uses descriptive module names and public APIs, and adds dependency boundary checks.
+The private bilingual progress website is published, showing target flow, current imports, and missing work; PR #8 remains unmerged.
+See [module architecture](../architecture/MODULES.md) and the [refactoring log](0008-module-boundaries.md).
+Reassignment and multi-task queues remain unsupported. Retain API 0.7. Stages 5-11 remain planned.
 A stage may require several PRs. Each PR has at most 500 changed code lines,
 excluding docs and configuration. Start the next increment only after user merge. Keep both languages synchronized.
 

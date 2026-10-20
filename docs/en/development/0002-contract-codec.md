@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0002-contract-codec.md) | [English](../../en/development/0002-contract-codec.md)
 
-<!-- doc-sync: codec / 2026-10-19-r3 -->
+<!-- doc-sync: codec / 2026-10-20-r5 -->
 
 Date: 2026-10-19. Status: implemented and fixture-verified, pending review.
 Branch: `feat/strict-contract-codec`. [PR #2](https://github.com/Requora/TAPF_MAPF_TPG/pull/2).
@@ -10,7 +10,7 @@ Baseline: PR #1 confirmed merged, `16f65e361b2d78876c789eaa42374a59cd5c7afb`.
 
 ## Scope and provenance
 
-Add `to_data`, `from_data`, `dumps`, and `loads` in `warehouse_api.codec`.
+Add `to_data`, `from_data`, `dumps`, and `loads` in `warehouse_api.serialization`.
 Reuse the dataclasses and annotations in the unchanged `contracts.py`.
 Follow the supplied English API 0.7 guide, sections 03 and 14, and `DATA_TYPES_EN.md`.
 Adapt the reference `package/warehouse_api/codec.py`; its source SHA256 is
@@ -20,7 +20,7 @@ JSON Schema export is outside this PR.
 
 Copy two selected JSON fixtures byte-for-byte from the reference `package/examples/`:
 
-| Fixture in `tests/fixtures/` | SHA256 |
+| Fixture in `tests/serialization/fixtures/` | SHA256 |
 | --- | --- |
 | `task_delta.json` | `344235fe4e58ec1becc9801cb7b19978fc7038c3b9f07225f58ce33f5e5f94ff` |
 | `fleet_plan.json` | `729232b1b3ae29a5c1d0f6741f573dff303f82297aba583ef1feb9691e9a9dca` |
@@ -104,7 +104,7 @@ Result unions and direct propagation of nested and overflow errors.
 Observed failure replay, exit code 1, with no exception wrapping:
 
 ```bash
-PYTHONPATH=src python -c 'from warehouse_api.codec import from_data; from_data(float | None, 10**400)'
+PYTHONPATH=src python -c 'from warehouse_api.serialization import from_data; from_data(float | None, 10**400)'
 ```
 
 ```text

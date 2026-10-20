@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0003-order-source.md) | [English](../../en/development/0003-order-source.md)
 
-<!-- doc-sync: order-source / 2026-10-19-r5 -->
+<!-- doc-sync: order-source / 2026-10-20-r6 -->
 
 日期: 2026-10-19. 状态: 已实现, 本地单元测试通过, 等待 review.
 分支: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
@@ -10,7 +10,7 @@
 
 ## 范围与来源
 
-新增 `warehouse_api.orders.ReplayOrderSource` 和 `generate_orders`.
+新增 `warehouse_api.order_source.ReplayOrderSource` 和 `generate_orders`.
 复用 `contracts.Order`, `Item` 和 `OrderSource` Protocol, 未修改契约.
 依据本地 API 0.7 英文指南第 05A 节和 `DATA_TYPES_EN.md` 的 Order/Item 说明.
 实现为本仓库原创 Python 代码, 只使用标准库, 无上游算法集成.
@@ -75,7 +75,7 @@ seed 重现, 全局 RNG 隔离, 参数拒绝及生成时间溢出检查. 没有�
 失败重放, 预期退出码 1, 保留原始 traceback:
 
 ```bash
-PYTHONPATH=src python -c 'from warehouse_api.orders import ReplayOrderSource; s = ReplayOrderSource(); s.release(2.0); s.release(1.0)'
+PYTHONPATH=src python -c 'from warehouse_api.order_source import ReplayOrderSource; s = ReplayOrderSource(); s.release(2.0); s.release(1.0)'
 ```
 
 ```text

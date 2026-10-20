@@ -2,7 +2,7 @@
 from fractions import Fraction
 from math import ceil
 
-from warehouse_api._duration_validation import validate_action_timing
+from ._validation import validate_action_timing
 from warehouse_api.contracts import ActionTimes, Drop, Lift, TaskAction
 
 

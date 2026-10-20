@@ -1,10 +1,10 @@
 """Input and business checks for the current-task compiler subset."""
-from warehouse_api.codec import from_data, to_data
+from warehouse_api.serialization import from_data, to_data
 from warehouse_api.contracts import (
     AssignmentRequest, Drop, Failure, Lift, ObjectSpec, ObjectState, Place,
     Pose2, RobotJobs, Serve, TaskDelta, TaskProgress, WorldModel,
 )
-from warehouse_api.durations import action_duration_s
+from warehouse_api.action_timing import action_duration_s
 
 
 def validate_model(model: WorldModel, sim_dt_s: float) -> None:

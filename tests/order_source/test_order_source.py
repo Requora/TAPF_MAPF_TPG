@@ -4,9 +4,9 @@ from dataclasses import replace
 import random
 import unittest
 
-from warehouse_api.codec import dumps, loads
+from warehouse_api.serialization import dumps, loads
 from warehouse_api.contracts import Item, Order, OrderSource
-from warehouse_api.orders import ReplayOrderSource, generate_orders
+from warehouse_api.order_source import ReplayOrderSource, generate_orders
 
 
 class OrderSourceTests(unittest.TestCase):

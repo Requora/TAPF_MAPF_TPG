@@ -5,9 +5,9 @@ from decimal import Decimal, ROUND_CEILING, localcontext
 from math import nextafter
 import unittest
 
-from warehouse_api.codec import dumps, loads
+from warehouse_api.serialization import dumps, loads
 from warehouse_api.contracts import ActionTimes, Drop, Lift, Pick, Serve, TaskAction
-from warehouse_api.durations import action_duration_s, action_duration_ticks
+from warehouse_api.action_timing import action_duration_s, action_duration_ticks
 
 
 class DurationTests(unittest.TestCase):

@@ -6,7 +6,7 @@ from pathlib import Path
 import unittest
 
 from warehouse_api import contracts as c
-from warehouse_api.codec import dumps, from_data, loads, to_data
+from warehouse_api.serialization import dumps, from_data, loads, to_data
 
 
 FIXTURES = Path(__file__).parent / "fixtures"

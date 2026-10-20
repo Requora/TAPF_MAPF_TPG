@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0004-action-durations.md) | [English](../../en/development/0004-action-durations.md)
 
-<!-- doc-sync: action-durations / 2026-10-19-r1 -->
+<!-- doc-sync: action-durations / 2026-10-20-r2 -->
 
 日期: 2026-10-19. 状态: 阶段 4 耗时函数已实现并通过单元测试, 等待 review.
 分支: `feat/shared-action-durations`. [PR #4](https://github.com/Requora/TAPF_MAPF_TPG/pull/4).
@@ -10,7 +10,7 @@
 
 ## 范围与来源
 
-新增 `warehouse_api.durations.action_duration_ticks` 和 `action_duration_s`.
+新增 `warehouse_api.action_timing.action_duration_ticks` 和 `action_duration_s`.
 两者接收 `(action, times, *, sim_dt_s)`, 复用 `TaskAction` 和 `ActionTimes`.
 未修改 DTO 或 Protocol. 这是阶段 4 的首个小改动, 尚未实现 SharedCompiler.
 编译器和运动适配器将共用这些纯函数; 两处集成都尚未实现.
@@ -79,7 +79,7 @@ Ruff 与 pip check 通过. 149 个参考文件的哈希与原清单一致.
 预期失败重放, 退出码 1, 保留原始 traceback:
 
 ```bash
-PYTHONPATH=src python -c 'from warehouse_api.contracts import ActionTimes, Lift; from warehouse_api.durations import action_duration_s; action_duration_s(Lift("P17"), ActionTimes(1, 1, 0, 0), sim_dt_s=0)'
+PYTHONPATH=src python -c 'from warehouse_api.contracts import ActionTimes, Lift; from warehouse_api.action_timing import action_duration_s; action_duration_s(Lift("P17"), ActionTimes(1, 1, 0, 0), sim_dt_s=0)'
 ```
 
 ```text
