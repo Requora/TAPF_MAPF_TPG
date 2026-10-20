@@ -149,4 +149,4 @@ It rejects reverse dependencies, cross-module internal imports, and cross-module
 star imports; it also checks public exports. Relative imports and aliases are
 covered, both in source and installed wheels. It does not intercept dynamic
 imports or runtime attribute access and is not a Python sandbox.
-Native tests exercise real upstreams and exact Hermite kinematic bounds. They do not establish continuous collision or indefinite parking safety. Native additions remain local while the PR line-limit decision is pending.
+Native tests exercise real upstreams and exact Hermite kinematic bounds. They do not establish continuous collision or indefinite parking safety. Native additions are included in PR #9 under the authorized line-limit exception and await review.
