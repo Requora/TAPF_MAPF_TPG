@@ -98,3 +98,7 @@ class ModuleBoundaryTests(unittest.TestCase):
             self.assertEqual(set(module.__all__), exports)
             for symbol in exports:
                 self.assertTrue(callable(vars(module)[symbol]))
+                self.assertTrue(
+                    vars(module)[symbol].__module__.startswith(f"warehouse_api.{name}."),
+                    f"{module.__name__}.{symbol}: implementation must belong to this package",
+                )

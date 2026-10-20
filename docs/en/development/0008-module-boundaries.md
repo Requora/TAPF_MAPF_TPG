@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0008-module-boundaries.md) | [English](../../en/development/0008-module-boundaries.md)
 
-<!-- doc-sync: module-boundaries-log / 2026-10-20-r2 -->
+<!-- doc-sync: module-boundaries-log / 2026-10-20-r3 -->
 
 ## Scope and sources
 
@@ -72,16 +72,58 @@ fresh temporary directory, excluding caches and egg-info. Install the wheel in a
 venv to avoid stale artifacts. The temporary paths above record this run; subsequent
 verification requires a new clean build directory and environment.
 No tests failed. Bilingual docs passed gpt-6-luna / low review, including execution
-of the replay command above. Remote CI passed at `52f159d`; results for this naming revision are pending confirmation.
+of the replay command above. Remote CI passed at `b8d9a29`; results for this review correction are pending confirmation.
 
 Historical pickle compatibility, dynamic import constraints, allocation optimization,
 native solvers, Runtime commits, continuous geometry, and parking safety are unverified.
 This change only refactors module boundaries.
 
+## Review triage and correction
+
+Check all 3 PR #8 findings against the renamed code with actual reproductions:
+
+| Finding | Decision and evidence |
+| --- | --- |
+| [Guard Bypass](https://github.com/Requora/TAPF_MAPF_TPG/pull/8#discussion_r4320624328) | No change needed. Root-package imports still pass through dependency checks after normalization; importing order_source from serialization or contracts returns forbidden dependency. Attribute access is already explicitly outside the architecture check's scope. |
+| [Missing Module Check](https://github.com/Requora/TAPF_MAPF_TPG/pull/8#discussion_r4320624333) | No change needed. A temporary foo/bar.py causes assertIn to raise AssertionError mentioning foo before violations runs, without reaching a KeyError. |
+| [Export Check Too Weak](https://github.com/Requora/TAPF_MAPF_TPG/pull/8#discussion_r4320624336) | Accepted. Assert that exported objects' __module__ belongs to their package. Temporarily replacing action_duration_s with an external lambda passed before the change and is rejected afterward. |
+
+Add only 4 assertion lines in tests; production code is unchanged. All 64 tests pass
+against source and the existing clean installed wheel; Ruff and diff checks pass.
+Package source is unchanged, so reuse the naming revision's wheel without rebuilding.
+The following command reproduces all three conclusions. Its two AssertionErrors are
+expected rejections, not unhandled test failures.
+
+```bash
+PYTHONPATH=src:tests python - <<'PYTHON'
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest import TestCase
+from unittest.mock import patch
+import warehouse_api
+from warehouse_api import action_timing
+from test_module_boundaries import ModuleBoundaryTests, violations
+for owner in ('serialization', 'contracts'):
+    print(owner, violations('from warehouse_api import order_source', f'warehouse_api.{owner}', 'warehouse_api'))
+with TemporaryDirectory() as directory:
+    root = Path(directory)
+    (root / 'foo').mkdir()
+    (root / 'foo/bar.py').write_text('from warehouse_api.contracts import Order\n')
+    with patch.object(warehouse_api, '__file__', str(root / '__init__.py')):
+        with TestCase().assertRaises(AssertionError) as caught:
+            ModuleBoundaryTests().test_source_uses_only_allowed_public_dependencies()
+        print(type(caught.exception).__name__, caught.exception)
+with patch.object(action_timing, 'action_duration_s', lambda: None):
+    with TestCase().assertRaisesRegex(AssertionError, 'implementation must belong to this package'):
+        ModuleBoundaryTests().test_public_exports_use_descriptive_import_paths()
+    print('wrong export rejected')
+PYTHON
+```
+
 ## Line counts and next step
 
-With Git rename detection, code and tests against origin/main are +137/-17, or 154 changed lines.
-Without rename detection, the count is +1601/-1481, including entire moved files.
+With Git rename detection, code and tests against origin/main are +141/-17, or 158 changed lines.
+Without rename detection, the count is +1605/-1481, including entire moved files.
 Moves do not compress or rewrite algorithms. Docs are counted separately; no configuration changes.
 After submission, await user review and merge before starting the smallest increment
 in the separate allocation module.
