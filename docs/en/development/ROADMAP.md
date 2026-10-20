@@ -5,10 +5,10 @@
 <!-- doc-sync: roadmap / 2026-10-20-r17 -->
 
 Status: the user merged PR #9; remote baseline `04d4cda` is confirmed.
-This increment on `feat/native-tapf-comparison` completes a real assignment/CBS/CBS-TA comparison, pending review submission.
+This increment on `feat/native-tapf-comparison` completes a real assignment/CBS/CBS-TA comparison, [PR #10](https://github.com/Requora/TAPF_MAPF_TPG/pull/10) awaits review.
 Two assignments with independent distance 6 have CBS total costs 6 and 8; CBS-TA returns 6.
 The local assignment solver selected the cost-8 tie; enumerating both avoids dependence on tie order.
-86 source tests pass, including real MAWPF/WinkTPG and CBS-TA; without binaries, 82 tests pass and four skip.
+86 source and clean installed-wheel tests pass, and remote CI 39379639913 passes all jobs, including real MAWPF/WinkTPG and CBS-TA; without binaries, 82 tests pass and four skip.
 The warehouse order-to-TPG chain still supports only one robot/shelf on an eastbound unit lane, with default action starts at 2.0/5.2/8.4 s and completion at 8.7 s.
 This increment only extends the process utility with optional cwd; it adds no warehouse planning API or dependencies and does not complete the joint warehouse pipeline; the 500-line limit applies.
 Multi-robot warehouse integration, joint API adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.

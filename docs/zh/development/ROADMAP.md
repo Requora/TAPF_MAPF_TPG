@@ -5,10 +5,10 @@
 <!-- doc-sync: roadmap / 2026-10-20-r17 -->
 
 状态: PR #9 已由用户合并, 已确认远端基线 `04d4cda`.
-本轮在 `feat/native-tapf-comparison` 完成真实目标分配/CBS/CBS-TA 对照实验, 等待提交 review.
+本轮在 `feat/native-tapf-comparison` 完成真实目标分配/CBS/CBS-TA 对照实验, [PR #10](https://github.com/Requora/TAPF_MAPF_TPG/pull/10) 等待 review.
 两种独立距离为 6 的分配, CBS 总代价分别为 6 和 8; CBS-TA 为 6.
 本地分配器选中的平局方案为 8; 枚举两种分配避免结论依赖平局顺序.
-86 项源码测试已通过, 包含真实 MAWPF/WinkTPG 与 CBS-TA; 未配置二进制时为 82 项通过, 4 项跳过.
+源码和干净安装包各 86 项测试已通过, 远端 CI 39379639913 全部通过, 包含真实 MAWPF/WinkTPG 与 CBS-TA; 未配置二进制时为 82 项通过, 4 项跳过.
 仓库订单到 TPG 链仍限于一车一架向东单位车道, 默认动作开始于 2.0/5.2/8.4 s, 8.7 s 完成.
 本轮仅扩展进程工具的可选 cwd 参数, 没有新增仓库规划 API 或依赖, 不是联合仓库流水线完成; 继续遵守 500 行限制.
 多机器人仓库集成, 联合 API 适配, 连续碰撞/停车验证, Runtime 和执行仍未完成.

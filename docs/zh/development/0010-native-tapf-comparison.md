@@ -7,7 +7,7 @@
 ## 范围与来源
 
 已确认 PR #9 由用户合并, 远端基线为 `04d4cda44f3ad9a78bed2f53946c5524702239c6`.
-本轮分支 `feat/native-tapf-comparison`, 实现验证基线 `b2a3f77`. PR 链接待创建后补齐.
+本轮分支 `feat/native-tapf-comparison`, 实现验证基线 `b2a3f77`. [PR #10](https://github.com/Requora/TAPF_MAPF_TPG/pull/10) 已提交, 等待 review.
 状态为真实上游目标分配实验已验证, 不是仓库联合流水线已实现.
 仓库规划 API, DTO, 依赖图和单车道支持范围不变. 进程工具增加可选 cwd 参数以隔离原生辅助文件. 本轮继续遵守 500 行限制.
 
@@ -71,7 +71,7 @@ PYTHONPATH=src:tests python -m tapf.replay /tmp/warehouse-tapf-pinned \
 本地结果: 6/8/6, 4 次退出码均为 0, 86 项源码测试通过.
 没有原生二进制时共运行 86 项, 其中 82 项通过, 4 项跳过; 普通测试不要求 PyYAML.
 CI 新增独立原生实验 job, 纳入 CI gate 并上传完整证据目录.
-桌面和手机重放检查通过: tick 2 的真实会车口位置, 三个面板, 单步按钮, 键盘及无溢出. 进展网页 check.py 检查通过, 两种页面的桌面/手机截图已检查. 干净源码构建的 wheel 在 Python 3.14 隔离模式中通过 86 项测试, pip check 通过. Ruff, JavaScript 语法及 diff 检查通过. 远端 CI 结果待提交后补充.
+桌面和手机重放检查通过: tick 2 的真实会车口位置, 三个面板, 单步按钮, 键盘及无溢出. 进展网页 check.py 检查通过, 两种页面的桌面/手机截图已检查. 干净源码构建的 wheel 在 Python 3.14 隔离模式中通过 86 项测试, pip check 通过. Ruff, JavaScript 语法及 diff 检查通过. [远端 CI 39379639913](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39379639913) 全部通过, 验证 commit 为 `1d2ffe8`. 已下载 [实验 artifact 12244991832](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39379639913/artifacts/12244991832), 核对 4 次成功调用, 固定代价 6/8, 独立选择为 8, 联合为 6. Artifact SHA256: `75cda758e375efeb8ce012ed76dce1ceb67d05ee43ea5363ced02d5995479225`.
 
 ## 失败记录与边界
 
@@ -92,4 +92,10 @@ TDD Red: 新增测试先因 `tapf.replay` 尚未存在而失败. 实现后真实
 进展网页同步 PR #9 合并状态与实验边界, 联合业务连接仍为虚线.
 仓库原生适配器集成数保持为 2, 独立目标实验不冒充第三个仓库适配器.
 网页源码在本 PR 审查, 通过独立 Sites checkout 更新同一私有站点.
-发布结果, 最终行数与 PR 链接待完成后记录.
+已发布到同一[私有网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), 返回 succeeded. Sites 源码 commit 为 `254ac62db093f3759c91ec331b7843cd2982d725`, version_id 为 `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_dfdebc47895881918bb2701928b2379e`. 页面包含 PR #10 和真实实验 CI artifact 链接. 访问范围保持仅所有者; 未运行托管登录浏览器测试. 本仓库 remote 未改变.
+
+相对 `04d4cda` 的最终差异: 代码 381 (+361/-20), 文档 293 (+254/-39), 配置 52 (+51/-1). HTML/JS, 测试和注释均计入代码. 本轮无行数例外, 未加入参考包或上游代码. 提交后仅等待 review, 不自行合并或开展后续 PR.
+
+## 自动 review 核对
+
+本轮五条自动意见未发现新缺陷: compare 已在任何调用前拒绝非空目录; 子目录失败保留符合证据隔离约定; mapping 的键和值已限定为 agent0/agent1 与 goal0/goal1; 联合结果不应被强制等于独立分配, 否则本例会拒绝代价 6 的正确方案; Python -I discover 已在远端原生 job 实际通过. 双语复核由 gpt-6-luna / low 执行, 已采纳测试总数表达建议并通过再次复核.

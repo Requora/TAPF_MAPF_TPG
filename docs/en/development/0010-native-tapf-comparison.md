@@ -7,7 +7,7 @@
 ## Scope and sources
 
 PR #9 was confirmed merged by the user; the remote baseline is `04d4cda44f3ad9a78bed2f53946c5524702239c6`.
-This increment uses branch `feat/native-tapf-comparison`, with implementation evidence at `b2a3f77`. The PR link will be added after creation.
+This increment uses branch `feat/native-tapf-comparison`, with implementation evidence at `b2a3f77`. [PR #10](https://github.com/Requora/TAPF_MAPF_TPG/pull/10) is submitted and awaits review.
 Status: real upstream goal-assignment experiment verified, not a completed joint warehouse pipeline.
 Warehouse planning APIs, DTOs, dependency graph and single-lane support remain unchanged. The process utility adds an optional cwd argument to isolate native side files. The 500-line limit applies.
 
@@ -71,7 +71,7 @@ a 10 s budget per call and `seed: null` (no random generation). Errors retain th
 Local results: 6/8/6, four exit codes of 0 and 86 passing source tests.
 Without native binaries, 86 tests run in total: 82 pass and four explicitly skip; ordinary tests do not need PyYAML.
 CI adds an independent native experiment job, required by the CI gate, and uploads the complete evidence directory.
-Desktop/mobile replay checks pass: real passing-bay positions at tick 2, three panels, step buttons, keyboard and no overflow. The progress website check.py passes; desktop/mobile screenshots of both pages were inspected. A wheel built from clean source passes 86 tests in Python 3.14 isolated mode; pip check passes. Ruff, JavaScript syntax and diff checks pass. Remote CI results will be added after submission.
+Desktop/mobile replay checks pass: real passing-bay positions at tick 2, three panels, step buttons, keyboard and no overflow. The progress website check.py passes; desktop/mobile screenshots of both pages were inspected. A wheel built from clean source passes 86 tests in Python 3.14 isolated mode; pip check passes. Ruff, JavaScript syntax and diff checks pass. [Remote CI 39379639913](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39379639913) passes all jobs at `1d2ffe8`. Downloaded [experiment artifact 12244991832](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39379639913/artifacts/12244991832) confirms four successful calls, fixed costs 6/8, standalone choice 8 and joint cost 6. Artifact SHA256: `75cda758e375efeb8ce012ed76dce1ceb67d05ee43ea5363ced02d5995479225`.
 
 ## Failure record and limits
 
@@ -92,4 +92,10 @@ Only after user review and merge of this PR will the next increment design a res
 The progress website records merged PR #9 and the experiment boundary; joint workflow connections remain dashed.
 The warehouse native-adapter integration count remains 2; the isolated goal experiment is not counted as a third warehouse adapter.
 Website source is reviewed in this PR and published from a separate Sites checkout to the same private site.
-Deployment results, final line counts and the PR link will be recorded after completion.
+Published to the same [private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), with status succeeded. Sites source commit: `254ac62db093f3759c91ec331b7843cd2982d725`; version_id: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_dfdebc47895881918bb2701928b2379e`. The page links PR #10 and the real experiment CI artifact. Access remains owner-only; the hosted login flow was not browser-tested. This repository's remote is unchanged.
+
+Final diff against `04d4cda`: code 381 (+361/-20), documentation 293 (+254/-39), configuration 52 (+51/-1). HTML/JS, tests and comments count as code. No line-limit exception, reference bundle or upstream source is included. Work now waits for review without merging or starting another PR.
+
+## Automated review verification
+
+The five automated comments identified no new defect: compare rejects nonempty directories before any call; retaining failed-call subdirectories matches evidence isolation; mapping keys/values are restricted to agent0/agent1 and goal0/goal1; forcing the joint result to equal the standalone assignment would reject this case's correct cost-6 plan; Python -I discover passed in the real remote native job. Bilingual review used gpt-6-luna / low; its test-count wording suggestion was applied and the recheck passed.
