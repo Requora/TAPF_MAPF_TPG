@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r8 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r9 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
 Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -126,7 +126,7 @@ Flow: same-repository PR open or push -> PR-Agent fetches diff and project rules
 Enable only `/review`; disable automatic describe and improve to avoid extra model tasks. Set `inline_key_issues=true` and `response_language=zh-CN`.
 Call `deepseek-flash` through the OpenAI-compatible route at `https://api.deepseek.com`.
 [DeepSeek documentation](https://api-docs.deepseek.com/) states that this alias currently serves DeepSeek-V4.1-Flash-1017; the alias is not immutable.
-Prioritize speed after user feedback with low reasoning effort. Set input budget 16000 tokens, output budget 16384 tokens, and AI timeout 180 seconds.
+Prioritize speed after user feedback with low reasoning effort. Set total context budget 32768 tokens, reserving 16384 for output and leaving up to 16384 for input including prompts. Set AI timeout to 180 seconds.
 Do not retry the same model after timeout or output exhaustion, and configure no fallback model. The workflow timeout is 6 minutes; run details record actual timing and calls.
 These limits bound waiting and cost, not fixed latency or full-repository coverage. Upstream manages the diff budget and reports coverage limits when input is too large.
 
@@ -137,6 +137,8 @@ The Copilot automatic-review rule has been removed from ruleset `25432822`; othe
 
 Distinguish configuration checks from real execution. Checked configuration keys and trigger logic in the pinned upstream version; YAML parsing passes.
 After removing the custom review script and its dedicated fake-API tests, all existing 61 source and installed-wheel tests, Ruff, and diff checks pass.
+The first upstream run `39350655372` failed before the model call because 16000 was mistakenly treated as an input budget, while upstream subtracts the 16384 output reserve from it.
+Correct the total budget to 32768 per upstream token_budget.py, retaining the 16384 output reserve. That failed run did not complete a model review.
 Actual PR-Agent Chinese inline publication and timing remain to be measured and will be recorded in the PR; old-script success is not upstream integration evidence.
 
 Historical diagnosis: the first custom-script run `39348625815` refused incomplete output. The second run `39348844596`

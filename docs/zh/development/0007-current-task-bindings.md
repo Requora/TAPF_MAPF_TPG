@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r8 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r9 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -124,7 +124,7 @@ REST 请求 `copilot-pull-request-reviewer[bot]` 与 GraphQL `requestReviewsByLo
 仅启用 `/review`, 关闭自动 describe 和 improve, 不增加额外模型任务. `inline_key_issues=true`, `response_language=zh-CN`.
 通过 OpenAI 兼容路由调用 `deepseek-flash`, endpoint 为 `https://api.deepseek.com`.
 [DeepSeek 官方文档](https://api-docs.deepseek.com/)说明该别名当前由 DeepSeek-V4.1-Flash-1017 提供服务; 别名不是不可变版本.
-按用户反馈优先速度, 使用 low 推理强度. 输入预算 16000 tokens, 输出预算 16384 tokens, 单次 AI 超时 180 秒,
+按用户反馈优先速度, 使用 low 推理强度. 总上下文预算 32768 tokens, 其中输出预留 16384 tokens, 输入含提示词最多 16384 tokens. 单次 AI 超时 180 秒,
 不重试超时或耗尽输出的同一模型, 不配置备用模型. 工作流最长 6 分钟, 实际耗时和调用信息在运行详情中记录.
 这些限制控制等待和成本, 不保证固定延迟或完整仓库覆盖. 输入过大时由上游管理 diff 预算并报告覆盖限制.
 
@@ -135,6 +135,8 @@ Copilot 自动审查规则已从 ruleset `25432822` 移除, 其余分支保护�
 
 验证区分配置检查和真实运行. 已核对上游固定版本中的配置项与触发逻辑, YAML 解析通过.
 删除自写审查脚本及其专用模拟测试后, 原有 61 项源码和安装后 wheel 测试通过, Ruff 和 diff 检查通过.
+首次上游运行 `39350655372` 在模型调用前因上下文预算错误失败: 将 16000 误当输入预算, 但上游先从中扣除 16384 输出预留.
+已按上游 token_budget.py 改为总预算 32768, 保留输出预留 16384. 此次失败未完成模型审查.
 PR-Agent 的真实中文行内发布和耗时仍需实测, 结果将在 PR 中记录; 不能用旧脚本的成功代替上游集成验证.
 
 历史诊断: 自写脚本首次运行 `39348625815` 因不完整输出拒绝发布. 第二次 `39348844596`
