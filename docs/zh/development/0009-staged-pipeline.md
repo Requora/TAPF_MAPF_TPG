@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r3 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r4 -->
 
 ## 范围与状态
 
@@ -12,7 +12,7 @@
 
 [PR #9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9) 之前只完成 fixture 串联便提前提交. 用户指出后已转为草稿. 用户在收到 500 行例外请求后授权继续同一个 PR. 本次修正纳入原生实现; 后续 PR 仍遵守原限制. 未新建其他 PR, 未合并.
 
-验证源码快照为 `a1d0d03b9e1fb7ee711c8ca8b783fa9b1d0885dd`. 源码 SHA256 为 `1f8a35d1c83eedd502342d7f4d7aba3f82335b846752cea5fdf584e9267c170a`. 计算范围为 src, tests, integrations 下排序后的 `.py`, `.cpp`, `.html`, `.txt`, 排除 __pycache__; 每个相对路径和空字节后追加文件字节. 源码哈希独立标识已测试的原生实现, 不受后续文档提交影响.
+验证源码快照为 `a1d0d03b9e1fb7ee711c8ca8b783fa9b1d0885dd`. 该 CI 快照的历史 SHA256 (不是后续 review 工作树哈希) 为 `1f8a35d1c83eedd502342d7f4d7aba3f82335b846752cea5fdf584e9267c170a`. 计算范围为 src, tests, integrations 下排序后的 `.py`, `.cpp`, `.html`, `.txt`, 排除 __pycache__; 每个相对路径和空字节后追加文件字节. 源码哈希独立标识已测试的原生实现, 不受后续文档提交影响.
 
 ## 实现与决策
 
@@ -92,4 +92,20 @@ PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已�
 
 发布: Sites 返回成功, 保留仅所有者可访问的现有权限. 源码 checkout 为 `/tmp/tapf-chain-site`, 源码 commit 为 `b2bfcbaa6b79cae15f5134d3a3966a8c5b2be6fc`, 版本为 `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_5bb6b11a3b488191bef27287333d8e58`. [私有网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site). 架构页浏览器检查通过双语, 双图, 键盘, 手机布局与无 JS 错误; 已检查桌面/手机截图.
 
-相对 `576e25d` 的变更: 代码 1,193 (+1,144/-49); 文档 383 (+332/-51); 配置 58 (+57/-1). 源码与上游代码未偏离已通过的原生 CI 基线. 未 vendoring 上游或加入参考包. 下一步: 用户 review PR #9; 合并前不开展后续模块.
+相对 `576e25d` 的变更: 代码 1,193 (+1,144/-49); 文档 415 (+364/-51); 配置 58 (+57/-1). 生产源码和上游构建配置未偏离已通过的原生 CI 基线; 下述 review 跟进仅修改测试时钟. 未 vendoring 上游或加入参考包. 下一步: 用户 review PR #9; 合并前不开展后续模块.
+
+## Review 跟进, 2026-10-20
+
+已对照当前源码和固定版本上游核实七条行内意见. 本次新增一项测试修正: 截止时间测试改为 `chain(repeat(0, expired_call), repeat(10))`. 到期后额外读取时钟仍返回到期时间, 不再触发 StopIteration. 保留阶段数量与 TIMEOUT 断言. 相对 `d612355` 仅修改测试 +2/-2 行, 未改变生产行为或原生证据. 已发布架构快照仍适用.
+
+| 意见 | 处理 |
+| --- | --- |
+| [编译后截止时间](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321133366) | 不改: solve 已在编译之后, MAPF 之前检查截止时间. |
+| [路径与任务一致性](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321133367) | 4277591 已修复: 检查机器人覆盖和有序 Do 引用; 回归案例阻止进入运动阶段. |
+| [共享预算时钟](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321133372) | 4277591 已改为无限 count(). |
+| [截止时间测试时钟](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321153328) | 本次改为无限到期尾段. |
+| [原生负预算](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321287871) | 不改: run_native 在启动任何进程前返回 TIMEOUT. |
+| [零速到零速运动](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321287874) | 不改: 上游定义跨一格加速/减速; 删除中点会破坏精确插值. |
+| [零需求/库存](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321287876) | 不改: 零需求是非法输入; 正需求且零库存是不可行. 两种失败码有意区分. |
+
+验证: `PYTHONPATH=src:tests python3 -m unittest planning.test_staged -v` 的 9 项测试全部通过. Ruff 和 diff 检查通过. 直接检查确认预算 0/-1 返回 TIMEOUT, 不启动不存在的可执行文件且不创建文件; 零库存为 NO_PLAN, 零需求为 BAD_INPUT. 原生范围, 连续安全边界, PR 状态及网页证据基线不变.

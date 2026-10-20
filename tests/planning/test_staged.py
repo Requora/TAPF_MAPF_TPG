@@ -1,7 +1,7 @@
 """Trace stage boundaries, failures, deadlines, and candidate immutability."""
 import copy
 from dataclasses import replace
-from itertools import count
+from itertools import chain, count, repeat
 import unittest
 from unittest.mock import Mock, patch
 
@@ -67,7 +67,7 @@ class StagedPipelineTests(unittest.TestCase):
         for expired_call in range(1, 6):
             with self.subTest(expired_call=expired_call):
                 _, request, pipeline, trace = scenario()
-                times = [0] * expired_call + [10]
+                times = chain(repeat(0, expired_call), repeat(10))
                 with patch("warehouse_api.planning._staged.monotonic", side_effect=times):
                     result = pipeline.solve(request)
                 self.assertEqual(result.code, "TIMEOUT")

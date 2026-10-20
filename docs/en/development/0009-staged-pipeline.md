@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r3 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r4 -->
 
 ## Scope and status
 
@@ -12,7 +12,7 @@ Supported scope is one robot, one grounded shelf, one demand/stock row, and an e
 
 [PR #9](https://github.com/Requora/TAPF_MAPF_TPG/pull/9) was submitted prematurely with fixture wiring only. After the user's correction, it was converted to draft. The user authorized continuing this same PR after the 500-line exception request. The native implementation is now included in this correction; no limit exception is implied for later PRs. No additional PR or merge was made.
 
-Validation source snapshot: `a1d0d03b9e1fb7ee711c8ca8b783fa9b1d0885dd`. Source SHA256 is `1f8a35d1c83eedd502342d7f4d7aba3f82335b846752cea5fdf584e9267c170a`, computed over sorted `.py`, `.cpp`, `.html`, and `.txt` files under src, tests, integrations, excluding __pycache__, with each relative path and a null byte before its bytes. The source hash identifies the tested native implementation independently of later documentation commits.
+Validation source snapshot: `a1d0d03b9e1fb7ee711c8ca8b783fa9b1d0885dd`. The historical SHA256 of that CI snapshot, not the later review working tree, is `1f8a35d1c83eedd502342d7f4d7aba3f82335b846752cea5fdf584e9267c170a`, computed over sorted `.py`, `.cpp`, `.html`, and `.txt` files under src, tests, integrations, excluding __pycache__, with each relative path and a null byte before its bytes. The source hash identifies the tested native implementation independently of later documentation commits.
 
 ## Implementation and decisions
 
@@ -92,4 +92,20 @@ PR #9 is ready for review after successful remote native CI; it is not merged. T
 
 Publication: Sites succeeded with the existing owner-only access. Source checkout `/tmp/tapf-chain-site`, source commit `b2bfcbaa6b79cae15f5134d3a3966a8c5b2be6fc`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_5bb6b11a3b488191bef27287333d8e58`. [Private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en). Dashboard browser checks passed both languages, both diagrams, keyboard operation, mobile layout, and no JS errors; desktop/mobile screenshots were inspected.
 
-Diff against `576e25d`: code 1,193 (+1,144/-49); docs 383 (+332/-51); config 58 (+57/-1). Source and upstream code are unchanged since the passing native CI baseline. No upstream vendoring or reference-bundle addition. Next: user review of PR #9; no further module work before merge.
+Diff against `576e25d`: code 1,193 (+1,144/-49); docs 415 (+364/-51); config 58 (+57/-1). Production source and upstream build configuration are unchanged since the passing native CI baseline; the review follow-up below only changes a test clock. No upstream vendoring or reference-bundle addition. Next: user review of PR #9; no further module work before merge.
+
+## Review follow-up, 2026-10-20
+
+Seven inline comments were checked against the current source and pinned upstream. One new test correction: the deadline test now uses `chain(repeat(0, expired_call), repeat(10))`. After expiry, extra clock reads stay expired instead of raising StopIteration. Stage-count and TIMEOUT assertions remain. This is +2/-2 test lines relative to `d612355`, with no production behavior or native evidence change. The published architecture snapshot remains applicable.
+
+| Comment | Decision |
+| --- | --- |
+| [Compiler deadline](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321133366) | No change: solve checks the deadline after compilation, before MAPF. |
+| [Path/job identity](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321133367) | Already fixed in 4277591: robot coverage and ordered Do references are checked; regression cases block motion. |
+| [Shared-budget clock](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321133372) | Already fixed in 4277591 with unbounded count(). |
+| [Deadline-test clock](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321153328) | Fixed in this follow-up with an unbounded expired tail. |
+| [Native negative budget](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321287871) | No change: run_native returns TIMEOUT before launching any process. |
+| [Zero-to-zero motion](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321287874) | No change: upstream defines one-cell acceleration/deceleration; removing the midpoint breaks exact interpolation. |
+| [Zero demand/stock](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321287876) | No change: zero demand is invalid input; positive demand with zero stock is infeasible. The failure codes intentionally differ. |
+
+Validation: `PYTHONPATH=src:tests python3 -m unittest planning.test_staged -v` passed all 9 tests. Ruff and diff checks passed. Direct checks confirmed budgets 0/-1 return TIMEOUT without launching a nonexistent executable or creating files; zero stock returns NO_PLAN and zero demand returns BAD_INPUT. Native scope, continuous safety limits, PR status, and website evidence baseline remain unchanged.
