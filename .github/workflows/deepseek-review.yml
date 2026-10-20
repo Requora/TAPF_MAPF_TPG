@@ -116,8 +116,6 @@ jobs:
                                 "finish_reason": choice["finish_reason"], "content_chars": len(content or "")}))
               if choice["finish_reason"] != "stop" or not content or not content.strip():
                   raise ValueError("DeepSeek returned incomplete or empty review; nothing published")
-              if len(content) > 50000:
-                  raise ValueError("Review exceeds publication size limit")
               latest = api(pull, token)
               if (latest["state"] != "open" or latest["head"]["sha"] != head
                       or latest["base"]["sha"] != base):
@@ -126,9 +124,12 @@ jobs:
               body = (f"{marker}\nDeepSeek review ({model})\n\n"
                       f"Commit: `{head}`. [Execution log]({run}).\n\n"
                       "Scope: GitHub text patches and base AGENTS.md/contracts; no tests executed.\n\n"
-                      + content.replace("@", "＠"))
+                      + content)
               if omitted:
                   body += "\n\nFiles without patches: " + json.dumps(omitted, ensure_ascii=True)
+              body = body.replace("@", "＠")
+              if len(body) > 50000:
+                  raise ValueError("Review exceeds publication size limit")
               published = api(f"{pull}/reviews", token, {
                   "commit_id": head, "event": "COMMENT", "body": body,
               })

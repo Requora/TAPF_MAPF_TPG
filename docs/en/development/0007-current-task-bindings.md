@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r5 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r6 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
 Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -123,20 +123,27 @@ These contributors are within the credential trust boundary; skipping forks does
 Check head/base and open state before and after the request. Never publish stale output; skip an existing bot review for the same head/base/model.
 Missing keys, inputs above 160000 characters, and empty or truncated output fail explicitly. List files without patches as omissions.
 Review only GitHub text patches and the two base files; do not claim full repository analysis or executed tests.
-Published output includes the commit and run link, and replaces @ characters to prevent model-generated mention notifications.
+Published output includes the commit and run link; replace @ characters throughout the final body to prevent mentions and check its 50000-character limit before publication.
 
-Five new fake-API tests cover COMMENT commit binding, missing-key/fork rejection, stale/truncated output rejection,
-duplicate-run skipping, and missing files/oversized input rejection.
-All 66 source tests and Ruff pass; embedded workflow Python separately passes compilation and Ruff.
+Six new fake-API tests cover COMMENT commit binding, missing-key/fork rejection, stale/truncated output rejection,
+duplicate-run skipping, missing files/oversized input rejection, omitted-filename mention handling, and the final body limit.
+All 67 source tests and Ruff pass; embedded workflow Python separately passes compilation and Ruff.
 These tests do not replace a real DeepSeek call. Record actual run results in the PR.
 The first real run `39348625815` received an incomplete or empty response and refused publication. Raise the output budget
 from 8192 to 16384 and log model, usage, finish_reason, and content length; record subsequent results in the PR.
 The second run `39348844596` confirmed finish_reason=length: all 16384 completion tokens were reasoning, with zero content characters.
 Set the budget to the thinking-mode default of 65536 from the [API documentation](https://api-docs.deepseek.com/api/create-chat-completion/), retaining high reasoning effort.
+The third run [39349073708](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39349073708) successfully published
+[a real review](https://github.com/Requora/TAPF_MAPF_TPG/pull/7#pullrequestreview-5579478108) attached to `d24384f`.
+Response model=deepseek-flash, finish_reason=stop, prompt_tokens=24273, completion_tokens=57196,
+including reasoning_tokens=56754, with 963 content characters. This verifies the real API and GitHub publication path.
+The review reported three issues. Retain the documented repository-writer credential trust boundary; do not claim isolation from malicious repository writers.
+Fix the other two: replace @ throughout the complete body, including omitted filenames, and check its final length so appended content cannot exceed the publication limit.
+Add fake-API regression coverage for these failure scenarios; record remote CI and review results for the fix commit in the PR.
 The initial local lookup found no node, so the implementation uses standard-library Python without new runtime dependencies.
 
 ## Line counts and next step
 
-Against main: code and workflow changes total +439/-9, including tests and the entire YAML; embedded code is not exempted as configuration. Documentation is counted separately.
+Against main: code and workflow changes total +453/-9, including tests and the entire YAML; embedded code is not exempted as configuration. Documentation is counted separately.
 Wait for user review and merge. Then pursue the smallest stage 5 allocation increment with stock/demand feasibility,
 while continuing to defer reassignment and multi-task queues.

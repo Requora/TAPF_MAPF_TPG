@@ -50,12 +50,25 @@ class DeepSeekReviewTests(unittest.TestCase):
         return copy.deepcopy(self.pr)
 
     def test_complete_review_is_attached_to_head_without_approval(self):
+        self.files.append({'filename': '@team/binary.bin', 'status': 'added'})
+        self.pr['changed_files'] = 2
         self.ns['review'](self.event, self.env)
         self.assertEqual(len(self.published), 1)
         self.assertEqual(self.published[0]['commit_id'], 'head')
         self.assertEqual(self.published[0]['event'], 'COMMENT')
         self.assertNotIn('@someone', self.published[0]['body'])
+        self.assertNotIn('@team', self.published[0]['body'])
+        self.assertIn('＠team/binary.bin', self.published[0]['body'])
         self.assertIn('no tests executed', self.published[0]['body'])
+
+    def test_final_body_limit_includes_omitted_files(self):
+        self.files.append({'filename': 'x' * 30000, 'status': 'added'})
+        self.pr['changed_files'] = 2
+        self.result['choices'][0]['message']['content'] = 'y' * 30000
+        with self.assertRaisesRegex(ValueError, 'publication size limit'):
+            self.ns['review'](self.event, self.env)
+        self.assertTrue(any('/chat/completions' in url for url in self.calls))
+        self.assertEqual(self.published, [])
 
     def test_missing_key_and_fork_fail_before_any_api_call(self):
         for env, event in (({**self.env, 'DEEPSEEK_API_KEY': ''}, self.event),

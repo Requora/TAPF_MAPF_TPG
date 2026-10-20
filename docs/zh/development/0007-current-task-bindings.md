@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r5 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r6 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -121,20 +121,27 @@ PR 工作流本身仍可由具有仓库写权限的人修改, 且可读取注入
 每次请求前后核对 head/base 和打开状态. 过期结果不发布; 相同 head/base/model 已有机器人 review 时跳过.
 缺少 Key, 超过 160000 字符输入, 输出为空或截断均明确失败. 无 patch 的文件列为遗漏.
 仅审查 GitHub 提供的文本 patch 及两份基线文件, 不声明完整仓库分析或执行测试.
-发布内容包含 commit 和运行链接, 并替换 @ 字符以避免模型输出触发提及通知.
+发布内容包含 commit 和运行链接, 完整正文统一替换 @ 字符以避免提及通知, 并在发布前检查 50000 字符限制.
 
-新增 5 项模拟 API 测试, 验证 COMMENT 绑定 commit, 缺 Key/fork 拒绝,
-旧结果/截断拒绝, 重复运行跳过, 文件缺失/输入过大拒绝.
-源码 66 项测试和 Ruff 已通过; 嵌入工作流的 Python 单独通过编译和 Ruff 检查.
+新增 6 项模拟 API 测试, 验证 COMMENT 绑定 commit, 缺 Key/fork 拒绝,
+旧结果/截断拒绝, 重复运行跳过, 文件缺失/输入过大拒绝, 遗漏文件名提及处理和最终正文长度限制.
+源码 67 项测试和 Ruff 已通过; 嵌入工作流的 Python 单独通过编译和 Ruff 检查.
 这些测试不替代真实 DeepSeek 调用. 实际运行结果将在 PR 中记录.
 首次真实运行 `39348625815` 收到不完整或空响应并拒绝发布. 输出预算从 8192 提高至 16384,
 新增 model, usage, finish_reason 和内容长度诊断, 后续结果在 PR 中记录.
 第二次运行 `39348844596` 确认 finish_reason=length, 16384 个 completion tokens 全为 reasoning,
 正文长度为 0. 按 [API 文档](https://api-docs.deepseek.com/api/create-chat-completion/)的思考模式默认预算改为 65536, 保留 high 推理强度.
+第三次运行 [39349073708](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39349073708) 成功发布
+[真实 review](https://github.com/Requora/TAPF_MAPF_TPG/pull/7#pullrequestreview-5579478108), 绑定 `d24384f`.
+响应 model=deepseek-flash, finish_reason=stop, prompt_tokens=24273, completion_tokens=57196,
+其中 reasoning_tokens=56754, 正文 963 字符. 这验证了真实调用与 GitHub 发布链路.
+审查指出 3 项问题. 仓库写权限属于凭据信任边界的现有设计保留, 不声称隔离恶意仓库写入者.
+另外两项已修正: 对包含遗漏文件名的完整正文统一处理 @, 并检查最终正文长度, 避免额外内容导致发布失败.
+增加真实失败场景的模拟 API 回归测试; 修正提交的远端 CI 和 review 结果在 PR 中记录.
 初次本地查询发现没有 node, 因此使用标准库 Python, 未增加运行时依赖.
 
 ## 行数与下一步
 
-相对 main 的代码和工作流变更合计 +439/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
+相对 main 的代码和工作流变更合计 +453/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
 等待用户 review 和合并. 之后按阶段 5 推进库存/需求可行的最小分配增量,
 仍暂缓重分配和多任务队列.
