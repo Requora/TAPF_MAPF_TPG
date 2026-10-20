@@ -120,5 +120,5 @@ Sites 使用独立 checkout, 保留既有项目和仅所有者访问范围.
 
 [私有网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 Sites 源码 commit: `69456164737f18ac4085eef0c978c3320eea6228`.
-版本: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_f20650b374ec8191bf4832b034aa39e4`.
+版本: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_7476d6902a6081919ad00fdf3b669ed5`.
 原生发布结果为 `succeeded`; 仅所有者访问范围和主仓库 remote 不变.

@@ -121,5 +121,5 @@ keeping the same composition entry point. Do not start later PRs before merge.
 
 [Private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 Sites source commit: `69456164737f18ac4085eef0c978c3320eea6228`.
-Version: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_f20650b374ec8191bf4832b034aa39e4`.
+Version: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_7476d6902a6081919ad00fdf3b669ed5`.
 Native publication result: `succeeded`; owner-only access and the main repository remote are unchanged.
