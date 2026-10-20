@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r10 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r11 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
 Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -126,7 +126,7 @@ Flow: same-repository PR open or push -> PR-Agent fetches diff and project rules
 Enable only `/review`; disable automatic describe and improve to avoid extra model tasks. Set `inline_key_issues=true` and `response_language=zh-CN`.
 Call `deepseek-flash` through the OpenAI-compatible route at `https://api.deepseek.com`.
 [DeepSeek documentation](https://api-docs.deepseek.com/) states that this alias currently serves DeepSeek-V4.1-Flash-1017; the alias is not immutable.
-Prioritize speed after user feedback with low reasoning effort. Set total context budget 32768 tokens, reserving 16384 for output and leaving up to 16384 for input including prompts. Set AI timeout to 180 seconds.
+Prioritize speed and reliable output after user feedback with none, the non-thinking mode; the model remains Flash 1017. Set total context budget 32768 tokens, reserving 16384 for output and leaving up to 16384 for input including prompts. Set AI timeout to 180 seconds.
 Do not retry the same model after timeout or output exhaustion, and configure no fallback model. The workflow timeout is 6 minutes; run details record actual timing and calls.
 These limits bound waiting and cost, not fixed latency or full-repository coverage. Upstream manages the diff budget and reports coverage limits when input is too large.
 
@@ -141,6 +141,11 @@ The first upstream run `39350655372` failed before the model call because 16000 
 Correct the total budget to 32768 per upstream token_budget.py, retaining the 16384 output reserve. That failed run did not complete a model review.
 The second upstream run `39350828844` rejected EXTRA_BODY.thinking before sending the request because this version permits only specific extension fields.
 Remove the redundant thinking field. The [DeepSeek API](https://api-docs.deepseek.com/api/create-chat-completion/) confirms that `reasoning_effort=low` itself enables thinking; no extra switch is required.
+The third upstream run `39351061754` still returned EmptyTruncatedResponseError with low effort and finish_reason=length; no review was published.
+Offline HTTP interception with the same LiteLLM 1.105.0 confirms that openai/deepseek-flash routes to api.deepseek.com/chat/completions,
+with actual model=deepseek-flash, reasoning_effort=low, and max_tokens=16384. The openai/ prefix selects a protocol route, not the model provider.
+The native deepseek/ route converts low to thinking.enabled and discards the specific effort, so retain the compatible route.
+Switched to reasoning_effort=none and verified its transmission offline; this disables thinking to reduce waiting, without claiming equal review depth to thinking mode.
 Actual PR-Agent Chinese inline publication and timing remain to be measured and will be recorded in the PR; old-script success is not upstream integration evidence.
 
 Historical diagnosis: the first custom-script run `39348625815` refused incomplete output. The second run `39348844596`
@@ -154,6 +159,6 @@ These records describe the old implementation, not current PR-Agent performance 
 
 ## Line counts and next step
 
-Against main: code and workflow changes total +270/-9, including tests and the entire YAML; embedded code is not exempted as configuration. Documentation is counted separately.
+Against main: code and workflow changes total +271/-9, including tests and the entire YAML; embedded code is not exempted as configuration. Documentation is counted separately.
 Wait for user review and merge. Then pursue the smallest stage 5 allocation increment with stock/demand feasibility,
 while continuing to defer reassignment and multi-task queues.

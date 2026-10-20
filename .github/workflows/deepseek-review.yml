@@ -24,10 +24,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           OPENAI_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           OPENAI.API_BASE: https://api.deepseek.com
+          # openai/ selects the compatible protocol; the endpoint is DeepSeek.
           CONFIG.MODEL: openai/deepseek-flash
           CONFIG.FALLBACK_MODELS: '[]'
           CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek-flash"]'
-          CONFIG.REASONING_EFFORT: low
+          CONFIG.REASONING_EFFORT: none
           CONFIG.RESPONSE_LANGUAGE: zh-CN
           CONFIG.CUSTOM_MODEL_MAX_TOKENS: '32768'
           CONFIG.MAX_MODEL_TOKENS: '32768'

@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r10 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r11 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -124,7 +124,7 @@ REST 请求 `copilot-pull-request-reviewer[bot]` 与 GraphQL `requestReviewsByLo
 仅启用 `/review`, 关闭自动 describe 和 improve, 不增加额外模型任务. `inline_key_issues=true`, `response_language=zh-CN`.
 通过 OpenAI 兼容路由调用 `deepseek-flash`, endpoint 为 `https://api.deepseek.com`.
 [DeepSeek 官方文档](https://api-docs.deepseek.com/)说明该别名当前由 DeepSeek-V4.1-Flash-1017 提供服务; 别名不是不可变版本.
-按用户反馈优先速度, 使用 low 推理强度. 总上下文预算 32768 tokens, 其中输出预留 16384 tokens, 输入含提示词最多 16384 tokens. 单次 AI 超时 180 秒,
+按用户反馈优先速度和稳定输出, 使用 none 非思考模式, 模型仍为 Flash 1017. 总上下文预算 32768 tokens, 其中输出预留 16384 tokens, 输入含提示词最多 16384 tokens. 单次 AI 超时 180 秒,
 不重试超时或耗尽输出的同一模型, 不配置备用模型. 工作流最长 6 分钟, 实际耗时和调用信息在运行详情中记录.
 这些限制控制等待和成本, 不保证固定延迟或完整仓库覆盖. 输入过大时由上游管理 diff 预算并报告覆盖限制.
 
@@ -139,6 +139,11 @@ Copilot 自动审查规则已从 ruleset `25432822` 移除, 其余分支保护�
 已按上游 token_budget.py 改为总预算 32768, 保留输出预留 16384. 此次失败未完成模型审查.
 第二次上游运行 `39350828844` 在请求发送前拒绝 EXTRA_BODY.thinking, 因该版本只允许指定扩展字段.
 已移除冗余 thinking 字段. [DeepSeek API](https://api-docs.deepseek.com/api/create-chat-completion/)确认 `reasoning_effort=low` 本身启用思考模式, 无需额外开关.
+第三次上游运行 `39351061754` 使用 low 后仍返回 EmptyTruncatedResponseError, finish_reason=length, 未发布审查.
+在相同 LiteLLM 1.105.0 上离线拦截 HTTP 请求确认: openai/deepseek-flash 路由发往 api.deepseek.com/chat/completions,
+实际 model=deepseek-flash, reasoning_effort=low, max_tokens=16384. openai/ 是协议路由, 不是模型提供商.
+原生 deepseek/ 路由会将 low 转为 thinking.enabled 并丢掉具体强度, 因此保留兼容路由.
+改为 reasoning_effort=none, 离线确认该值正确发送; 此设置关闭思考以减少等待, 不代表与思考模式具有相同审查深度.
 PR-Agent 的真实中文行内发布和耗时仍需实测, 结果将在 PR 中记录; 不能用旧脚本的成功代替上游集成验证.
 
 历史诊断: 自写脚本首次运行 `39348625815` 因不完整输出拒绝发布. 第二次 `39348844596`
@@ -152,6 +157,6 @@ reasoning_tokens=56754. 过大的输入和 high 推理预算导致等待较长, 
 
 ## 行数与下一步
 
-相对 main 的代码和工作流变更合计 +270/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
+相对 main 的代码和工作流变更合计 +271/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
 等待用户 review 和合并. 之后按阶段 5 推进库存/需求可行的最小分配增量,
 仍暂缓重分配和多任务队列.
