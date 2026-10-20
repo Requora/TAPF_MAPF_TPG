@@ -108,10 +108,12 @@ jobs:
                       {"role": "user", "content": prompt},
                   ],
                   "thinking": {"type": "enabled"},
-                  "reasoning_effort": "high", "max_tokens": 8192, "stream": False,
+                  "reasoning_effort": "high", "max_tokens": 16384, "stream": False,
               })
               choice = result["choices"][0]
               content = choice["message"]["content"]
+              print(json.dumps({"model": result["model"], "usage": result.get("usage", {}),
+                                "finish_reason": choice["finish_reason"], "content_chars": len(content or "")}))
               if choice["finish_reason"] != "stop" or not content or not content.strip():
                   raise ValueError("DeepSeek returned incomplete or empty review; nothing published")
               if len(content) > 50000:

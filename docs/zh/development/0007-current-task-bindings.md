@@ -109,7 +109,7 @@ REST 请求 `copilot-pull-request-reviewer[bot]` 与 GraphQL `requestReviewsByLo
 
 用户要求将自动 code review 改为 DeepSeek V4.1 Flash 1017.
 [官方 API 文档](https://api-docs.deepseek.com/)指定当前调用名为 `deepseek-flash`,
-由 DeepSeek-V4.1-Flash-1017 提供服务. 使用高推理强度, 最多输出 8192 tokens.
+由 DeepSeek-V4.1-Flash-1017 提供服务. 使用高推理强度, 最多输出 16384 tokens.
 模型调用名是供应商别名, 不是本仓库固定的不可变版本; 日志记录响应 model 和 usage.
 Key 仅存入 Actions Secret `DEEPSEEK_API_KEY`, 不进入源码或模型输入.
 已从 ruleset `25432822` 移除 Copilot 自动审查规则; 其余分支保护保持不变.
@@ -127,10 +127,12 @@ PR 工作流本身仍可由具有仓库写权限的人修改, 且可读取注入
 旧结果/截断拒绝, 重复运行跳过, 文件缺失/输入过大拒绝.
 源码 66 项测试和 Ruff 已通过; 嵌入工作流的 Python 单独通过编译和 Ruff 检查.
 这些测试不替代真实 DeepSeek 调用. 实际运行结果将在 PR 中记录.
+首次真实运行 `39348625815` 收到不完整或空响应并拒绝发布. 输出预算从 8192 提高至 16384,
+新增 model, usage, finish_reason 和内容长度诊断, 后续结果在 PR 中记录.
 初次本地查询发现没有 node, 因此使用标准库 Python, 未增加运行时依赖.
 
 ## 行数与下一步
 
-相对 main 的代码和工作流变更合计 +437/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
+相对 main 的代码和工作流变更合计 +439/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
 等待用户 review 和合并. 之后按阶段 5 推进库存/需求可行的最小分配增量,
 仍暂缓重分配和多任务队列.

@@ -111,7 +111,7 @@ Automatic review recovery remains unverified; quota or successful responses alon
 
 The user requested switching automatic code review to DeepSeek V4.1 Flash 1017.
 The [official API documentation](https://api-docs.deepseek.com/) specifies the current call name `deepseek-flash`,
-served by DeepSeek-V4.1-Flash-1017. Use high reasoning effort and at most 8192 output tokens.
+served by DeepSeek-V4.1-Flash-1017. Use high reasoning effort and at most 16384 output tokens.
 The model name is a provider alias, not an immutable version pinned by this repository; log the response model and usage.
 Store the key only in Actions Secret `DEEPSEEK_API_KEY`, never in source or model input.
 Removed the Copilot automatic-review rule from ruleset `25432822`; other branch protections remain unchanged.
@@ -129,10 +129,12 @@ Five new fake-API tests cover COMMENT commit binding, missing-key/fork rejection
 duplicate-run skipping, and missing files/oversized input rejection.
 All 66 source tests and Ruff pass; embedded workflow Python separately passes compilation and Ruff.
 These tests do not replace a real DeepSeek call. Record actual run results in the PR.
+The first real run `39348625815` received an incomplete or empty response and refused publication. Raise the output budget
+from 8192 to 16384 and log model, usage, finish_reason, and content length; record subsequent results in the PR.
 The initial local lookup found no node, so the implementation uses standard-library Python without new runtime dependencies.
 
 ## Line counts and next step
 
-Against main: code and workflow changes total +437/-9, including tests and the entire YAML; embedded code is not exempted as configuration. Documentation is counted separately.
+Against main: code and workflow changes total +439/-9, including tests and the entire YAML; embedded code is not exempted as configuration. Documentation is counted separately.
 Wait for user review and merge. Then pursue the smallest stage 5 allocation increment with stock/demand feasibility,
 while continuing to defer reassignment and multi-task queues.
