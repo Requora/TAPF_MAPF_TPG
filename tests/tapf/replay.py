@@ -25,13 +25,15 @@ def scenario() -> dict:
     }
 
 
-# 中文: invoke 运行一个原生程序并读取 YAML 输出, 复用进程证据和超时边界以避免接受旧结果.
-# English: invoke runs one native executable and reads YAML output, reusing process evidence and timeouts to avoid stale results.
+# 中文: invoke 在独立目录运行原生程序并读取 YAML 输出, 保留辅助文件, 复用进程证据和超时边界以避免接受旧结果.
+# English: invoke runs a native executable in its own directory and reads YAML output, retaining side files and reusing process evidence and timeouts to avoid stale results.
 def invoke(binary: Path, source: Path, output: Path, budget_s: float) -> dict:
     import yaml  # Optional research dependency; normal package tests do not need PyYAML.
 
     command = [str(binary.resolve()), "-i", str(source.resolve()), "-o", str(output.resolve())]
-    failure = run_native(command, output, budget_s=budget_s, request_id=output.stem)
+    working_directory = output.parent / output.stem
+    working_directory.mkdir()
+    failure = run_native(command, output, budget_s=budget_s, request_id=output.stem, cwd=working_directory)
     if failure is not None:
         raise RuntimeError(f"{failure.code}: {failure.message}")
     return yaml.safe_load(output.read_text())

@@ -14,14 +14,17 @@ from warehouse_api.contracts import Failure
 # English: run_native executes a compiled upstream bridge within the remaining wall-clock budget, removes
 # stale output and retains the command, stdout, stderr and exit details so calls are traceable and
 # expired output cannot become a new plan.
-def run_native(command: list[str], output: Path, *, budget_s: float, request_id: str) -> Failure | None:
+# 中文: 可选 cwd 指定子进程工作目录, 将上游辅助输出限制在证据目录内, 不改变调用者目录.
+# English: Optional cwd selects the child working directory to contain upstream side files without changing the caller's directory.
+def run_native(command: list[str], output: Path, *, budget_s: float, request_id: str,
+               cwd: Path | None = None) -> Failure | None:
     if budget_s <= 0:
         return Failure("TIMEOUT", "Native process budget exhausted", (request_id,))
     output.unlink(missing_ok=True)
     started = monotonic()
     with output.with_suffix(".stdout").open("w") as stdout, output.with_suffix(".stderr").open("w") as stderr:
         try:
-            result = subprocess.run(command, stdout=stdout, stderr=stderr, timeout=budget_s)
+            result = subprocess.run(command, stdout=stdout, stderr=stderr, timeout=budget_s, cwd=cwd)
         except subprocess.TimeoutExpired:
             code = None
         else:
@@ -30,6 +33,7 @@ def run_native(command: list[str], output: Path, *, budget_s: float, request_id:
     output.with_suffix(".run.json").write_text(json.dumps({
         "request_id": request_id, "command": command, "budget_s": budget_s,
         "elapsed_s": elapsed, "exit_code": code, "timed_out": code is None,
+        "cwd": str((cwd or Path.cwd()).resolve()),
     }, indent=2))
     if code is None or elapsed > budget_s:
         return Failure("TIMEOUT", "Native process exceeded budget; result discarded", (request_id,))

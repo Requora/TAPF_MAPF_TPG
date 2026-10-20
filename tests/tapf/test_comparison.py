@@ -93,4 +93,5 @@ class NativeComparisonTests(unittest.TestCase):
             records = list(Path(directory).glob("*.run.json"))
             self.assertEqual(len(records), 4)
             self.assertTrue(all(json.loads(path.read_text())["exit_code"] == 0 for path in records))
+            self.assertTrue((Path(directory) / "joint" / "searchGraph.dot").is_file())
             self.assertEqual(json.loads((Path(directory) / "comparison.json").read_text()), result)
