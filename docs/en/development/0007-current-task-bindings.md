@@ -138,8 +138,8 @@ The third run [39349073708](https://github.com/Requora/TAPF_MAPF_TPG/actions/run
 Response model=deepseek-flash, finish_reason=stop, prompt_tokens=24273, completion_tokens=57196,
 including reasoning_tokens=56754, with 963 content characters. This verifies the real API and GitHub publication path.
 The review reported three issues. Retain the documented repository-writer credential trust boundary; do not claim isolation from malicious repository writers.
-Fix the other two: replace @ throughout the complete body, including omitted filenames, and check its final length so appended content cannot exceed the publication limit.
-Add fake-API regression coverage for these failure scenarios; record remote CI and review results for the fix commit in the PR.
+The other two issues are fixed: the workflow replaces @ throughout the complete body, including omitted filenames, and checks its final length so appended content cannot exceed the publication limit.
+Fake-API regression coverage for these failure scenarios is added and passes; remote CI and review results for the fix commit will be recorded in the PR.
 The initial local lookup found no node, so the implementation uses standard-library Python without new runtime dependencies.
 
 ## Line counts and next step
