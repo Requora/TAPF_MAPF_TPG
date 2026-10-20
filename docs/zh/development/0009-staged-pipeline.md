@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r8 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r9 -->
 
 ## 范围与状态
 
@@ -127,3 +127,13 @@ PR #9 在远端原生 CI 通过后进入待 review 状态; 未合并. 用户已�
 验证: 两个原生桥接重新构建成功; 使用重建二进制运行上述 unittest 命令, 79 项全部通过. Ruff, 两个 JavaScript 脚本的 `node --check` 和 `git diff --check` 通过. 文档 subagent 已核对双语含义和接口/实现边界. 已发布网页的内容, 交互和证据状态未变, 本次无需重新发布. 这些检查不扩大此前声明的规划或安全验证范围.
 
 补注释后, PR 相对 `576e25d` 的总变更为: 代码 2,104 (+2,055/-49), 文档 453 (+402/-51), 配置 58 (+57/-1). 本轮继续使用用户已授权的 PR #9 行数例外, 不扩大功能范围.
+
+## 注释可读性 review, 2026-10-20
+
+本轮处理用户新增的四条意见: [一车一架子集](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321797946), [公共路径](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321824388), [逐个编译目标](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321829109), [缺少主语](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321859405). 四条意见均成立. 本轮重写分配器和 MAPF 适配器的类, 方法及排序回调说明, 明确输入, 输出, 执行动作的主体和设计原因.
+
+分配器说明现在明确: 它只接受一台机器人, 一个货架和一条商品需求, 并生成搬运, 工作站服务和归还任务. MAPF 说明现在明确: PathRequest 是模块间的请求类型; plan 读取已经编译好的动作, 逐段规划到动作目标节点的路线. Move 表示沿地图边移动, Do 表示执行原任务步骤. 本轮删除了容易误解为访问权限的“公共路径”说法, 并解释上游格子序号如何对应地图节点 ID.
+
+AGENTS.md 新增要求: 中英文注释必须有明确主语, 并在附近解释所用名词, 缩写和项目术语的含义及作用. 本轮将规则应用于上述被 review 的两个文件, 未声称已按新规则重审全仓库.
+
+相对 `5a21fb8`, 两个代码文件的原始变更为 82 行 (+58/-24), 内容仅为注释和模块 docstring; 去除模块 docstring 后的 Python AST 完全相同. 本轮没有行为修改, 因此没有添加人为失败测试. 使用真实原生二进制的 79 项测试全部通过, Ruff 和 diff 检查通过. 支持范围, 网页证据快照及 PR 待 review 状态不变, 无需重新发布网页.

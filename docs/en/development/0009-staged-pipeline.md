@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0009-staged-pipeline.md) | [English](../../en/development/0009-staged-pipeline.md)
 
-<!-- doc-sync: staged-pipeline / 2026-10-20-r8 -->
+<!-- doc-sync: staged-pipeline / 2026-10-20-r9 -->
 
 ## Scope and status
 
@@ -127,3 +127,13 @@ Relative to `6f054fa`, 34 code files add only 911 comment lines, with no executa
 Validation: both native bridges rebuilt successfully; the unittest command above passed all 79 tests using the rebuilt binaries. Ruff, `node --check` for both JavaScript scripts, and `git diff --check` passed. The documentation subagent checked bilingual meaning and interface/implementation boundaries. Published website content, interaction, and evidence status are unchanged, so no republication is needed. These checks do not expand the previously stated planning or safety validation scope.
 
 After annotation, the total PR diff against `576e25d` is: code 2,104 (+2,055/-49), docs 453 (+402/-51), configuration 58 (+57/-1). This follows the user-authorized line-limit exception for PR #9 without expanding functional scope.
+
+## Comment readability review, 2026-10-20
+
+This follow-up addresses four new user comments: [one-robot/one-shelf subset](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321797946), [public paths](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321824388), [successive compiled targets](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321829109), and [missing subjects](https://github.com/Requora/TAPF_MAPF_TPG/pull/9#discussion_r4321859405). All four comments are valid. The allocator and MAPF adapter now have rewritten class, method and sorting-callback explanations that identify inputs, outputs, the actor performing each operation and design reasons.
+
+The allocator explanation now states that it accepts only one robot, one shelf and one item-demand row, then creates pickup, workstation-service and return tasks. The MAPF explanation identifies PathRequest as a message type between modules: plan reads already compiled actions and plans successive routes to their target nodes. Move means travel along a map edge; Do refers to execution of the original task step. The misleading phrase "public paths" is removed, and the comments explain how upstream cell indices map to node IDs.
+
+AGENTS.md now requires explicit subjects in both languages and nearby explanations of nouns, abbreviations and project terms, including their meaning and role. This follow-up applies the rule to the two reviewed files; it does not claim a repository-wide audit under the new rule.
+
+Relative to `5a21fb8`, the raw diff in two code files is 82 lines (+58/-24), consisting only of comments and module docstrings. The Python ASTs are identical after excluding module docstrings. No behavior changed, so no artificial failing tests were added. All 79 tests passed with real native binaries enabled; Ruff and diff checks passed. Supported scope, the website evidence snapshot and the PR's review status are unchanged, so no website republication is needed.
