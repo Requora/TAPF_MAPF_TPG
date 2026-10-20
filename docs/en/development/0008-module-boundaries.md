@@ -7,7 +7,7 @@
 ## Scope and sources
 
 Status: module refactoring passed fixture and installation checks; awaiting review.
-The allocation increment is paused. Branch: `refactor/module-boundaries`. PR: pending creation.
+The allocation increment is paused. Branch: `refactor/module-boundaries`. [PR #8](https://github.com/Requora/TAPF_MAPF_TPG/pull/8).
 GitHub confirmed PR #7 merged; baseline is `6dbed6cdaddb21c9ecf50644eae7ff82b76a386a`.
 Source is existing code at that baseline; API 0.7 is unchanged. No new upstream
 dependency or native integration. The user reference bundle is unchanged and excluded.
@@ -71,7 +71,7 @@ fresh temporary directory, excluding caches and egg-info. Install the wheel in a
 venv to avoid stale artifacts. The temporary paths above record this run; subsequent
 verification requires a new clean build directory and environment.
 No tests failed. Bilingual docs passed gpt-6-luna / low review, including execution
-of the replay command above. Remote CI is pending PR creation.
+of the replay command above. Remote CI was triggered by the PR; results are pending confirmation.
 
 Historical pickle compatibility, dynamic import constraints, allocation optimization,
 native solvers, Runtime commits, continuous geometry, and parking safety are unverified.

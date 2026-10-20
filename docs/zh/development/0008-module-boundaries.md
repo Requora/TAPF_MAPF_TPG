@@ -7,7 +7,7 @@
 ## 范围与来源
 
 状态: 模块重构已通过 fixture 和安装验证, 等待 review. 分配增量暂停.
-分支: `refactor/module-boundaries`. PR: 待创建.
+分支: `refactor/module-boundaries`. [PR #8](https://github.com/Requora/TAPF_MAPF_TPG/pull/8).
 GitHub 已确认 PR #7 合并, 基线为 `6dbed6cdaddb21c9ecf50644eae7ff82b76a386a`.
 来源为该基线的既有代码, API 0.7 不变; 无新增上游依赖或原生集成.
 用户参考包保持原状, 未加入 PR.
@@ -68,7 +68,7 @@ git diff --check
 排除缓存和 egg-info; 新建 venv 后安装 wheel, 避免旧产物影响验证.
 上述临时目录为本次证据路径, 重新验证时需创建新的干净构建目录和环境.
 没有测试失败. 双语文档已通过 gpt-6-luna / low 复核, 并实际重放上述命令.
-远端 CI 尚待 PR 创建后运行.
+远端 CI 已由 PR 触发, 结果待确认.
 
 尚未验证历史 pickle 兼容性, 动态导入约束, 分配优化, 原生求解器,
 Runtime 提交, 连续几何或停车安全. 本轮只重构模块边界.
