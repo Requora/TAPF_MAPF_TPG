@@ -1,14 +1,14 @@
-"""Compile accepted current tasks; candidate edits remain unsupported."""
+"""Compile current tasks and new tasks assigned to idle robots."""
 from warehouse_api import _compiler_validation as validation
 from warehouse_api.contracts import (
     AssignmentRequest, Failure, Lift, PhysicalAction, Place, Pose2, RobotJobs,
-    Serve, StepRef, TaskAction, TaskDelta, WorldModel,
+    Serve, StepRef, TaskAction, TaskDelta, TaskProgress, WorldModel,
 )
 from warehouse_api.durations import action_duration_s
 
 
 class CurrentTaskCompiler:
-    """SharedCompiler subset: one accepted Lift/Serve/Drop task per robot.
+    """SharedCompiler subset: one Lift/Serve/Drop task per robot.
 
     Contract shape and timing errors raise without interception. Semantic
     failures return Failure. This compiler does not validate executable safety.
@@ -27,6 +27,9 @@ class CurrentTaskCompiler:
         failure = validation.validate_request(self.model, request, draft)
         if failure is not None:
             return failure
+        failure = validation.validate_candidate_bindings(self.model, request, draft)
+        if failure is not None:
+            return failure
         state = request.start.join_state
         objects = {obj.id: obj for obj in self.model.objects}
         locations = {obj.object_id: obj for obj in state.objects}
@@ -35,6 +38,9 @@ class CurrentTaskCompiler:
         tasks = {progress.task.id: progress for progress in request.tasks}
         owners = {task_id: queue.robot_id for queue in request.queues
                   for task_id in queue.task_ids}
+        tasks.update((task.id, TaskProgress(task, 0, False)) for task in draft.tasks)
+        owners.update((task_id, queue.robot_id) for queue in draft.queues
+                      for task_id in queue.task_ids)
         jobs = {robot.id: RobotJobs(robot.id, ()) for robot in self.model.robots}
         claimed: set[str] = set()
         for task_id, robot_id in owners.items():

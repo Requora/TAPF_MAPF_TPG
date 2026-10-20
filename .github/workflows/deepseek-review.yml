@@ -1,0 +1,62 @@
+name: DeepSeek review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: deepseek-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: PR-Agent review with DeepSeek Flash
+        # PR-Agent 0.48.0. Pin the runtime image, not only its Action wrapper.
+        uses: docker://pragent/pr-agent@sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPENAI_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENAI.API_BASE: https://api.deepseek.com
+          # openai/ selects the compatible protocol; the endpoint is DeepSeek.
+          CONFIG.MODEL: openai/deepseek-flash
+          CONFIG.FALLBACK_MODELS: '[]'
+          CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek-flash"]'
+          CONFIG.REASONING_EFFORT: none
+          CONFIG.RESPONSE_LANGUAGE: zh-CN
+          CONFIG.CUSTOM_MODEL_MAX_TOKENS: '32768'
+          CONFIG.MAX_MODEL_TOKENS: '32768'
+          CONFIG.MAX_OUTPUT_TOKENS: '16384'
+          CONFIG.AI_TIMEOUT: '180'
+          CONFIG.NUM_RETRIES: '0'
+          CONFIG.RETRY_SAME_MODEL_ON_TIMEOUT: 'false'
+          CONFIG.RETRY_SAME_MODEL_ON_LENGTH: 'false'
+          CONFIG.USE_REPO_SETTINGS_FILE: 'false'
+          CONFIG.USE_GLOBAL_SETTINGS_FILE: 'false'
+          CONFIG.OUTPUT_RUN_DETAILS: 'true'
+          CONFIG.LOG_LEVEL: INFO
+          CONFIG.ENABLE_AUTO_APPROVAL: 'false'
+          CONFIG.RESTRICTED_MODE: 'true'
+          GITHUB_ACTION_CONFIG.AUTO_REVIEW: 'true'
+          GITHUB_ACTION_CONFIG.AUTO_DESCRIBE: 'false'
+          GITHUB_ACTION_CONFIG.AUTO_IMPROVE: 'false'
+          GITHUB_ACTION_CONFIG.HANDLE_PUSH_TRIGGER: 'true'
+          GITHUB_ACTION_CONFIG.PUSH_COMMANDS: '["/review"]'
+          GITHUB_ACTION_CONFIG.FEEDBACK_ON_DRAFT_PR: 'true'
+          GITHUB_ACTION_CONFIG.FAIL_ON_TOOL_ERRORS: 'true'
+          PR_REVIEWER.INLINE_KEY_ISSUES: 'true'
+          PR_REVIEWER.NUM_MAX_FINDINGS: '5'
+          PR_REVIEWER.REQUIRE_TICKET_ANALYSIS_REVIEW: 'false'
+          PR_REVIEWER.ENABLE_REVIEW_LABELS_SECURITY: 'false'
+          PR_REVIEWER.ENABLE_REVIEW_LABELS_EFFORT: 'false'
+          PR_REVIEWER.REVIEW_HEADING: DeepSeek 中文代码审查
+          PR_REVIEWER.EXTRA_INSTRUCTIONS: >-
+            所有审查意见使用简体中文和英文标点. 每条意见说明严重程度,
+            具体失败场景和修复建议. 只报告可操作的缺陷, 不重复已修复的问题.
+            不声称执行过测试. 项目暂不实现模拟器或原生后端.
