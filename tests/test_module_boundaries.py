@@ -10,16 +10,16 @@ import warehouse_api
 
 DEPENDENCIES = {
     "contracts": set(),
-    "codec": set(),
-    "orders": {"contracts"},
-    "durations": {"contracts"},
-    "compiler": {"contracts", "codec", "durations"},
+    "serialization": set(),
+    "order_source": {"contracts"},
+    "action_timing": {"contracts"},
+    "task_compiler": {"contracts", "serialization", "action_timing"},
 }
 EXPORTS = {
-    "codec": {"dumps", "loads", "from_data", "to_data"},
-    "orders": {"ReplayOrderSource", "generate_orders"},
-    "durations": {"action_duration_s", "action_duration_ticks"},
-    "compiler": {"CurrentTaskCompiler"},
+    "serialization": {"dumps", "loads", "from_data", "to_data"},
+    "order_source": {"ReplayOrderSource", "generate_orders"},
+    "action_timing": {"action_duration_s", "action_duration_ticks"},
+    "task_compiler": {"CurrentTaskCompiler"},
 }
 
 
@@ -76,23 +76,23 @@ class ModuleBoundaryTests(unittest.TestCase):
 
     def test_guard_rejects_private_and_reverse_dependencies(self):
         for source in (
-            "from warehouse_api.orders import ReplayOrderSource",
-            "from warehouse_api.durations._timing import action_duration_s",
-            "from warehouse_api.durations import _validation",
-            "import warehouse_api.codec._json as json_codec",
-            "from ..codec._json import dumps",
-            "from warehouse_api.codec import *",
+            "from warehouse_api.order_source import ReplayOrderSource",
+            "from warehouse_api.action_timing._timing import action_duration_s",
+            "from warehouse_api.action_timing import _validation",
+            "import warehouse_api.serialization._json as json_codec",
+            "from ..serialization._json import dumps",
+            "from warehouse_api.serialization import *",
         ):
             with self.subTest(source=source):
                 self.assertTrue(violations(
-                    source, "warehouse_api.compiler._current_task", "warehouse_api.compiler",
+                    source, "warehouse_api.task_compiler._current_task", "warehouse_api.task_compiler",
                 ))
         self.assertTrue(violations(
-            "from warehouse_api.compiler import CurrentTaskCompiler",
-            "warehouse_api.durations._timing", "warehouse_api.durations",
+            "from warehouse_api.task_compiler import CurrentTaskCompiler",
+            "warehouse_api.action_timing._timing", "warehouse_api.action_timing",
         ))
 
-    def test_public_exports_keep_existing_import_paths(self):
+    def test_public_exports_use_descriptive_import_paths(self):
         for name, exports in EXPORTS.items():
             module = import_module(f"warehouse_api.{name}")
             self.assertEqual(set(module.__all__), exports)

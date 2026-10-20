@@ -2,7 +2,7 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r11 -->
+<!-- doc-sync: readme / 2026-10-20-r12 -->
 
 依据 Warehouse API 0.7 英文规范构建模块化仓库规划系统.
 当前提供共享契约, 严格 JSON 结构 codec, 已测试的 fixture, 可重放订单源, 共用动作耗时和受限当前任务编译器.
@@ -19,7 +19,7 @@ python -I -m unittest discover -s tests -v
 
 契约包运行时只依赖 Python 标准库. 安装时使用 setuptools.
 从 `warehouse_api.contracts` 导入类型.
-使用 `warehouse_api.codec.loads(TargetType, text)` 解码, `dumps(value)` 编码.
+使用 `warehouse_api.serialization.loads(TargetType, text)` 解码, `dumps(value)` 编码.
 解码检查类型和字段; 编码转换 JSON 兼容值.
 这些操作不验证业务规则, 连续几何或安全停车.
 

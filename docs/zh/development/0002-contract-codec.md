@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0002-contract-codec.md) | [English](../../en/development/0002-contract-codec.md)
 
-<!-- doc-sync: codec / 2026-10-20-r4 -->
+<!-- doc-sync: codec / 2026-10-20-r5 -->
 
 日期: 2026-10-19. 状态: 已实现并通过 fixture 验证, 等待 review.
 分支: `feat/strict-contract-codec`. [PR #2](https://github.com/Requora/TAPF_MAPF_TPG/pull/2).
@@ -10,7 +10,7 @@
 
 ## 范围与来源
 
-在 `warehouse_api.codec` 中添加 `to_data`, `from_data`, `dumps` 和 `loads`.
+在 `warehouse_api.serialization` 中添加 `to_data`, `from_data`, `dumps` 和 `loads`.
 复用未修改的 `contracts.py` 中的数据类与注解.
 依据用户提供的英文 API 0.7 指南第 03, 14 节和 `DATA_TYPES_EN.md`.
 改编参考 `package/warehouse_api/codec.py`; 原件 SHA256 为
@@ -20,7 +20,7 @@
 
 从参考 `package/examples/` 原样复制两个选定的 JSON fixture:
 
-| `tests/codec/fixtures/` 中的 fixture | SHA256 |
+| `tests/serialization/fixtures/` 中的 fixture | SHA256 |
 | --- | --- |
 | `task_delta.json` | `344235fe4e58ec1becc9801cb7b19978fc7038c3b9f07225f58ce33f5e5f94ff` |
 | `fleet_plan.json` | `729232b1b3ae29a5c1d0f6741f573dff303f82297aba583ef1feb9691e9a9dca` |
@@ -101,7 +101,7 @@ AGENTS.md 的文档检查配置已改为 `gpt-6-luna` / `low`.
 实际失败重放, 退出码为 1, 无异常包装:
 
 ```bash
-PYTHONPATH=src python -c 'from warehouse_api.codec import from_data; from_data(float | None, 10**400)'
+PYTHONPATH=src python -c 'from warehouse_api.serialization import from_data; from_data(float | None, 10**400)'
 ```
 
 ```text

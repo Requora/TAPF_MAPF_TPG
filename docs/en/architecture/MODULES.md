@@ -2,75 +2,85 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r1 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r2 -->
 
 ## Implemented directories
 
 Each module owns its implementation and local validation directory.
 `__init__.py` explicitly exports entry points; underscore files are internal.
 `contracts.py` remains the sole source of DTOs and Protocols.
-Tests are grouped by module; test cases and codec fixtures retain their behavior.
+Tests are grouped by module; test cases and serialization fixtures retain their behavior.
 
 ```text
 src/warehouse_api/
   contracts.py
-  codec/
+  serialization/
     __init__.py
     _json.py
     _validation.py
-  orders/
+  order_source/
     __init__.py
     _replay.py
     _validation.py
-  durations/
+  action_timing/
     __init__.py
     _timing.py
     _validation.py
-  compiler/
+  task_compiler/
     __init__.py
     _current_task.py
     _validation.py
 tests/
-  codec/fixtures/
-  compiler/
-  durations/
-  orders/
+  serialization/fixtures/
+  task_compiler/
+  action_timing/
+  order_source/
   test_module_boundaries.py
 ```
 
 ## Allowed dependencies
 
-Arrows show import dependencies, not execution order. The codec converts generic
+Arrows show import dependencies, not execution order. The serialization module converts generic
 structures and does not depend on concrete contracts or business modules.
 
 ```mermaid
 flowchart LR
-    Compiler[compiler] --> Contracts[contracts.py]
-    Compiler --> Codec[codec]
-    Compiler --> Durations[durations]
-    Orders[orders] --> Contracts
+    Compiler[task_compiler] --> Contracts[contracts.py]
+    Compiler --> Codec[serialization]
+    Compiler --> Durations[action_timing]
+    Orders[order_source] --> Contracts
     Durations --> Contracts
 ```
 
 | Module | Public API | Responsibility |
 | --- | --- | --- |
 | contracts.py | Existing Request/Result, DTO, Protocol types | Shared communication types, no algorithms |
-| orders | ReplayOrderSource, generate_orders | Order release and generation |
-| compiler | CurrentTaskCompiler | Compile supported current tasks and new bindings |
-| durations | action_duration_s, action_duration_ticks | Shared action timing |
-| codec | dumps, loads, from_data, to_data | JSON structure conversion |
+| order_source | ReplayOrderSource, generate_orders | Order release and generation |
+| task_compiler | CurrentTaskCompiler | Compile supported current tasks and new bindings |
+| action_timing | action_duration_s, action_duration_ticks | Shared action timing |
+| serialization | dumps, loads, from_data, to_data | JSON structure conversion |
 
 Cross-module imports use package entry points or contracts. For example, the
-compiler uses `from warehouse_api.durations import action_duration_s`.
+task_compiler uses `from warehouse_api.action_timing import action_duration_s`.
 Each package's `_validation.py` owns its input or business rules.
 The future continuous geometry validator has a separate responsibility from
 these local checks.
 
 Composition code selects implementations; consumers use Protocols from contracts.
-Existing public imports such as `from warehouse_api.compiler import CurrentTaskCompiler`
-remain compatible. Internal Python `__module__` paths change; historical pickle
-and internal module imports are not guaranteed compatible. Public JSON contracts
+Public entry points use descriptive responsibility names, such as
+`from warehouse_api.task_compiler import CurrentTaskCompiler`. Migrate old package imports
+using the table below; no aliases retain the old names. Class and function names are unchanged.
+Internal Python `__module__` paths change; historical pickle and internal module imports
+are not guaranteed compatible. Public JSON contracts
 are unchanged. This change adds no runtime orchestrator or complete planning pipeline.
+
+
+| Previous name | New name |
+| --- | --- |
+| `codec` | `serialization` |
+| `compiler` | `task_compiler` |
+| `durations` | `action_timing` |
+| `orders` | `order_source` |
 
 ## Future module boundaries
 

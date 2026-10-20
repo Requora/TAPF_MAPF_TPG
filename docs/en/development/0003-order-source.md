@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0003-order-source.md) | [English](../../en/development/0003-order-source.md)
 
-<!-- doc-sync: order-source / 2026-10-19-r5 -->
+<!-- doc-sync: order-source / 2026-10-20-r6 -->
 
 Date: 2026-10-19. Status: implemented, local unit tests passed, pending review.
 Branch: `feat/replayable-order-source`. [PR #3](https://github.com/Requora/TAPF_MAPF_TPG/pull/3).
@@ -10,7 +10,7 @@ Baseline: GitHub confirmed PR #2 merged at `8412ad1a7733e6e19b9642fa9ef4dc287e54
 
 ## Scope and sources
 
-Add `warehouse_api.orders.ReplayOrderSource` and `generate_orders`.
+Add `warehouse_api.order_source.ReplayOrderSource` and `generate_orders`.
 Reuse `contracts.Order`, `Item`, and the `OrderSource` Protocol without contract changes.
 Follow section 05A of the local API 0.7 English guide and Order/Item in `DATA_TYPES_EN.md`.
 This is original repository Python code using only the standard library, with no upstream algorithm integration.
@@ -82,7 +82,7 @@ with no issues in bilingual parity, English punctuation, links, or technical fac
 Failure replay, expected exit code 1, with the original traceback preserved:
 
 ```bash
-PYTHONPATH=src python -c 'from warehouse_api.orders import ReplayOrderSource; s = ReplayOrderSource(); s.release(2.0); s.release(1.0)'
+PYTHONPATH=src python -c 'from warehouse_api.order_source import ReplayOrderSource; s = ReplayOrderSource(); s.release(2.0); s.release(1.0)'
 ```
 
 ```text

@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0008-module-boundaries.md) | [English](../../en/development/0008-module-boundaries.md)
 
-<!-- doc-sync: module-boundaries-log / 2026-10-20-r1 -->
+<!-- doc-sync: module-boundaries-log / 2026-10-20-r2 -->
 
 ## 范围与来源
 
@@ -14,10 +14,10 @@ GitHub 已确认 PR #7 合并, 基线为 `6dbed6cdaddb21c9ecf50644eae7ff82b76a38
 
 ## 决策与结构
 
-按用户要求, 先将 orders, compiler, durations, codec 各自放入独立目录.
+按用户要求, 将 order_source, task_compiler, action_timing, serialization 各自放入独立目录.
 包入口显式导出公开 API, 内部实现和校验留在各自包内. 测试和 fixture 同步归类.
-统一契约仍为 `contracts.py`, 不复制 DTO 或 Protocol. 保留既有公开导入,
-因此现有调用者不必随文件移动修改业务代码.
+统一契约仍为 `contracts.py`, 不复制 DTO 或 Protocol. 按用户 review 改为明确的职责名称,
+旧包导入需迁移到新名称, 不保留旧别名; 类名, 函数名和 JSON 契约不变.
 [目录图与依赖规则](../architecture/MODULES.md)区分已实现模块和后续接口规划.
 新增静态依赖门禁, 用被拒绝的内部导入和反向依赖样例检验门禁本身.
 AGENTS 明确模块目录规则, 并保留用户要求的 500 行限制不计文档说明.
@@ -35,8 +35,8 @@ AGENTS 明确模块目录规则, 并保留用户要求的 500 行限制不计文
 ```bash
 PYTHONPATH=src:tests python - <<'PYTHON'
 from dataclasses import replace
-from compiler.test_compiler import fixture
-from warehouse_api.compiler import CurrentTaskCompiler
+from task_compiler.test_task_compiler import fixture
+from warehouse_api.task_compiler import CurrentTaskCompiler
 from warehouse_api.contracts import Failure, RobotQueue, TaskDelta
 model, accepted = fixture()
 compiler = CurrentTaskCompiler(model, sim_dt_s=0.1)
@@ -56,9 +56,9 @@ PYTHON
 ```bash
 PYTHONPATH=src python -m unittest discover -s tests -v
 /tmp/warehouse-ci-check/bin/ruff check src tests
-python -m pip wheel --no-deps --wheel-dir /tmp/warehouse-modules-4v_xlj0q/wheels /tmp/warehouse-modules-4v_xlj0q/project
-/tmp/warehouse-modules-4v_xlj0q/venv/bin/python -m pip check
-/tmp/warehouse-modules-4v_xlj0q/venv/bin/python -I -m unittest discover -s tests
+python -m pip wheel --no-deps --wheel-dir /tmp/warehouse-names-7vku970l/wheels /tmp/warehouse-names-7vku970l/project
+/tmp/warehouse-names-7vku970l/venv/bin/python -m pip check
+/tmp/warehouse-names-7vku970l/venv/bin/python -I -m unittest discover -s tests
 git diff --check
 ```
 
@@ -68,14 +68,14 @@ git diff --check
 排除缓存和 egg-info; 新建 venv 后安装 wheel, 避免旧产物影响验证.
 上述临时目录为本次证据路径, 重新验证时需创建新的干净构建目录和环境.
 没有测试失败. 双语文档已通过 gpt-6-luna / low 复核, 并实际重放上述命令.
-远端 CI 已由 PR 触发, 结果待确认.
+此前 `52f159d` 的远端 CI 已通过; 本次命名修正的远端结果待确认.
 
 尚未验证历史 pickle 兼容性, 动态导入约束, 分配优化, 原生求解器,
 Runtime 提交, 连续几何或停车安全. 本轮只重构模块边界.
 
 ## 行数与下一步
 
-Git 识别文件移动后, 相对 origin/main 的代码和测试 +125/-5, 共 130 行.
+Git 识别文件移动后, 相对 origin/main 的代码和测试 +137/-17, 共 154 行.
 不识别重命名时为 +1601/-1481, 其中包含完整文件搬移.
 文件搬移没有压缩或重写算法. 文档另计, 无配置变更.
 提交后等待用户 review 和合并; 之后才继续独立 allocation 模块的最小增量.

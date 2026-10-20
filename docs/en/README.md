@@ -2,7 +2,7 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-19-r11 -->
+<!-- doc-sync: readme / 2026-10-20-r12 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
 Current status: shared contracts, strict JSON shape codec, tested fixtures, replayable orders, shared action timing, and a limited current-task compiler.
@@ -19,7 +19,7 @@ python -I -m unittest discover -s tests -v
 
 Runtime use of this contract package needs only the Python standard library.
 Installing the package uses setuptools. Import types from `warehouse_api.contracts`.
-Use `warehouse_api.codec.loads(TargetType, text)` to decode and `dumps(value)` to encode.
+Use `warehouse_api.serialization.loads(TargetType, text)` to decode and `dumps(value)` to encode.
 Decoding checks types and fields; encoding converts JSON-compatible values.
 These operations do not validate business rules, continuous geometry, or safe stopping.
 

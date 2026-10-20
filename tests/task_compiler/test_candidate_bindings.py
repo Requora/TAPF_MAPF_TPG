@@ -3,9 +3,9 @@ import copy
 from dataclasses import replace
 import unittest
 
-from .test_compiler import fixture
-from warehouse_api.codec import dumps, loads
-from warehouse_api.compiler import CurrentTaskCompiler
+from .test_task_compiler import fixture
+from warehouse_api.serialization import dumps, loads
+from warehouse_api.task_compiler import CurrentTaskCompiler
 from warehouse_api.contracts import (
     AssignmentRequest, Drop, Failure, Lift, ObjectState, Pose2, QueueState,
     RobotQueue, StepLock, StepRef, TaskDelta, TaskProgress,

@@ -2,10 +2,10 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r11 -->
+<!-- doc-sync: roadmap / 2026-10-20-r12 -->
 
 状态: PR #7 已合并至 `6dbed6c`. 阶段 3 订单和阶段 4 当前任务编译及新绑定已通过 fixture 验证.
-本 PR 按用户要求先整理模块目录, 保留公开 API, 增加依赖边界检查.
+本 PR 按用户要求先整理模块目录, 采用明确的模块名和公开 API, 增加依赖边界检查.
 见 [模块架构](../architecture/MODULES.md) 和 [重构日志](0008-module-boundaries.md).
 重分配和多任务队列仍不支持. 保留 API 0.7. 阶段 5-11 仍为计划.
 每个阶段可能需要多个 PR. 每个 PR 的代码变更不超过 500 行,

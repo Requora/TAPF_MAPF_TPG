@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r12 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r13 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
 Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -39,7 +39,7 @@ rationale, and completion verification to the user. Verification must include ac
 - Accepted task progress, action locks, and carry ownership remain effective. Candidates cannot repair
   invalid old locks. Success and failure leave the model, request, and draft unchanged; failures return no partial jobs.
 
-Running `tests/compiler/test_candidate_bindings.py` and the replay command below produced:
+Running `tests/task_compiler/test_candidate_bindings.py` and the replay command below produced:
 
 | Scenario | A | B | Result |
 | --- | --- | --- | --- |
@@ -54,9 +54,9 @@ Replay the success and failure cases:
 ```bash
 PYTHONPATH=src:tests python - <<'PY'
 from dataclasses import replace
-from compiler.test_compiler import fixture
-from warehouse_api.codec import dumps
-from warehouse_api.compiler import CurrentTaskCompiler
+from task_compiler.test_task_compiler import fixture
+from warehouse_api.serialization import dumps
+from warehouse_api.task_compiler import CurrentTaskCompiler
 from warehouse_api.contracts import RobotQueue, TaskDelta
 model, accepted = fixture()
 compiler = CurrentTaskCompiler(model, sim_dt_s=0.1)

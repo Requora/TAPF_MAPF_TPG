@@ -2,10 +2,10 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r11 -->
+<!-- doc-sync: roadmap / 2026-10-20-r12 -->
 
 Status: PR #7 merged at `6dbed6c`. Stage 3 orders and stage 4 current-task compilation and new bindings have fixture verification.
-At the user's request, this PR first organizes module directories, preserves public APIs, and adds dependency boundary checks.
+At the user's request, this PR first organizes module directories, uses descriptive module names and public APIs, and adds dependency boundary checks.
 See [module architecture](../architecture/MODULES.md) and the [refactoring log](0008-module-boundaries.md).
 Reassignment and multi-task queues remain unsupported. Retain API 0.7. Stages 5-11 remain planned.
 A stage may require several PRs. Each PR has at most 500 changed code lines,

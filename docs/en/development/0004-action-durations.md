@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0004-action-durations.md) | [English](../../en/development/0004-action-durations.md)
 
-<!-- doc-sync: action-durations / 2026-10-19-r1 -->
+<!-- doc-sync: action-durations / 2026-10-20-r2 -->
 
 Date: 2026-10-19. Status: stage 4 timing helper implemented and unit-tested; pending review.
 Branch: `feat/shared-action-durations`. [PR #4](https://github.com/Requora/TAPF_MAPF_TPG/pull/4).
@@ -10,7 +10,7 @@ Baseline: GitHub confirmed PR #3 merged at `b310d6ab19944eff0044a2d9ea5e6bfc1eae
 
 ## Scope and sources
 
-Add `warehouse_api.durations.action_duration_ticks` and `action_duration_s`.
+Add `warehouse_api.action_timing.action_duration_ticks` and `action_duration_s`.
 Both take `(action, times, *, sim_dt_s)`, using the existing `TaskAction` and
 `ActionTimes` contracts. No DTO or Protocol changes. This is the first small
 part of stage 4, not a working SharedCompiler. Compiler and motion adapters
@@ -87,7 +87,7 @@ the GitHub connector confirmed merge status instead.
 Expected failure replay, exit code 1, with the original traceback retained:
 
 ```bash
-PYTHONPATH=src python -c 'from warehouse_api.contracts import ActionTimes, Lift; from warehouse_api.durations import action_duration_s; action_duration_s(Lift("P17"), ActionTimes(1, 1, 0, 0), sim_dt_s=0)'
+PYTHONPATH=src python -c 'from warehouse_api.contracts import ActionTimes, Lift; from warehouse_api.action_timing import action_duration_s; action_duration_s(Lift("P17"), ActionTimes(1, 1, 0, 0), sim_dt_s=0)'
 ```
 
 ```text
