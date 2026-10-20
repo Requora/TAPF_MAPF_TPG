@@ -2,11 +2,11 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-20-r13 -->
+<!-- doc-sync: readme / 2026-10-20-r14 -->
 
 Modular warehouse planning using the Warehouse API 0.7 English specification.
 Current status: shared contracts, strict JSON shape codec, tested fixtures, replayable orders, shared action timing, and a limited current-task compiler.
-Current development focuses on each robot's current task; defer queue scheduling and retain unused API fields.
+Current priority is the order-to-TPG chain. StagedPipeline has fixture wiring evidence; allocation/MAPF/TPG are test doubles and the native chain is incomplete. Queue scheduling is deferred.
 Planner adapters and Runtime are not implemented.
 
 Python 3.10+, from the repository root:
@@ -51,3 +51,5 @@ Backend boundary types remain for compatibility; simulator implementation is out
 - [Module split: compatibility and verification](development/0008-module-boundaries.md)
 
 - [Project progress and interactive architecture, private access](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en)
+
+- [Staged planning and fixture replay](development/0009-staged-pipeline.md).

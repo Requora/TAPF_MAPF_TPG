@@ -2,15 +2,17 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r13 -->
+<!-- doc-sync: roadmap / 2026-10-20-r14 -->
 
-Status: PR #7 merged at `6dbed6c`. Stage 3 orders and stage 4 current-task compilation and new bindings have fixture verification.
-At the user's request, this PR first organizes module directories, uses descriptive module names and public APIs, and adds dependency boundary checks.
-The private bilingual progress website is published, showing target flow, current imports, and missing work; PR #8 remains unmerged.
-See [module architecture](../architecture/MODULES.md) and the [refactoring log](0008-module-boundaries.md).
-Reassignment and multi-task queues remain unsupported. Retain API 0.7. Stages 5-11 remain planned.
-A stage may require several PRs. Each PR has at most 500 changed code lines,
-excluding docs and configuration. Start the next increment only after user merge. Keep both languages synchronized.
+Status: PR #8 merged at `576e25d`. The user now prioritizes the order-to-TPG chain.
+This PR adds StagedPipeline before filling the individual adapters. The real order source
+and compiler run in a fixture replay; allocation, MAPF, and TPG remain test doubles.
+The native chain is not complete. Shared budgets, short-circuit failures, and stale path rejection
+are verified at `c47f4a7` (72 source and installed-wheel tests).
+Both upstreams were built locally; this is not adapter integration. Runtime acceptance,
+continuous safety, and parking validation remain unimplemented.
+See [composition evidence](0009-staged-pipeline.md) and [architecture](../architecture/MODULES.md).
+Each PR remains limited to 500 changed code lines. Await review and merge before the next PR.
 
 ## Replaceable modules
 
@@ -89,6 +91,8 @@ and return slots; matching alone does not solve inventory or service sequencing.
 Compare it with joint CBS-TA on a restricted one-goal-per-robot scenario before
 extending to multi-action warehouse jobs. This is a proposed experiment, not a
 claim that CBS-TA already supports the full API.
+
+Stage 8 now has fixture-only staged composition. Native staged and joint TAPF integration remain planned.
 
 ## Observability
 

@@ -2,7 +2,7 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r3 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r4 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 
@@ -27,11 +27,16 @@ src/warehouse_api/
     __init__.py
     _timing.py
     _validation.py
+  planning/
+    __init__.py
+    _staged.py
+    _validation.py
   task_compiler/
     __init__.py
     _current_task.py
     _validation.py
 tests/
+  planning/
   serialization/fixtures/
   task_compiler/
   action_timing/
@@ -47,6 +52,7 @@ tests/
 ```mermaid
 flowchart LR
     Compiler[task_compiler] --> Contracts[contracts.py]
+    Planning[planning] --> Contracts
     Compiler --> Codec[serialization]
     Compiler --> Durations[action_timing]
     Orders[order_source] --> Contracts
@@ -59,6 +65,7 @@ flowchart LR
 | order_source | ReplayOrderSource, generate_orders | 发布和生成订单 |
 | task_compiler | CurrentTaskCompiler | 编译受支持的当前任务和新绑定 |
 | action_timing | action_duration_s, action_duration_ticks | 共用动作耗时 |
+| planning | StagedPipeline | 共用预算组合注入的阶段; 已通过 fixture 串联验证 |
 | serialization | dumps, loads, from_data, to_data | JSON 结构转换 |
 
 跨模块只从包入口或 contracts 导入. 例如编译器调用
@@ -70,7 +77,7 @@ flowchart LR
 公开入口使用明确的职责名称, 如 `from warehouse_api.task_compiler import CurrentTaskCompiler`.
 旧包导入需要按下表迁移, 不保留旧名称别名. 类名和函数名不变.
 内部 Python `__module__` 路径已改变; 不保证历史 pickle 或内部模块导入兼容.
-公开 JSON 契约不变. 本轮没有新增运行时编排器或完整规划链.
+公开 JSON 契约不变. StagedPipeline 已组合四个注入阶段. 重放中的分配, MAPF, TPG 为测试替身. 未实现 Runtime 接受或原生链路. 见 [组合验证](../development/0009-staged-pipeline.md).
 
 
 | 旧名称 | 新名称 |
@@ -89,7 +96,6 @@ flowchart LR
 | allocation/ | Allocator | 接口已定义 |
 | mapf/ | PathPlanner | 接口已定义 |
 | tpg/ | MotionPlanner | 接口已定义 |
-| planning/ | DecisionPipeline | 分阶段与联合 TAPF 的组合入口已定义 |
 | validation/ | Validator | 连续验证接口已定义 |
 | runtime/ | Runtime | 事务与原子提交接口已定义 |
 | execution/ | CentralExecutor | 执行接口已定义 |

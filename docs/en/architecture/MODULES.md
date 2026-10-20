@@ -2,7 +2,7 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r3 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r4 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
@@ -28,11 +28,16 @@ src/warehouse_api/
     __init__.py
     _timing.py
     _validation.py
+  planning/
+    __init__.py
+    _staged.py
+    _validation.py
   task_compiler/
     __init__.py
     _current_task.py
     _validation.py
 tests/
+  planning/
   serialization/fixtures/
   task_compiler/
   action_timing/
@@ -48,6 +53,7 @@ structures and does not depend on concrete contracts or business modules.
 ```mermaid
 flowchart LR
     Compiler[task_compiler] --> Contracts[contracts.py]
+    Planning[planning] --> Contracts
     Compiler --> Codec[serialization]
     Compiler --> Durations[action_timing]
     Orders[order_source] --> Contracts
@@ -60,6 +66,7 @@ flowchart LR
 | order_source | ReplayOrderSource, generate_orders | Order release and generation |
 | task_compiler | CurrentTaskCompiler | Compile supported current tasks and new bindings |
 | action_timing | action_duration_s, action_duration_ticks | Shared action timing |
+| planning | StagedPipeline | Compose injected stages with a shared budget; fixture wiring verified |
 | serialization | dumps, loads, from_data, to_data | JSON structure conversion |
 
 Cross-module imports use package entry points or contracts. For example, the
@@ -74,7 +81,7 @@ Public entry points use descriptive responsibility names, such as
 using the table below; no aliases retain the old names. Class and function names are unchanged.
 Internal Python `__module__` paths change; historical pickle and internal module imports
 are not guaranteed compatible. Public JSON contracts
-are unchanged. This change adds no runtime orchestrator or complete planning pipeline.
+are unchanged. StagedPipeline now composes four injected stages. Allocation, MAPF, and TPG are test doubles in the replay. No Runtime acceptance or native chain is implemented. See [pipeline evidence](../development/0009-staged-pipeline.md).
 
 
 | Previous name | New name |
@@ -94,7 +101,6 @@ packages have been created.
 | allocation/ | Allocator | Interface defined |
 | mapf/ | PathPlanner | Interface defined |
 | tpg/ | MotionPlanner | Interface defined |
-| planning/ | DecisionPipeline | Composition entry point for staged and joint TAPF defined |
 | validation/ | Validator | Continuous validation interface defined |
 | runtime/ | Runtime | Transaction and atomic commit interface defined |
 | execution/ | CentralExecutor | Execution interface defined |
