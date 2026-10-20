@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r9 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r10 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -137,6 +137,8 @@ Copilot 自动审查规则已从 ruleset `25432822` 移除, 其余分支保护�
 删除自写审查脚本及其专用模拟测试后, 原有 61 项源码和安装后 wheel 测试通过, Ruff 和 diff 检查通过.
 首次上游运行 `39350655372` 在模型调用前因上下文预算错误失败: 将 16000 误当输入预算, 但上游先从中扣除 16384 输出预留.
 已按上游 token_budget.py 改为总预算 32768, 保留输出预留 16384. 此次失败未完成模型审查.
+第二次上游运行 `39350828844` 在请求发送前拒绝 EXTRA_BODY.thinking, 因该版本只允许指定扩展字段.
+已移除冗余 thinking 字段. [DeepSeek API](https://api-docs.deepseek.com/api/create-chat-completion/)确认 `reasoning_effort=low` 本身启用思考模式, 无需额外开关.
 PR-Agent 的真实中文行内发布和耗时仍需实测, 结果将在 PR 中记录; 不能用旧脚本的成功代替上游集成验证.
 
 历史诊断: 自写脚本首次运行 `39348625815` 因不完整输出拒绝发布. 第二次 `39348844596`
@@ -150,6 +152,6 @@ reasoning_tokens=56754. 过大的输入和 high 推理预算导致等待较长, 
 
 ## 行数与下一步
 
-相对 main 的代码和工作流变更合计 +271/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
+相对 main 的代码和工作流变更合计 +270/-9, 包含测试及完整 YAML, 未通过配置豁免嵌入代码. 文档另计.
 等待用户 review 和合并. 之后按阶段 5 推进库存/需求可行的最小分配增量,
 仍暂缓重分配和多任务队列.

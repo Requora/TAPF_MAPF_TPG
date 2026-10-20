@@ -28,7 +28,6 @@ jobs:
           CONFIG.FALLBACK_MODELS: '[]'
           CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek-flash"]'
           CONFIG.REASONING_EFFORT: low
-          LITELLM.EXTRA_BODY: '{"thinking":{"type":"enabled"}}'
           CONFIG.RESPONSE_LANGUAGE: zh-CN
           CONFIG.CUSTOM_MODEL_MAX_TOKENS: '32768'
           CONFIG.MAX_MODEL_TOKENS: '32768'
