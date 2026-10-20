@@ -10,7 +10,7 @@ import json
 import types
 import typing as t
 
-from warehouse_api import _codec_validation as validation
+from . import _validation as validation
 
 
 def to_data(value):

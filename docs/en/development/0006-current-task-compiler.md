@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0006-current-task-compiler.md) | [English](../../en/development/0006-current-task-compiler.md)
 
-<!-- doc-sync: current-task-compiler / 2026-10-19-r2 -->
+<!-- doc-sync: current-task-compiler / 2026-10-20-r3 -->
 
 Date: 2026-10-19. Status: restricted stage 4 implementation, fixture-tested; pending review.
 Branch: `feat/current-task-compiler`. [PR #6](https://github.com/Requora/TAPF_MAPF_TPG/pull/6).
@@ -54,7 +54,7 @@ AGENTS.md records this separation, including business preconditions.
   CONFLICT. Contract shape and timing/configuration errors propagate original exceptions;
   no try/except hides failures. Inputs remain unchanged after success or failure.
 
-Actual compiler execution using `tests/test_compiler.py:fixture`, sim_dt_s=0.1:
+Actual compiler execution using `tests/compiler/test_compiler.py:fixture`, sim_dt_s=0.1:
 
 | Case | Robot A actions, each 0.3 s | Robot B | Result |
 | --- | --- | --- | --- |

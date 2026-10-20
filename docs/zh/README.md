@@ -46,3 +46,6 @@ ruff check src tests
 - [开发与 review 规则](../../AGENTS.md)
 - [当前任务编译: 动作锁和携带归属](development/0006-current-task-compiler.md)
 - [新任务绑定: 空闲机器人和候选检查](development/0007-current-task-bindings.md)
+
+- [模块目录, 公开 API 与依赖图](architecture/MODULES.md)
+- [模块拆分: 兼容性与验证](development/0008-module-boundaries.md)

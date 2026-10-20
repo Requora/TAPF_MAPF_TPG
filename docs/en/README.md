@@ -46,3 +46,6 @@ Backend boundary types remain for compatibility; simulator implementation is out
 - [Development and review rules (Chinese only)](../../AGENTS.md)
 - [Current-task compilation: action locks and carry ownership](development/0006-current-task-compiler.md)
 - [New-task bindings: idle robots and candidate checks](development/0007-current-task-bindings.md)
+
+- [Module directories, public APIs, and dependency graph](architecture/MODULES.md)
+- [Module split: compatibility and verification](development/0008-module-boundaries.md)

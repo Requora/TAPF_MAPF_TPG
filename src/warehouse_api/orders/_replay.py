@@ -1,7 +1,7 @@
 """Replayable demand only; no inventory, assignment, or runtime writes."""
 from random import Random
 
-from warehouse_api._order_validation import (
+from ._validation import (
     validate_generation_parameters,
     validate_orders,
     validate_release_time,

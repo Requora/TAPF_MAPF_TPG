@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0006-current-task-compiler.md) | [English](../../en/development/0006-current-task-compiler.md)
 
-<!-- doc-sync: current-task-compiler / 2026-10-19-r2 -->
+<!-- doc-sync: current-task-compiler / 2026-10-20-r3 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限实现, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-compiler`. [PR #6](https://github.com/Requora/TAPF_MAPF_TPG/pull/6).
@@ -54,7 +54,7 @@ AGENTS.md 记录此职责划分, 包括业务前置条件.
   契约结构和耗时/配置错误保留原始异常, 不使用 try/except 隐藏错误.
   成功或失败都不修改输入.
 
-使用 `tests/test_compiler.py:fixture`, sim_dt_s=0.1 的真实编译输出:
+使用 `tests/compiler/test_compiler.py:fixture`, sim_dt_s=0.1 的真实编译输出:
 
 | 场景 | 机器人 A 的动作, 每个 0.3 s | 机器人 B | 结果 |
 | --- | --- | --- | --- |

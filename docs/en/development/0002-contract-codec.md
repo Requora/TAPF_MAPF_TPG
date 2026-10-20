@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0002-contract-codec.md) | [English](../../en/development/0002-contract-codec.md)
 
-<!-- doc-sync: codec / 2026-10-19-r3 -->
+<!-- doc-sync: codec / 2026-10-20-r4 -->
 
 Date: 2026-10-19. Status: implemented and fixture-verified, pending review.
 Branch: `feat/strict-contract-codec`. [PR #2](https://github.com/Requora/TAPF_MAPF_TPG/pull/2).
@@ -20,7 +20,7 @@ JSON Schema export is outside this PR.
 
 Copy two selected JSON fixtures byte-for-byte from the reference `package/examples/`:
 
-| Fixture in `tests/fixtures/` | SHA256 |
+| Fixture in `tests/codec/fixtures/` | SHA256 |
 | --- | --- |
 | `task_delta.json` | `344235fe4e58ec1becc9801cb7b19978fc7038c3b9f07225f58ce33f5e5f94ff` |
 | `fleet_plan.json` | `729232b1b3ae29a5c1d0f6741f573dff303f82297aba583ef1feb9691e9a9dca` |

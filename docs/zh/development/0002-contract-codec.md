@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0002-contract-codec.md) | [English](../../en/development/0002-contract-codec.md)
 
-<!-- doc-sync: codec / 2026-10-19-r3 -->
+<!-- doc-sync: codec / 2026-10-20-r4 -->
 
 日期: 2026-10-19. 状态: 已实现并通过 fixture 验证, 等待 review.
 分支: `feat/strict-contract-codec`. [PR #2](https://github.com/Requora/TAPF_MAPF_TPG/pull/2).
@@ -20,7 +20,7 @@
 
 从参考 `package/examples/` 原样复制两个选定的 JSON fixture:
 
-| `tests/fixtures/` 中的 fixture | SHA256 |
+| `tests/codec/fixtures/` 中的 fixture | SHA256 |
 | --- | --- |
 | `task_delta.json` | `344235fe4e58ec1becc9801cb7b19978fc7038c3b9f07225f58ce33f5e5f94ff` |
 | `fleet_plan.json` | `729232b1b3ae29a5c1d0f6741f573dff303f82297aba583ef1feb9691e9a9dca` |

@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-20-r11 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r12 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -38,7 +38,7 @@ Review 补充: AGENTS.md 要求每个 PR 完成后向用户说明要做什么, �
 - 已接受任务的进度, 动作锁和携带归属仍有效. 错误的旧锁不能通过候选修复.
   成功和失败均不修改模型, 请求或草稿; 失败不返回部分 jobs.
 
-实际运行 `tests/test_candidate_bindings.py` 和下面的重放命令得到:
+实际运行 `tests/compiler/test_candidate_bindings.py` 和下面的重放命令得到:
 
 | 场景 | A | B | 结果 |
 | --- | --- | --- | --- |
@@ -53,7 +53,7 @@ Review 补充: AGENTS.md 要求每个 PR 完成后向用户说明要做什么, �
 ```bash
 PYTHONPATH=src:tests python - <<'PY'
 from dataclasses import replace
-from test_compiler import fixture
+from compiler.test_compiler import fixture
 from warehouse_api.codec import dumps
 from warehouse_api.compiler import CurrentTaskCompiler
 from warehouse_api.contracts import RobotQueue, TaskDelta

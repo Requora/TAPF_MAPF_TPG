@@ -3,7 +3,7 @@ import copy
 from dataclasses import replace
 import unittest
 
-from test_compiler import fixture
+from .test_compiler import fixture
 from warehouse_api.codec import dumps, loads
 from warehouse_api.compiler import CurrentTaskCompiler
 from warehouse_api.contracts import (

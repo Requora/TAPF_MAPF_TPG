@@ -1,5 +1,5 @@
 """Compile current tasks and new tasks assigned to idle robots."""
-from warehouse_api import _compiler_validation as validation
+from . import _validation as validation
 from warehouse_api.contracts import (
     AssignmentRequest, Failure, Lift, PhysicalAction, Place, Pose2, RobotJobs,
     Serve, StepRef, TaskAction, TaskDelta, TaskProgress, WorldModel,
