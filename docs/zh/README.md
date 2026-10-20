@@ -2,12 +2,12 @@
 
 [中文](../zh/README.md) | [English](../en/README.md)
 
-<!-- doc-sync: readme / 2026-10-20-r13 -->
+<!-- doc-sync: readme / 2026-10-20-r16 -->
 
 依据 Warehouse API 0.7 英文规范构建模块化仓库规划系统.
 当前提供共享契约, 严格 JSON 结构 codec, 已测试的 fixture, 可重放订单源, 共用动作耗时和受限当前任务编译器.
-当前开发关注每台机器人的当前任务; 暂不实现队列调度, 保留 API 中未使用的字段.
-规划器适配层和 Runtime 尚未实现.
+当前优先接通订单到 TPG 链路. StagedPipeline 已在向东单位车道的一车一架场景中本地接通真实分配/MAPF/TPG; 通用链路仍未完成. 暂缓队列调度.
+通用规划支持仍有限. Runtime 尚未实现.
 
 Python 3.10+, 从仓库根目录运行:
 
@@ -51,3 +51,7 @@ ruff check src tests
 - [模块拆分: 兼容性与验证](development/0008-module-boundaries.md)
 
 - [项目进展与交互架构网页, 私有访问](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site)
+
+私有网页已更新为 `a1d0d03` 的原生链证据, 包含远端 CI 与未完成边界.
+
+- [真实订单到 TPG 规划链路](development/0009-staged-pipeline.md).

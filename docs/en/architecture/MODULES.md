@@ -2,9 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r3 -->
+<!-- doc-sync: module-boundaries / 2026-10-20-r6 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
+
+The private website now shows the native-chain evidence at `a1d0d03`, including remote CI and remaining limits.
 
 ## Implemented directories
 
@@ -28,11 +30,35 @@ src/warehouse_api/
     __init__.py
     _timing.py
     _validation.py
+  allocation/
+    __init__.py
+    _single_shelf.py
+  mapf/
+    __init__.py
+    _mawpf.py
+    _validation.py
+  tpg/
+    __init__.py
+    _winktpg.py
+    _validation.py
+  validation/
+    __init__.py
+    _single_lane.py
+  native_process/
+    __init__.py
+    _run.py
+  planning/
+    __init__.py
+    _staged.py
+    _validation.py
   task_compiler/
     __init__.py
     _current_task.py
     _validation.py
 tests/
+  native/
+  native_process/
+  planning/
   serialization/fixtures/
   task_compiler/
   action_timing/
@@ -48,10 +74,21 @@ structures and does not depend on concrete contracts or business modules.
 ```mermaid
 flowchart LR
     Compiler[task_compiler] --> Contracts[contracts.py]
+    Planning[planning] --> Contracts
     Compiler --> Codec[serialization]
     Compiler --> Durations[action_timing]
     Orders[order_source] --> Contracts
     Durations --> Contracts
+    Allocation[allocation] --> Contracts
+    Allocation --> Validation[validation: supported subset]
+    MAPF[mapf] --> Contracts
+    MAPF --> Validation
+    MAPF --> Native[native_process]
+    TPG[tpg] --> Contracts
+    TPG --> Validation
+    TPG --> Native
+    Validation --> Contracts
+    Native --> Contracts
 ```
 
 | Module | Public API | Responsibility |
@@ -60,6 +97,12 @@ flowchart LR
 | order_source | ReplayOrderSource, generate_orders | Order release and generation |
 | task_compiler | CurrentTaskCompiler | Compile supported current tasks and new bindings |
 | action_timing | action_duration_s, action_duration_ticks | Shared action timing |
+| planning | StagedPipeline | Compose injected stages with a shared budget and actual stage trace; native single-lane chain verified locally |
+| allocation | SingleShelfAllocator | One feasible shelf/robot; picks derived from demand |
+| mapf | NativeMawpfPlanner | Pinned LaCAM output to adjacent moves and action references |
+| tpg | NativeWinkTpgPlanner | Pinned speedSolver primitives to Hermite knots and action holds |
+| validation | check_single_lane, check_jobs, check_assignment | Supported-subset checks; continuous Validator remains unimplemented |
+| native_process | run_native | Process budgets and retained raw evidence |
 | serialization | dumps, loads, from_data, to_data | JSON structure conversion |
 
 Cross-module imports use package entry points or contracts. For example, the
@@ -74,7 +117,7 @@ Public entry points use descriptive responsibility names, such as
 using the table below; no aliases retain the old names. Class and function names are unchanged.
 Internal Python `__module__` paths change; historical pickle and internal module imports
 are not guaranteed compatible. Public JSON contracts
-are unchanged. This change adds no runtime orchestrator or complete planning pipeline.
+are unchanged. StagedPipeline now composes four injected stages. The native replay uses real allocation, MAWPF, and WinkTPG on one supported unit lane. The earlier fixture replay remains a composition test. No Runtime acceptance is implemented. See [pipeline evidence](../development/0009-staged-pipeline.md).
 
 
 | Previous name | New name |
@@ -91,11 +134,7 @@ packages have been created.
 
 | Planned directory | Interface in contracts | Status |
 | --- | --- | --- |
-| allocation/ | Allocator | Interface defined |
-| mapf/ | PathPlanner | Interface defined |
-| tpg/ | MotionPlanner | Interface defined |
-| planning/ | DecisionPipeline | Composition entry point for staged and joint TAPF defined |
-| validation/ | Validator | Continuous validation interface defined |
+| validation/ | Validator | Input subset implemented; continuous validation interface only |
 | runtime/ | Runtime | Transaction and atomic commit interface defined |
 | execution/ | CentralExecutor | Execution interface defined |
 
@@ -110,5 +149,4 @@ It rejects reverse dependencies, cross-module internal imports, and cross-module
 star imports; it also checks public exports. Relative imports and aliases are
 covered, both in source and installed wheels. It does not intercept dynamic
 imports or runtime attribute access and is not a Python sandbox.
-Business fixtures verify existing behavior after refactoring, not real solvers
-or execution safety.
+Native tests exercise real upstreams and exact Hermite kinematic bounds. They do not establish continuous collision or indefinite parking safety. Native additions are included in PR #9 under the authorized line-limit exception and await review.

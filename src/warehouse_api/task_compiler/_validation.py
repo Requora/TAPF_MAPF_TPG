@@ -1,4 +1,7 @@
-"""Input and business checks for the current-task compiler subset."""
+"""中文: 该模块集中检查当前任务编译所支持的输入和业务规则, 使编译器主体专注于动作转换.
+
+English: This module checks inputs and business rules supported by current-task compilation so the compiler body can focus on action conversion.
+"""
 from warehouse_api.serialization import from_data, to_data
 from warehouse_api.contracts import (
     AssignmentRequest, Drop, Failure, Lift, ObjectSpec, ObjectState, Place,
@@ -7,6 +10,9 @@ from warehouse_api.contracts import (
 from warehouse_api.action_timing import action_duration_s
 
 
+# 中文: validate_model 检查 WorldModel 场景定义的数据结构, 动作耗时, 标识唯一性和位置引用, 在编译入口集中发现静态错误, 让编译算法只负责数据转换.
+# English: validate_model checks WorldModel scene structure, action timing, identifier uniqueness and
+# place references at the compiler boundary so the compilation algorithm can focus on data conversion.
 def validate_model(model: WorldModel, sim_dt_s: float) -> None:
     from_data(WorldModel, to_data(model))
     action_duration_s(Lift("timing-check"), model.action_times, sim_dt_s=sim_dt_s)
@@ -23,6 +29,10 @@ def validate_model(model: WorldModel, sim_dt_s: float) -> None:
             raise ValueError(f"place {place.id}: unknown node or resource")
 
 
+# 中文: validate_request 检查新方案接入时刻的预测状态, 已接受任务的进度和固定执行者的动作锁, 为叠加候选任务建立可信起点, 防止新草稿掩盖原状态错误.
+# English: validate_request checks the projected state at the new plan's join time, accepted task
+# progress and action locks that fix executors before candidate tasks are overlaid, so a new draft cannot
+# hide errors in existing state.
 def validate_request(
     model: WorldModel, request: AssignmentRequest, draft: TaskDelta,
 ) -> Failure | None:
@@ -81,10 +91,14 @@ def validate_request(
     return None
 
 
+# 中文: validate_candidate_bindings 要求每个新任务恰好绑定一台空队列机器人, 并拒绝修改既有绑定, 使候选任务不会改变已接受任务的进度或动作锁.
+# English: validate_candidate_bindings requires each new task to bind to exactly one robot with an empty
+# queue and rejects existing-binding edits so candidates cannot change accepted task progress or action
+# locks.
 def validate_candidate_bindings(
     model: WorldModel, request: AssignmentRequest, draft: TaskDelta,
 ) -> Failure | None:
-    """Accept only new definitions bound once to robots with empty queues.
+    """validate_candidate_bindings accepts only new tasks bound once to robots with empty queues.
 
     The request has already passed boundary validation. An empty old queue has
     no protected prefix, so its proposed singleton is also the complete queue.
@@ -126,11 +140,16 @@ def validate_candidate_bindings(
     return None
 
 
+# 中文: validate_current_task 检查未完成任务的动作序列, 货架携带归属和抬架前置条件, 并用 claimed 中已被候选任务占用的货架标识拒绝重复争抢,
+# 防止多个任务取同一货架.
+# English: validate_current_task checks an unfinished task's action sequence, shelf carrier and lift
+# preconditions, using claimed shelf identifiers from candidate tasks to reject competing claims so
+# multiple tasks cannot take the same shelf.
 def validate_current_task(
     progress: TaskProgress, robot_id: str, objects: dict[str, ObjectSpec],
     locations: dict[str, ObjectState], carried: dict[str, str], claimed: set[str],
 ) -> Failure | None:
-    """Check an unfinished bound task without changing candidate bookkeeping."""
+    """validate_current_task checks an unfinished bound task without changing candidate bookkeeping."""
     task_id, steps = progress.task.id, progress.task.steps
     if progress.blocked:
         return Failure("NO_PLAN", "Blocked task requires explicit recovery", (task_id,))
@@ -151,18 +170,30 @@ def validate_current_task(
     return None
 
 
+# 中文: validate_lift_target 要求 Lift 抬架动作的货架落地位姿只匹配一个 Place 存储位置, 为机器人提供确定的取架节点和朝向,
+# 防止编译器任意选择模糊目标.
+# English: validate_lift_target requires the grounded shelf pose of a Lift shelf-raising action to match
+# exactly one storage Place so the robot receives a definite pickup node and heading instead of an
+# arbitrarily selected target.
 def validate_lift_target(step: Lift, matches: list[Place]) -> Failure | None:
     if len(matches) != 1:
         return Failure("UNSUPPORTED", "Lift requires one exact storage pose match", (step.object_id,))
     return None
 
 
+# 中文: validate_place 检查服务工作站或放架存储位置是否存在且类型正确, 在生成执行动作前拒绝目标错误, 防止编译器把存储位置当成工作站.
+# English: validate_place checks that a service workstation or shelf-return storage location exists with
+# the required kind before executable actions are created so the compiler cannot treat storage as a
+# workstation.
 def validate_place(place: Place | None, place_id: str, kind: str) -> Failure | None:
     if place is None or place.kind != kind:
         return Failure("BAD_INPUT", f"Expected a known {kind} place", (place_id,))
     return None
 
 
+# 中文: validate_carried_jobs 拒绝载货机器人没有剩余执行动作的候选, 使每个被携带货架仍对应机器人尚未完成的作业, 防止编译器把载货机器人当成空闲机器人.
+# English: validate_carried_jobs rejects candidates where a carrying robot has no remaining actions so
+# each carried shelf retains an unfinished job and the compiler cannot treat a carrying robot as idle.
 def validate_carried_jobs(
     jobs: dict[str, RobotJobs], carried: dict[str, str],
 ) -> Failure | None:

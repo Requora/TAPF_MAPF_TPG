@@ -92,3 +92,6 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding-block
   .evidence { padding: 26px; } footer { flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) { :root { scroll-behavior: auto; } .node rect { transition: none; } }
+
+.node .integrated { fill: #3e735c; }
+.legend .integrated::before { background: #3e735c; }

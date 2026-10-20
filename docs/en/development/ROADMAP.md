@@ -2,15 +2,16 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r13 -->
+<!-- doc-sync: roadmap / 2026-10-20-r16 -->
 
-Status: PR #7 merged at `6dbed6c`. Stage 3 orders and stage 4 current-task compilation and new bindings have fixture verification.
-At the user's request, this PR first organizes module directories, uses descriptive module names and public APIs, and adds dependency boundary checks.
-The private bilingual progress website is published, showing target flow, current imports, and missing work; PR #8 remains unmerged.
-See [module architecture](../architecture/MODULES.md) and the [refactoring log](0008-module-boundaries.md).
-Reassignment and multi-task queues remain unsupported. Retain API 0.7. Stages 5-11 remain planned.
-A stage may require several PRs. Each PR has at most 500 changed code lines,
-excluding docs and configuration. Start the next increment only after user merge. Keep both languages synchronized.
+Status: PR #8 merged at `576e25d`. PR #9 is ready for review after correction of the premature fixture-only submission.
+The order-to-TPG native chain now runs locally for one robot/shelf on an eastbound unit lane.
+Real allocation, shared compilation, MAWPF LaCAM, and WinkTPG speedSolver all participate.
+Six native calls produce the default plan: Lift 2.0 s, Serve 5.2 s, Drop 8.4 s, complete 8.7 s.
+79 source and installed-wheel tests pass with native binaries; three native tests skip when binaries are not configured.
+Multi-robot integration, joint TAPF, continuous collision/parking validation, Runtime, and execution remain incomplete.
+The user approved the line-limit exception for this PR. Native additions are submitted in PR #9; remote native CI 39366365034 passed.
+See [real trace and limits](0009-staged-pipeline.md) and [architecture](../architecture/MODULES.md).
 
 ## Replaceable modules
 
@@ -33,7 +34,7 @@ flowchart TD
     B -->|Observation| R
 ```
 
-The diagram describes the target design, not running integrations. The backend
+The diagram describes the full target design. Its single-lane planning subset runs locally; the full loop does not. The backend
 is external to this work. Tests may supply fixed observations and test doubles.
 Constructor injection selects implementations. New algorithms must not require
 changing Runtime or public request fields. Keep native dependencies optional.
@@ -61,7 +62,7 @@ Do not add a mandatory intermediate submit or claim TAPF covers warehouse stock.
 | 10 | Runtime transactions and branches | No double reservation, idempotent submit, stale rejection, protected Lift, due branch wins |
 | 11 | Central executor and integrated replay | Exact Hermite slices, retained switch knots, action starts once, event deduplication |
 
-Before upstream integration, define and test the adapter's supported subset.
+Before extending upstream integration, define and test the adapter's supported subset.
 Refuse unsupported mid-edge starts, loaded handovers, geometry, cyclic rotations,
 or action semantics rather than silently reducing the problem. An intermediate
 adapter PR need not claim all stages work; no executable plan is accepted until
@@ -69,15 +70,15 @@ the shared validator and stopping requirements are satisfied.
 
 ## Candidate upstreams
 
-Inspected on 2026-10-19. These are research candidates, not tested integrations.
+Inspected on 2026-10-19. MAWPF/WinkTPG now have local single-lane integration evidence; general support remains incomplete.
 
 | Candidate | Evidence and proposed role | Adapter work / limits |
 | --- | --- | --- |
-| [MAWPF](https://github.com/HirokiNagai-39/mawpf) | C++17; CLI selects LaCAM, PIBT, LNS2, or PP; MIT | First MAPF family. Translate graph/state/jobs; expand multi-cell moves and export resource precedence. Warehouse actions need a capability check. |
-| [WinkTPG](https://github.com/JingtianYan/WinkTPG-IEEE-TASE) | C++20 and Boost; path file to CSV; modes 1 (WinkTPG) and 0 (TPG) | First motion family. Add physical actions, exact splice and fleet stopping checks. No license file found in the inspected tree; resolve reuse terms before redistribution. |
+| [MAWPF](https://github.com/HirokiNagai-39/mawpf) | C++17; CLI selects LaCAM, PIBT, LNS2, or PP; MIT | Single-lane graph/state/job translation and action capability checks run locally. Multi-robot paths, obstacles, turns, multi-cell moves and resource precedence remain incomplete. |
+| [WinkTPG](https://github.com/JingtianYan/WinkTPG-IEEE-TASE) | C++20 and Boost; path file to CSV; modes 1 (WinkTPG) and 0 (TPG) | Single-lane physical actions and exact Hermite splices run locally. Multi-robot motion and continuous fleet stopping checks remain incomplete. No license file found in the inspected tree; resolve reuse terms before redistribution. |
 | [libMultiRobotPlanning](https://github.com/whoenig/libMultiRobotPlanning) | C++14; CBS/ECBS, CBS-TA/ECBS-TA, min-cost assignment and next-best assignment; MIT | Assignment and joint TAPF experiment. Its goal-assignment examples do not express SKU selection, shelf service or queue locks. |
 
-Inspected commits (freeze again when a build is introduced):
+Inspected commits (the native build pins MAWPF and WinkTPG):
 
 - MAWPF: `0cdb8e43797aff3781e4cd3ddb2c6d7d36f3df17`.
 - WinkTPG: `dd96946f225e206de35b041320786eab43210658`.
@@ -89,6 +90,8 @@ and return slots; matching alone does not solve inventory or service sequencing.
 Compare it with joint CBS-TA on a restricted one-goal-per-robot scenario before
 extending to multi-action warehouse jobs. This is a proposed experiment, not a
 claim that CBS-TA already supports the full API.
+
+Stage 8 has a locally verified real single-lane staged chain. General native integration and joint TAPF remain planned.
 
 ## Observability
 

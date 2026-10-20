@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>真实订单到 TPG 重放 / Native chain replay</title>
+<style>
+body{font:16px/1.65 system-ui;color:#302d27;background:#f7f4ed;max-width:1040px;margin:auto;padding:32px}h1{font-size:32px}small,.muted{color:#746d61}button,input,select{font:inherit}button{padding:8px 16px;background:#fff;border:1px solid #cabfae;border-radius:8px;cursor:pointer}button:focus-visible,summary:focus-visible{outline:3px solid #a86138}section{background:#fffaf3;border:1px solid #e2d8ca;border-radius:16px;padding:24px;margin:20px 0}svg{width:100%;height:auto}input{width:100%}table{border-collapse:collapse;width:100%;font-size:14px}td,th{padding:9px;text-align:left;border-bottom:1px solid #e2d8ca}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}summary{cursor:pointer}.stats{display:flex;gap:30px;flex-wrap:wrap}output{font-variant-numeric:tabular-nums}.badge{color:#426847}#robot{fill:#a86138}#shelf{fill:none;stroke:#716357;stroke-width:3}a{color:#885534}@media(max-width:600px){body{padding:16px}section{padding:16px}.scroll{overflow:auto}}
+</style>
+<header><small>WAREHOUSE / ACTUAL NATIVE EXECUTION TRACE</small><h1>订单 → 分配 → 编译 → MAPF → TPG</h1>
+<p>真实运行重放 / Actual native planning replay. 没有求解器替身 / No solver doubles.</p>
+<p class="muted">范围 / Scope: 1 robot, 1 shelf, eastbound unit lane. 未提交 Runtime, 未证明连续碰撞或停车安全 / No Runtime acceptance or continuous collision/parking proof.</p></header>
+<section><strong id="status"></strong><p id="failure"></p><div class="stats"><span>订单数量 / Units: <b id="quantity"></b></span><span>原生调用 / Native calls: <b id="calls"></b></span><span>完成 / Finish: <b id="finish"></b></span></div></section>
+<section id="playback"><svg viewBox="0 0 940 160" aria-label="Robot and shelf on the route"><g id="lane"></g><rect id="shelf" x="-17" y="46" width="34" height="34" rx="3"/><circle id="robot" cx="0" cy="90" r="15"/></svg>
+<label for="time">仿真时间 / Simulation time</label><input id="time" type="range" min="0" step="any" value="0">
+<p><button id="previous">← 上一节点 / Previous</button> <button id="next">下一节点 / Next →</button> <button id="play">播放 / Play</button></p>
+<div class="stats"><output id="clock"></output><output id="position"></output><output id="speed"></output><output id="action"></output></div></section>
+<section><h2>动作与资源 / Actions and resources</h2><div class="scroll"><table><thead><tr><th>动作 / Action</th><th>位置 / Node</th><th>开始 / Start</th><th>耗时 / Duration</th><th>资源 / Resource</th><th>StepRef</th></tr></thead><tbody id="actions"></tbody></table></div></section>
+<section><h2>实际模块输入输出 / Actual stage I/O</h2><div id="stages"></div></section>
+<section><h2>上游原始证据 / Native evidence</h2><p>包含真实命令, 预算, 退出码, 原始状态和速度 / Commands, budgets, exit codes, raw states and speeds.</p><div id="raw"></div></section>
+<script id="evidence" type="application/json">__EVIDENCE__</script>
+<script>
+const data = JSON.parse(document.querySelector('#evidence').textContent);
+// 中文: $ 函数按元素 ID 查找重放控件, 让渲染函数始终访问对应的显示元素.
+// English: The $ function finds replay controls by element ID so rendering consistently accesses the intended element.
+const $ = id => document.getElementById(id);
+// 中文: escape 函数转义证据标签. 内层 replace 回调把特殊字符转换为 HTML 实体, 防止标签被浏览器解释为页面代码.
+// English: escape escapes evidence labels. Its replace callback converts special characters to HTML entities so the browser treats labels as text.
+const escape = value => String(value).replace(/[&<>"']/g, char => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[char]));
+
+// 中文: detail 函数把阶段或原生程序证据放入可展开文本块, 让用户按需查看日志并保持主时间线清晰.
+// English: detail puts stage or native-program evidence in expandable text blocks so users can inspect logs while keeping the main timeline clear.
+function detail(parent, title, value) {
+  const block = document.createElement('details');
+  const summary = document.createElement('summary');
+  const content = document.createElement('pre');
+  summary.textContent = title;
+  content.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+  block.append(summary, content);
+  parent.append(block);
+}
+
+$('status').textContent = data.status;
+$('quantity').textContent = data.orders[0].items[0].quantity;
+// 中文: reduce 回调累加各阶段的进程记录数. filter 回调只保留 run.json 执行记录文件, 让调用计数来自真实进程证据.
+// English: The reduce callback sums stage process records. The filter callback keeps only run.json execution records so the count reflects real process evidence.
+$('calls').textContent = Object.values(data.native_evidence).reduce((sum, files) =>
+  sum + Object.keys(files).filter(name => name.endsWith('.run.json')).length, 0);
+for (const [name, input, output] of data.trace) {
+  detail($('stages'), name, { input, output });
+}
+for (const [stage, files] of Object.entries(data.native_evidence)) {
+  for (const name of Object.keys(files).sort()) {
+    detail($('raw'), stage + ' / ' + name, files[name]);
+  }
+}
+detail($('raw'), 'Upstream commits and binary SHA256', {
+  sources: data.sources, binaries: data.binaries, seed: data.seed
+});
+
+if (!data.result.motion) {
+  $('playback').hidden = true;
+  $('failure').textContent = JSON.stringify(data.result);
+  $('finish').textContent = 'rejected';
+} else {
+  const segment = data.result.motion.common_prefix[0];
+  const knots = segment.knots;
+  // 中文: trace.find 回调定位 compilation 编译阶段. jobs 读取该阶段输出的机器人动作, 让资源和耗时展示沿用真实编译结果.
+  // English: The trace.find callback locates the compilation stage. jobs reads its robot actions so displayed resources and durations use actual compiler output.
+  const jobs = data.trace.find(row => row[0] === 'compilation')[2][0].actions;
+  const duration = knots.at(-1).time_s;
+  const end = knots.at(-1).pose.x_m;
+  const canvas = $('lane').ownerSVGElement;
+  // 中文: px 函数把米制位置映射到当前画布宽度, 让显示比例随屏幕变化并保持原始轨迹坐标不变.
+  // English: px maps metric positions to the current canvas width so display scaling preserves the original trajectory coordinates.
+  const px = x => 30 + x / end * (canvas.clientWidth - 60);
+  $('finish').textContent = duration.toFixed(3) + ' s';
+  $('time').max = duration;
+
+  // 中文: layout 函数按画布宽度重绘车道和节点, 让手机上的标签保持可读并使显示缩放独立于运动计算.
+  // English: layout redraws the lane and nodes for the canvas width so mobile labels remain readable and display scaling stays separate from motion calculations.
+  function layout() {
+    canvas.setAttribute('viewBox', `0 0 ${canvas.clientWidth} 160`);
+    $('lane').innerHTML = `<path d="M30 90H${canvas.clientWidth - 30}" stroke="#d5c9b8" stroke-width="5"/>`;
+    // 中文: nodes.map 回调把路网节点转换为位置标记和 ID, 让图中位置可以回查输入模型中的真实路网.
+    // English: The nodes.map callback converts graph nodes into position markers and IDs so displayed locations can be traced to the input graph.
+    $('lane').innerHTML += data.model.nodes.map(node =>
+      `<circle cx="${px(node.position.x_m)}" cy="90" r="4" fill="#8c8375"/>
+       <text x="${px(node.position.x_m)}" y="130" text-anchor="middle">${escape(node.id)}</text>`
+    ).join('');
+  }
+  layout();
+  // 中文: resize 事件回调在窗口尺寸变化时重排车道并重绘当前帧, 防止机器人位置与缩放后的路网节点错位.
+  // English: The resize event callback lays out again the lane and redraws the current frame so the robot stays aligned with the scaled graph nodes.
+  window.addEventListener('resize', () => { layout(); render(); });
+  // 中文: jobs.map 回调展示各动作的开始时刻, 资源和 StepRef. StepRef 用任务 ID 与步骤下标定位原任务动作, 方便用户核对动画细节.
+  // English: The jobs.map callback displays action starts, resources and StepRefs. A StepRef identifies the original task action by task ID and step index for inspection alongside animation.
+  $('actions').innerHTML = jobs.map((action, index) => `<tr>
+    <td>${action.kind}</td><td>${escape(action.target_node)}</td>
+    <td>${segment.actions[index].start_s.toFixed(3)} s</td><td>${action.duration_s.toFixed(3)} s</td>
+    <td>${escape(action.resource_ids.join(', '))}</td>
+    <td>${escape(action.step.task_id)}:${action.step.step_index}</td></tr>`).join('');
+
+  // 中文: render 函数用返回节点的位置与速度计算 Hermite 三次插值曲线上的当前运动状态. render 同时显示动作状态, 让动画重放求解器返回的轨迹.
+  // English: render uses returned knot positions and velocities to evaluate the current motion on a cubic Hermite curve and displays action state so animation replays the solver trajectory.
+  function render() {
+    const time = +$('time').value;
+    // 中文: knots.findIndex 回调定位当前时间之后的首个轨迹节点, 让 render 选择正确的曲线区间并保留内部速度切换.
+    // English: The knots.findIndex callback locates the first trajectory knot after the current time so render selects the correct curve interval and preserves internal speed switches.
+    let index = knots.findIndex(knot => knot.time_s > time);
+    if (index < 1) index = knots.length - 1;
+    const left = knots[index - 1], right = knots[index];
+    const dt = right.time_s - left.time_s;
+    const s = Math.max(0, Math.min(1, (time - left.time_s) / dt));
+    const x0 = left.pose.x_m, x1 = right.pose.x_m;
+    const v0 = left.velocity.vx_mps, v1 = right.velocity.vx_mps;
+    const a = 2*x0 - 2*x1 + dt*(v0 + v1);
+    const b = -3*x0 + 3*x1 - dt*(2*v0 + v1);
+    const c = dt*v0;
+    const x = ((a*s + b)*s + c)*s + x0;
+    const speed = (3*a*s*s + 2*b*s + c) / dt;
+    $('robot').setAttribute('cx', px(x));
+    const lifted = time >= segment.actions[0].start_s + jobs[0].duration_s - 1e-9;
+    const dropped = time >= segment.actions[2].start_s + jobs[2].duration_s - 1e-9;
+    $('shelf').setAttribute('transform', `translate(${px(dropped ? end : lifted ? x : 1)},0)`);
+    $('clock').textContent = time.toFixed(3) + ' s';
+    $('position').textContent = 'x = ' + x.toFixed(3) + ' m';
+    $('speed').textContent = 'v = ' + speed.toFixed(3) + ' m/s';
+    // 中文: actions.findIndex 回调用开始时间与完整耗时识别当前动作, 防止显示区域把已完成动作继续标为执行中.
+    // English: The actions.findIndex callback identifies the active action from its start and full duration so the display does not mark completed work as running.
+    const active = segment.actions.findIndex((action, i) =>
+      time >= action.start_s && time < action.start_s + jobs[i].duration_s - 1e-9);
+    $('action').textContent = active < 0 ? '移动或等待 / Move or hold' : jobs[active].kind;
+  }
+  $('time').oninput = render;
+  // 中文: next 点击回调跳到后一个曲线节点, 让用户逐个检查轨迹切换点.
+  // English: The next click callback advances to the next curve knot so users can inspect each trajectory switch.
+  $('next').onclick = () => {
+    // 中文: knots.find 回调查找严格晚于当前时间的节点, 防止下一步按钮停在同一浮点时间边界.
+    // English: The knots.find callback locates a strictly later knot so the next button cannot remain on the same floating-point time boundary.
+    $('time').value = (knots.find(knot => knot.time_s > +$('time').value + 1e-8) || knots.at(-1)).time_s;
+    render();
+  };
+  // 中文: previous 点击回调回到前一个曲线节点, 让用户重新检查动作边界并保持前后步进操作对称.
+  // English: The previous click callback returns to the preceding curve knot so users can revisit action boundaries with symmetric stepping controls.
+  $('previous').onclick = () => {
+    // 中文: 倒序副本的 find 回调查找更早的轨迹节点, 让向后重放保持原始轨迹证据的节点顺序.
+    // English: The find callback on the reversed copy locates an earlier trajectory knot so backward replay preserves the original evidence order.
+    $('time').value = ([...knots].reverse().find(knot => knot.time_s < +$('time').value - 1e-8) || knots[0]).time_s;
+    render();
+  };
+  let timer = null;
+  // 中文: play 点击回调切换播放或暂停, 并在结束后重播. 该回调让用户连续观察或暂停核对, 并保持计划不变.
+  // English: The play click callback toggles playback and restarts completed playback so users can observe or pause for inspection while preserving the plan.
+  $('play').onclick = () => {
+    if (timer) { clearInterval(timer); timer = null; return; }
+    if (+$('time').value >= duration) $('time').value = 0;
+    // 中文: setInterval 定时回调推进显示时间并在结尾停止, 该回调仅控制浏览器播放节奏, 不执行物理后端动作.
+    // English: The setInterval callback advances display time and stops at the end. It controls browser playback only and does not execute physical backend actions.
+    timer = setInterval(() => {
+      $('time').value = Math.min(duration, +$('time').value + 0.04);
+      render();
+      if (+$('time').value >= duration) { clearInterval(timer); timer = null; }
+    }, 40);
+  };
+  render();
+}
+</script>
+</html>
