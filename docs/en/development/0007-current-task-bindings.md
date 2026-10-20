@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-19-r2 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r3 -->
 
 Date: 2026-10-19. Status: limited stage 4 increment, fixture verified, awaiting review.
 Branch: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -87,6 +87,18 @@ Bilingual docs passed gpt-6-luna / low review. Remote CI results will be recorde
 
 No allocator, stock/demand feasibility, MAPF/TPG/TAPF, Runtime atomic commit,
 continuous geometry, resource scheduling, or parking safety verification. Compiled jobs are not an acceptable execution proposal.
+
+Copilot trigger diagnosis (2026-10-20 UTC): ruleset `25432822` is active for the default branch,
+with `review_on_push=true` and `review_draft_pull_requests=true`. Empty commit `da43cc8` was pushed
+and CI passed, but PR #7 had no review, review-request, or Copilot work events.
+Both the REST request for `copilot-pull-request-reviewer[bot]` and GraphQL `requestReviewsByLogin`
+returned success without producing actual review events; HTTP success is not proof of a triggered review.
+A read-only subscription query for the signed-in account TachikakaMin returned
+`access_type_sku=free_limited_copilot` and zero premium request entitlement; Requora had zero seats.
+The account query used the undocumented `copilot_internal/user` diagnostic endpoint,
+which is not a project dependency. [Official documentation](https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review)
+confirms that Copilot Free excludes code review. An eligible subscription or organization-paid access
+is needed before verifying an actual trigger. No subscription was purchased or organization-paid usage enabled.
 
 ## Line counts and next step
 

@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0007-current-task-bindings.md) | [English](../../en/development/0007-current-task-bindings.md)
 
-<!-- doc-sync: current-task-bindings / 2026-10-19-r2 -->
+<!-- doc-sync: current-task-bindings / 2026-10-20-r3 -->
 
 日期: 2026-10-19. 状态: 阶段 4 受限增量, 已通过 fixture 验证, 等待 review.
 分支: `feat/current-task-bindings`. [PR #7](https://github.com/Requora/TAPF_MAPF_TPG/pull/7).
@@ -86,6 +86,17 @@ Ruff, pip check 和 diff 检查通过. 160 个参考文件哈希保持不变.
 
 尚未验证分配器, 库存/需求可行性, MAPF/TPG/TAPF, Runtime 原子提交,
 连续几何, 资源调度或停车安全. 编译 jobs 不代表可接受执行方案.
+
+Copilot 触发诊断 (2026-10-20 UTC): 规则 `25432822` 已启用, 面向默认分支,
+`review_on_push=true`, `review_draft_pull_requests=true`. 空提交 `da43cc8` 已推送,
+CI 通过, 但 PR #7 的 review, review-request 和 Copilot work 事件均为空.
+REST 请求 `copilot-pull-request-reviewer[bot]` 与 GraphQL `requestReviewsByLogin`
+都返回成功响应, 但没有产生实际 review 事件, 因此不能将 HTTP 成功视为触发成功.
+当前登录账号 TachikakaMin 的只读订阅查询返回 `access_type_sku=free_limited_copilot`,
+高级请求额度为 0; Requora 组织席位数为 0. 账号查询使用非公开稳定契约的
+`copilot_internal/user` 诊断端点, 不作为项目依赖. [官方说明](https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review)
+确认 Copilot Free 不包含 code review. 需先获得对应订阅或组织付费使用资格,
+再验证实际触发; 本次没有购买订阅或启用组织付费使用.
 
 ## 行数与下一步
 
