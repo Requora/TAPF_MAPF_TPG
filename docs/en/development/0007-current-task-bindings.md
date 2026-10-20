@@ -111,7 +111,7 @@ Automatic review recovery remains unverified; quota or successful responses alon
 
 The user requested switching automatic code review to DeepSeek V4.1 Flash 1017.
 The [official API documentation](https://api-docs.deepseek.com/) specifies the current call name `deepseek-flash`,
-served by DeepSeek-V4.1-Flash-1017. Use high reasoning effort and at most 16384 output tokens.
+served by DeepSeek-V4.1-Flash-1017. Use high reasoning effort and at most 65536 generated tokens, including reasoning.
 The model name is a provider alias, not an immutable version pinned by this repository; log the response model and usage.
 Store the key only in Actions Secret `DEEPSEEK_API_KEY`, never in source or model input.
 Removed the Copilot automatic-review rule from ruleset `25432822`; other branch protections remain unchanged.
@@ -131,6 +131,8 @@ All 66 source tests and Ruff pass; embedded workflow Python separately passes co
 These tests do not replace a real DeepSeek call. Record actual run results in the PR.
 The first real run `39348625815` received an incomplete or empty response and refused publication. Raise the output budget
 from 8192 to 16384 and log model, usage, finish_reason, and content length; record subsequent results in the PR.
+The second run `39348844596` confirmed finish_reason=length: all 16384 completion tokens were reasoning, with zero content characters.
+Set the budget to the thinking-mode default of 65536 from the [API documentation](https://api-docs.deepseek.com/api/create-chat-completion/), retaining high reasoning effort.
 The initial local lookup found no node, so the implementation uses standard-library Python without new runtime dependencies.
 
 ## Line counts and next step

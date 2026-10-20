@@ -108,7 +108,7 @@ jobs:
                       {"role": "user", "content": prompt},
                   ],
                   "thinking": {"type": "enabled"},
-                  "reasoning_effort": "high", "max_tokens": 16384, "stream": False,
+                  "reasoning_effort": "high", "max_tokens": 65536, "stream": False,
               })
               choice = result["choices"][0]
               content = choice["message"]["content"]
