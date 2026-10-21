@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
 
-<!-- doc-sync: native-tapf-comparison / 2026-10-20-r1 -->
+<!-- doc-sync: native-tapf-comparison / 2026-10-21-r2 -->
 
 ## Scope and sources
 
@@ -94,8 +94,16 @@ The warehouse native-adapter integration count remains 2; the isolated goal expe
 Website source is reviewed in this PR and published from a separate Sites checkout to the same private site.
 Published to the same [private website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), with status succeeded. Sites source commit: `254ac62db093f3759c91ec331b7843cd2982d725`; version_id: `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_dfdebc47895881918bb2701928b2379e`. The page links PR #10 and the real experiment CI artifact. Access remains owner-only; the hosted login flow was not browser-tested. This repository's remote is unchanged.
 
-Final diff against `04d4cda`: code 381 (+361/-20), documentation 293 (+254/-39), configuration 52 (+51/-1). HTML/JS, tests and comments count as code. No line-limit exception, reference bundle or upstream source is included. Work now waits for review without merging or starting another PR.
+Diff at goal-experiment delivery against `04d4cda`: code 381 (+361/-20), documentation 293 (+254/-39), configuration 52 (+51/-1). HTML/JS, tests and comments count as code. No line-limit exception, reference bundle or upstream source is included. Work now waits for review without merging or starting another PR.
 
 ## Automated review verification
 
 The five automated comments identified no new defect: compare rejects nonempty directories before any call; retaining failed-call subdirectories matches evidence isolation; mapping keys/values are restricted to agent0/agent1 and goal0/goal1; forcing the joint result to equal the standalone assignment would reject this case's correct cost-6 plan; Python -I discover passed in the real remote native job. Bilingual review used gpt-6-luna / low; its test-count wording suggestion was applied and the recheck passed.
+
+## OpenRouter review migration, 2026-10-21
+
+The user requested routing automatic review through OpenRouter. This follow-up changes the review workflow in the same PR #10 without starting the next planning module.
+The [official OpenRouter API guide](https://openrouter.ai/docs/quickstart) and live [model catalog](https://openrouter.ai/api/v1/models) support `https://openrouter.ai/api/v1` and `deepseek/deepseek-v4.1-flash-1017`. PR-Agent uses the LiteLLM compatible route `openai/deepseek/deepseek-v4.1-flash-1017`; `openai/` is only a protocol prefix.
+The key was entered through hidden input into the repository Actions Secret `OPENROUTER_API_KEY`, read by the workflow's OPENAI_KEY. No key was written to the repository or logs. The user subsequently requested `reasoning_effort=medium`. The pinned PR-Agent image, Chinese inline review, 32768 model-token limit, 16384 output budget, no model fallback and existing retry policy are retained.
+Validation sequence: offline HTTP interception with LiteLLM 1.105.0 first failed because the request still targeted api.deepseek.com; after the change it confirmed `https://openrouter.ai/api/v1/chat/completions`, actual model `deepseek/deepseek-v4.1-flash-1017`, reasoning_effort medium and max_tokens 16384. The earlier real OpenRouter request with reasoning_effort=none returned OK with finish_reason=stop; the full medium-effort review awaits remote verification. YAML and diff checks pass. No permanent test that merely repeats configuration was added.
+This changes only the review service route; planning APIs, native experiments and architecture evidence are unchanged. Pre-existing .gitignore edits and helloworld.md are excluded from the commit. Full remote-review results will be recorded after pushing.

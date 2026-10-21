@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
 
-<!-- doc-sync: native-tapf-comparison / 2026-10-20-r1 -->
+<!-- doc-sync: native-tapf-comparison / 2026-10-21-r2 -->
 
 ## 范围与来源
 
@@ -94,8 +94,16 @@ TDD Red: 新增测试先因 `tapf.replay` 尚未存在而失败. 实现后真实
 网页源码在本 PR 审查, 通过独立 Sites checkout 更新同一私有站点.
 已发布到同一[私有网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), 返回 succeeded. Sites 源码 commit 为 `254ac62db093f3759c91ec331b7843cd2982d725`, version_id 为 `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_dfdebc47895881918bb2701928b2379e`. 页面包含 PR #10 和真实实验 CI artifact 链接. 访问范围保持仅所有者; 未运行托管登录浏览器测试. 本仓库 remote 未改变.
 
-相对 `04d4cda` 的最终差异: 代码 381 (+361/-20), 文档 293 (+254/-39), 配置 52 (+51/-1). HTML/JS, 测试和注释均计入代码. 本轮无行数例外, 未加入参考包或上游代码. 提交后仅等待 review, 不自行合并或开展后续 PR.
+目标实验交付时相对 `04d4cda` 的差异: 代码 381 (+361/-20), 文档 293 (+254/-39), 配置 52 (+51/-1). HTML/JS, 测试和注释均计入代码. 本轮无行数例外, 未加入参考包或上游代码. 提交后仅等待 review, 不自行合并或开展后续 PR.
 
 ## 自动 review 核对
 
 本轮五条自动意见未发现新缺陷: compare 已在任何调用前拒绝非空目录; 子目录失败保留符合证据隔离约定; mapping 的键和值已限定为 agent0/agent1 与 goal0/goal1; 联合结果不应被强制等于独立分配, 否则本例会拒绝代价 6 的正确方案; Python -I discover 已在远端原生 job 实际通过. 双语复核由 gpt-6-luna / low 执行, 已采纳测试总数表达建议并通过再次复核.
+
+## OpenRouter review 迁移, 2026-10-21
+
+用户要求将自动 review 改走 OpenRouter. 本次在同一 PR #10 修改 review 工作流, 不开启后续规划模块开发.
+根据 [OpenRouter 官方接口说明](https://openrouter.ai/docs/quickstart)和实时 [模型列表](https://openrouter.ai/api/v1/models), 使用 `https://openrouter.ai/api/v1` 与 `deepseek/deepseek-v4.1-flash-1017`. PR-Agent 的 LiteLLM 兼容路由为 `openai/deepseek/deepseek-v4.1-flash-1017`; `openai/` 只是协议前缀.
+密钥经隐藏输入写入仓库 Actions Secret `OPENROUTER_API_KEY`, 由工作流的 OPENAI_KEY 读取. 密钥未写入仓库或日志. 按用户后续要求改为 `reasoning_effort=medium`. 保持固定 PR-Agent 镜像, 中文行内 review, 32768 模型 token 上限, 16384 输出预算, 无模型 fallback 和原重试策略.
+验证先后: LiteLLM 1.105.0 的离线 HTTP 拦截先因请求仍发往 api.deepseek.com 而失败; 修改后确认请求为 `https://openrouter.ai/api/v1/chat/completions`, 实际 model 为 `deepseek/deepseek-v4.1-flash-1017`, reasoning_effort 为 medium, max_tokens 为 16384. 先前 reasoning_effort=none 的真实 OpenRouter 小请求返回 OK, finish_reason=stop; medium 的完整 review 待远端验证. YAML 与 diff 检查通过. 未增加只复述配置的永久测试.
+本次仅改变审查服务路由; 规划 API, 原生实验和架构证据不变. 工作区已有的 .gitignore 修改和 helloworld.md 未纳入提交. 完整远端 review 的运行结果待推送后补充.

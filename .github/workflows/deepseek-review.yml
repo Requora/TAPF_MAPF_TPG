@@ -1,4 +1,4 @@
-name: DeepSeek review
+name: OpenRouter review
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -17,18 +17,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: PR-Agent review with DeepSeek Flash
+      - name: PR-Agent review with DeepSeek Flash via OpenRouter
         # PR-Agent 0.48.0. Pin the runtime image, not only its Action wrapper.
         uses: docker://pragent/pr-agent@sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          OPENAI_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          OPENAI.API_BASE: https://api.deepseek.com
-          # openai/ selects the compatible protocol; the endpoint is DeepSeek.
-          CONFIG.MODEL: openai/deepseek-flash
+          OPENAI_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI.API_BASE: https://openrouter.ai/api/v1
+          # 中文: openai/ 选择兼容协议; OpenRouter 将请求路由到指定的 DeepSeek 模型.
+          # English: openai/ selects the compatible protocol; OpenRouter routes to the named DeepSeek model.
+          CONFIG.MODEL: openai/deepseek/deepseek-v4.1-flash-1017
           CONFIG.FALLBACK_MODELS: '[]'
-          CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek-flash"]'
-          CONFIG.REASONING_EFFORT: none
+          CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek/deepseek-v4.1-flash-1017"]'
+          CONFIG.REASONING_EFFORT: medium
           CONFIG.RESPONSE_LANGUAGE: zh-CN
           CONFIG.CUSTOM_MODEL_MAX_TOKENS: '32768'
           CONFIG.MAX_MODEL_TOKENS: '32768'
@@ -55,7 +56,7 @@ jobs:
           PR_REVIEWER.REQUIRE_TICKET_ANALYSIS_REVIEW: 'false'
           PR_REVIEWER.ENABLE_REVIEW_LABELS_SECURITY: 'false'
           PR_REVIEWER.ENABLE_REVIEW_LABELS_EFFORT: 'false'
-          PR_REVIEWER.REVIEW_HEADING: DeepSeek 中文代码审查
+          PR_REVIEWER.REVIEW_HEADING: DeepSeek 中文代码审查 (OpenRouter)
           PR_REVIEWER.EXTRA_INSTRUCTIONS: >-
             所有审查意见使用简体中文和英文标点. 每条意见说明严重程度,
             具体失败场景和修复建议. 只报告可操作的缺陷, 不重复已修复的问题.
