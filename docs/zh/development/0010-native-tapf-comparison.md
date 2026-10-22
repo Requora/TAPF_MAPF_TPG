@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
 
-<!-- doc-sync: native-tapf-comparison / 2026-10-22-r5 -->
+<!-- doc-sync: native-tapf-comparison / 2026-10-22-r6 -->
 
 ## 范围与来源
 
@@ -126,3 +126,11 @@ TDD Red: 新增测试先因 `tapf.replay` 尚未存在而失败. 实现后真实
 该运行记录输入约 37706 token, 但 81920 总预算扣除 65536 输出预留后只有 16384 输入空间, 导致 diff 被裁剪. 本次同时将 CUSTOM_MODEL_MAX_TOKENS 和 MAX_MODEL_TOKENS 改为 131072, 输出预留仍为 65536, 输入空间增至 65536. 模型目录公布的上下文为 1048576, 本地预算未超出该上限. high, 模型, 路由, 密钥映射, 300 s AI 设置和无重试策略不变. 输入空间增大可能增加单次费用和延迟; 本次保留有界预算, 不保证任意 PR 全部装入.
 可选 .secrets.toml 缺失无需创建密钥文件. Actions token 查询 /user 的 403 在上游代码中回退为 github-actions[bot], 无需增加权限或使用个人 token. 本次不修改或屏蔽上游警告.
 预算复现先因 16384 无法容纳已观察的 37706 加 4096 余量而失败; 修改后 65536 可容纳相同输入. 实际客户端 HTTP 拦截确认 high, OpenRouter 和 max_tokens=65536 不变; YAML 与 diff 检查通过. 这只验证预算与请求参数, 不等同于服务审查成功. 推送后的真实 diff 覆盖和模型结果记录于 PR 说明. 本次没有业务代码或网页变更, 双语日志同步.
+
+## 输出上限与时间估算, 2026-10-22
+
+[预算修正后的 review 39856505842](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39856505842)确认 `Tokens: 38758` 且 `returning full diff`, 因此该提交的 diff 裁剪问题已验证消除. 但模型调用从 21:21:38 到 21:27:32 后返回空正文和 finish_reason=length, 审查失败, 不再只是 job 超时. 用户随后明确要求继续增大输出上限并据此计算时间.
+用户提供 generation ID `gen-1792703584-tN4b4ljB9eB9KKym0mMO`. 经 [OpenRouter generation API](https://openrouter.ai/docs/api/api-reference/generations/get-request-&-usage-metadata-for-a-generation)查询, 这是 21:13:04 UTC 的前一次 high 请求: provider=InferenceNet, generation_time=362093 ms, native_tokens_completion=51685, native_tokens_reasoning=51685, cancelled=true, 上游状态 499, finish_reason=null. 该记录不是 39856505842 的请求. 全部已生成 token 均计为推理, 未产生正文; 这与客户端取消相符, 不将 499 解读为模型供应商主动故障.
+实测平均速度为 `51685 / 362.093 = 142.74 token/s`. 新输出上限为 131072, 同速跑满约 `131072 / 142.74 = 918.26 s = 15.30 min`. 增加 25% 余量后约 1147.82 s, 向上取整为 1200 s AI 超时. job 再留 2 min 启动和发布余量, 因此设为 22 min. 这是单次中途取消请求的速度估算, 不是服务 SLA 或模型必定完成的保证; 实际速度, 首 token 延迟, 路由和输入处理时间会变化, AI 超时也不被宣称为整个流式请求的墙钟硬截止.
+工作流将 MAX_OUTPUT_TOKENS 改为 131072, CUSTOM_MODEL_MAX_TOKENS 和 MAX_MODEL_TOKENS 同步改为 196608, 为输入保留 65536. high, 模型, OpenRouter, 密钥和无重试策略不变. 新预算不保证正文一定出现. 密钥仅通过隐藏输入用于本次只读查询, 未写入仓库或日志; 原始账户元数据未提交.
+离线客户端检查先因 max_tokens 仍为 65536 失败, 修改后确认发送 high 和 max_tokens=131072; 预算检查确认输入仍为 65536 且时间公式得到 AI=1200 s/job=22 min. YAML 与 diff 检查通过. 远端结果在推送后记录于 PR 说明, 不以参数验证代替真实审查成功. 本次仅修改配置及双语日志, 不改业务代码或网页.

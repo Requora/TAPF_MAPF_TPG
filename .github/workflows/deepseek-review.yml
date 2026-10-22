@@ -15,7 +15,9 @@ jobs:
   review:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    # 中文: job 为 20 min 模型预算另留 2 min, 用于启动和发布评论.
+    # English: The job adds 2 min for startup and comment publishing to the 20 min model budget.
+    timeout-minutes: 22
     steps:
       - name: PR-Agent review with DeepSeek Flash via OpenRouter
         # PR-Agent 0.48.0. Pin the runtime image, not only its Action wrapper.
@@ -31,12 +33,14 @@ jobs:
           CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek/deepseek-v4.1-flash-1017"]'
           CONFIG.REASONING_EFFORT: high
           CONFIG.RESPONSE_LANGUAGE: zh-CN
-          # 中文: 模型上限为 high 推理和正文保留 65536 token, 另为 diff 和提示词提供 65536 输入 token 的预算.
-          # English: The model limit reserves 65536 tokens for high reasoning plus text, providing a separate 65536-token input budget for the diff and prompt.
-          CONFIG.CUSTOM_MODEL_MAX_TOKENS: '131072'
-          CONFIG.MAX_MODEL_TOKENS: '131072'
-          CONFIG.MAX_OUTPUT_TOKENS: '65536'
-          CONFIG.AI_TIMEOUT: '300'
+          # 中文: 模型上限为 high 推理和正文保留 131072 token, 另为 diff 和提示词提供 65536 输入 token 的预算.
+          # English: The model limit reserves 131072 tokens for high reasoning plus text, providing a separate 65536-token input budget for the diff and prompt.
+          CONFIG.CUSTOM_MODEL_MAX_TOKENS: '196608'
+          CONFIG.MAX_MODEL_TOKENS: '196608'
+          CONFIG.MAX_OUTPUT_TOKENS: '131072'
+          # 中文: 实测 51685 token / 362.093 s; 新输出上限按此速度加 25% 余量, 向上取整为 20 min.
+          # English: Measured 51685 tokens / 362.093 s; the new output cap at this rate plus 25% margin rounds up to 20 min.
+          CONFIG.AI_TIMEOUT: '1200'
           CONFIG.NUM_RETRIES: '0'
           CONFIG.RETRY_SAME_MODEL_ON_TIMEOUT: 'false'
           CONFIG.RETRY_SAME_MODEL_ON_LENGTH: 'false'
