@@ -68,19 +68,20 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["真实最小链已通过 CI", "Real minimal chain passes CI"], ["PR #9 待 review. 一车一架直线场景中, 六次原生调用得到 2.0/5.2/8.4 s 的动作开始时间, 8.7 s 完成. 原生实现已推送, 远端 CI 构建和 79 项原生测试通过.", "PR #9 awaits review. Six native calls for one robot/shelf on a straight lane produce action starts at 2.0/5.2/8.4 s and completion at 8.7 s. Native code is pushed; remote builds and 79 tests with native binaries pass."]],
-    [["NEXT / 待审查", "NEXT / REVIEW"], ["按真实结果审查", "Review the real result"], ["用户已授权本次行数例外. 远端原生 CI 已通过, 等待 review, 不自行合并. 原始输出与可单步重放保留在 CI artifacts.", "The user authorized this line-limit exception. Native CI passed; review is pending, with no automatic merge. Raw output and stepwise replay are retained in CI artifacts."]],
-    [["NOT YET / 尚未完成", "NOT YET"], ["通用仓库与执行闭环", "General warehouse & execution loop"], ["多车, 转弯, 障碍, 联合 TAPF, Runtime, 连续几何, 无限期停车和中央执行器未验证或未实现. 当前证据只覆盖受支持子集.", "Multiple robots, turns, obstacles, joint TAPF, Runtime, continuous geometry, indefinite parking, and central execution remain unverified or absent. Evidence covers only the supported subset."]],
+    [["NOW / 正在做", "NOW"], ["真实联合目标实验", "Real joint-goal experiment"], ["PR #9 已合并. 两种独立距离同为 6 的分配, CBS 代价为 6/8; CBS-TA 得到 6. 当前实验的四次原生调用与单步重放已通过远端 CI, PR #10 待 review.", "PR #9 merged. Two assignments share distance 6 but have CBS costs 6/8; CBS-TA returns 6. Four native calls and stepwise replay pass remote CI; PR #10 awaits review."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["核对真实路径与边界", "Inspect real paths and limits"], ["本地独立分配器选中代价 8 的平局方案. 枚举两种分配验证联合结果, 不声称普遍性能优势. 本轮遵守 500 行限制, 等待用户 review 后再继续.", "The local standalone allocator selected the cost-8 tie. Enumerating both verifies the joint result without claiming a general performance advantage. This increment stays within 500 lines and awaits user review before further work."]],
+    [["NOT YET / 尚未完成", "NOT YET"], ["联合仓库与执行闭环", "Joint warehouse & execution loop"], ["目标实验未接 SKU, Lift/Serve/Drop, 共享编译或 TPG. 多车仓库, Runtime, 连续几何, 无限期停车和中央执行器仍未完成.", "The goal experiment has no SKU, Lift/Serve/Drop, shared compiler or TPG connection. Multi-robot warehouse planning, Runtime, continuous geometry, indefinite parking and execution remain incomplete."]],
   ];
   // 中文: map 的回调把每个工作状态条目转换为卡片, 分开显示当前工作和未实现项, 防止读者把计划当成已完成成果.
   // English: The map callback converts each work-status entry into a card, separating current work from missing scope so plans are not mistaken for results.
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
+    [text(["真实目标实验 CI · 下载单步重放", "Real goal experiment CI · download replay"]), `${project.repo}/actions/runs/39379639913/artifacts/12244991832`],
     [text(["真实原生 CI · HTML/JSON 重放", "Real native CI · HTML/JSON replay"]), `${project.repo}/actions/runs/39366365034`],
-    [text(["当前 PR · 变更与 review", "Current PR · changes & review"]), `${project.repo}/pull/9`],
-    [text(["原生实现验证基线", "Native implementation baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
-    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0009-staged-pipeline.md`],
+    [text(["当前 PR · 变更与 review", "Current PR · changes & review"]), `${project.repo}/pull/10`],
+    [text(["目标实验验证基线", "Goal-experiment baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
+    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0010-native-tapf-comparison.md`],
     [text(["路线图 · 阶段 1—11", "Roadmap · stages 1–11"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/ROADMAP.md`],
   ];
   // 中文: map 的回调把每条验证证据转换成链接, 让用户能从页面追查代码, 自动构建与测试记录(CI), 或开发日志.

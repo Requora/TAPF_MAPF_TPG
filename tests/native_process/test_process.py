@@ -11,6 +11,22 @@ from warehouse_api.native_process import run_native
 # English: ProcessTests tests real subprocess timeout and output freshness so failed execution cannot accidentally
 # accept an old result file.
 class ProcessTests(unittest.TestCase):
+    # 中文: 本测试让原生程序在指定目录写辅助文件, 防止上游调试输出污染调用者的工作目录.
+    # English: This test runs a native process in a chosen directory so upstream debug output cannot pollute the caller's working directory.
+    def test_working_directory_contains_native_side_files(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "result.txt"
+            original = Path.cwd()
+            command = [sys.executable, "-c",
+                       "from pathlib import Path; Path('result.txt').write_text('ok'); "
+                       "Path('debug.dot').write_text(str(Path.cwd()))"]
+            result = run_native(command, output, budget_s=5, request_id="directory", cwd=root)
+            self.assertIsNone(result)
+            self.assertEqual((root / "debug.dot").read_text(), str(root))
+            self.assertEqual(Path.cwd(), original)
+            self.assertEqual(json.loads(output.with_suffix(".run.json").read_text())["cwd"], str(root))
+
     # 中文: 本测试运行会超时的真实休眠进程, 检查 TIMEOUT 和证据, 确认进程边界实际生效而非仅模拟返回码.
     # English: This test runs a real sleeping child and inspects TIMEOUT evidence so process enforcement is
     # checked rather than merely mocked.

@@ -2,16 +2,17 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r16 -->
+<!-- doc-sync: roadmap / 2026-10-20-r17 -->
 
-状态: PR #8 已合并至 `576e25d`. PR #9 已修正提前提交的 fixture 串联, 现待 review.
-订单到 TPG 原生链已在本地跑通, 范围为向东单位车道上的一台机器人/一个货架.
-真实分配, 共享编译, MAWPF LaCAM 和 WinkTPG speedSolver 均已参与.
-默认方案含六次原生调用: Lift 2.0 s, Serve 5.2 s, Drop 8.4 s, 8.7 s 完成.
-启用二进制后, 源码和安装包各 79 项测试通过; 未配置二进制则跳过三项原生测试.
-多机器人集成, 联合 TAPF, 连续碰撞/停车验证, Runtime 和执行仍未完成.
-用户已同意本 PR 行数例外. 原生增量纳入 PR #9; 远端原生 CI 39366365034 已通过.
-见 [真实轨迹与边界](0009-staged-pipeline.md) 和 [模块架构](../architecture/MODULES.md).
+状态: PR #9 已由用户合并, 已确认远端基线 `04d4cda`.
+本轮在 `feat/native-tapf-comparison` 完成真实目标分配/CBS/CBS-TA 对照实验, [PR #10](https://github.com/Requora/TAPF_MAPF_TPG/pull/10) 等待 review.
+两种独立距离为 6 的分配, CBS 总代价分别为 6 和 8; CBS-TA 为 6.
+本地分配器选中的平局方案为 8; 枚举两种分配避免结论依赖平局顺序.
+源码和干净安装包各 86 项测试已通过, 远端 CI 39379639913 全部通过, 包含真实 MAWPF/WinkTPG 与 CBS-TA; 未配置二进制时为 82 项通过, 4 项跳过.
+仓库订单到 TPG 链仍限于一车一架向东单位车道, 默认动作开始于 2.0/5.2/8.4 s, 8.7 s 完成.
+本轮仅扩展进程工具的可选 cwd 参数, 没有新增仓库规划 API 或依赖, 不是联合仓库流水线完成; 继续遵守 500 行限制.
+多机器人仓库集成, 联合 API 适配, 连续碰撞/停车验证, Runtime 和执行仍未完成.
+见 [目标分配实验与重放](0010-native-tapf-comparison.md), [仓库链证据](0009-staged-pipeline.md) 和 [模块架构](../architecture/MODULES.md).
 
 ## 可替换模块
 
@@ -67,15 +68,15 @@ flowchart TD
 
 ## 上游候选
 
-检查日期为 2026-10-19. 以下为调研候选; MAWPF/WinkTPG 的单车道子集现已本地集成验证, 不代表通用支持.
+检查日期为 2026-10-20. MAWPF/WinkTPG 的单车道子集已集成验证; libMultiRobotPlanning 的目标分配实验已真实运行, 不代表通用仓库支持.
 
 | 候选 | 证据与建议用途 | 适配工作 / 限制 |
 | --- | --- | --- |
 | [MAWPF](https://github.com/HirokiNagai-39/mawpf) | C++17; CLI 可选 LaCAM, PIBT, LNS2 或 PP; MIT | 单车道图/状态/任务转换和动作支持检查已本地运行. 多机器人路径, 障碍, 转弯, 跨格移动和资源先后关系仍未完成. |
 | [WinkTPG](https://github.com/JingtianYan/WinkTPG-IEEE-TASE) | C++20 和 Boost; 路径文件输入, CSV 输出; 模式 1 为 WinkTPG, 0 为 TPG | 单车道物理动作和精确 Hermite 拼接已本地运行. 多机器人运动和连续全车队停车检查仍未完成. 检查的文件树中未发现许可证文件; 再分发前需明确使用条款. |
-| [libMultiRobotPlanning](https://github.com/whoenig/libMultiRobotPlanning) | C++14; CBS/ECBS, CBS-TA/ECBS-TA, 最小费用分配与次优分配枚举; MIT | 分配和联合 TAPF 实验. 目标分配示例不表达 SKU 选择, 货架服务或队列锁. |
+| [libMultiRobotPlanning](https://github.com/whoenig/libMultiRobotPlanning) | C++14; CBS/ECBS, CBS-TA/ECBS-TA, 最小费用分配与次优分配枚举; MIT | 目标分配, CBS 和 CBS-TA 对照已真实运行. 目标分配示例不表达 SKU 选择, 货架服务或队列锁. |
 
-检查的 commits (原生构建已固定 MAWPF 和 WinkTPG):
+检查的 commits (各自的原生构建均已固定):
 
 - MAWPF: `0cdb8e43797aff3781e4cd3ddb2c6d7d36f3df17`.
 - WinkTPG: `dd96946f225e206de35b041320786eab43210658`.
@@ -84,10 +85,10 @@ flowchart TD
 分配先测试具有明确可行边的最小费用机器人/任务匹配.
 仓库专用代码仍需选择可行货架, 拣选项, 工作站和归还位置.
 匹配本身不解决库存或服务顺序.
-先在每个机器人一个目标的受限场景中与联合 CBS-TA 比较,
-再扩展到多动作仓库任务. 这是计划中的实验, 不表示 CBS-TA 已支持完整 API.
+每个机器人一个目标的双车受限实验已完成, 包含平局分配和会车口绕行.
+后续需适配共享任务语义与多动作仓库任务; CBS-TA 尚不支持完整仓库 API.
 
-阶段 8 已本地验证真实单车道分阶段链路. 通用原生集成和联合 TAPF 仍为计划.
+阶段 8 已验证单车道分阶段链路与独立目标分配原生实验. 联合仓库流水线和通用原生集成仍为计划.
 
 ## 可观察性
 

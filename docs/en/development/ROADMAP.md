@@ -2,16 +2,17 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r16 -->
+<!-- doc-sync: roadmap / 2026-10-20-r17 -->
 
-Status: PR #8 merged at `576e25d`. PR #9 is ready for review after correction of the premature fixture-only submission.
-The order-to-TPG native chain now runs locally for one robot/shelf on an eastbound unit lane.
-Real allocation, shared compilation, MAWPF LaCAM, and WinkTPG speedSolver all participate.
-Six native calls produce the default plan: Lift 2.0 s, Serve 5.2 s, Drop 8.4 s, complete 8.7 s.
-79 source and installed-wheel tests pass with native binaries; three native tests skip when binaries are not configured.
-Multi-robot integration, joint TAPF, continuous collision/parking validation, Runtime, and execution remain incomplete.
-The user approved the line-limit exception for this PR. Native additions are submitted in PR #9; remote native CI 39366365034 passed.
-See [real trace and limits](0009-staged-pipeline.md) and [architecture](../architecture/MODULES.md).
+Status: the user merged PR #9; remote baseline `04d4cda` is confirmed.
+This increment on `feat/native-tapf-comparison` completes a real assignment/CBS/CBS-TA comparison, [PR #10](https://github.com/Requora/TAPF_MAPF_TPG/pull/10) awaits review.
+Two assignments with independent distance 6 have CBS total costs 6 and 8; CBS-TA returns 6.
+The local assignment solver selected the cost-8 tie; enumerating both avoids dependence on tie order.
+86 source and clean installed-wheel tests pass, and remote CI 39379639913 passes all jobs, including real MAWPF/WinkTPG and CBS-TA; without binaries, 82 tests pass and four skip.
+The warehouse order-to-TPG chain still supports only one robot/shelf on an eastbound unit lane, with default action starts at 2.0/5.2/8.4 s and completion at 8.7 s.
+This increment only extends the process utility with optional cwd; it adds no warehouse planning API or dependencies and does not complete the joint warehouse pipeline; the 500-line limit applies.
+Multi-robot warehouse integration, joint API adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.
+See [goal-assignment experiment and replay](0010-native-tapf-comparison.md), [warehouse-chain evidence](0009-staged-pipeline.md) and [architecture](../architecture/MODULES.md).
 
 ## Replaceable modules
 
@@ -70,15 +71,15 @@ the shared validator and stopping requirements are satisfied.
 
 ## Candidate upstreams
 
-Inspected on 2026-10-19. MAWPF/WinkTPG now have local single-lane integration evidence; general support remains incomplete.
+Inspected on 2026-10-20. MAWPF/WinkTPG have single-lane integration evidence; libMultiRobotPlanning has a real goal-assignment experiment. General warehouse support remains incomplete.
 
 | Candidate | Evidence and proposed role | Adapter work / limits |
 | --- | --- | --- |
 | [MAWPF](https://github.com/HirokiNagai-39/mawpf) | C++17; CLI selects LaCAM, PIBT, LNS2, or PP; MIT | Single-lane graph/state/job translation and action capability checks run locally. Multi-robot paths, obstacles, turns, multi-cell moves and resource precedence remain incomplete. |
 | [WinkTPG](https://github.com/JingtianYan/WinkTPG-IEEE-TASE) | C++20 and Boost; path file to CSV; modes 1 (WinkTPG) and 0 (TPG) | Single-lane physical actions and exact Hermite splices run locally. Multi-robot motion and continuous fleet stopping checks remain incomplete. No license file found in the inspected tree; resolve reuse terms before redistribution. |
-| [libMultiRobotPlanning](https://github.com/whoenig/libMultiRobotPlanning) | C++14; CBS/ECBS, CBS-TA/ECBS-TA, min-cost assignment and next-best assignment; MIT | Assignment and joint TAPF experiment. Its goal-assignment examples do not express SKU selection, shelf service or queue locks. |
+| [libMultiRobotPlanning](https://github.com/whoenig/libMultiRobotPlanning) | C++14; CBS/ECBS, CBS-TA/ECBS-TA, min-cost assignment and next-best assignment; MIT | Real assignment, CBS and CBS-TA comparison completed. Its goal-assignment examples do not express SKU selection, shelf service or queue locks. |
 
-Inspected commits (the native build pins MAWPF and WinkTPG):
+Inspected commits (each native build pins its upstream):
 
 - MAWPF: `0cdb8e43797aff3781e4cd3ddb2c6d7d36f3df17`.
 - WinkTPG: `dd96946f225e206de35b041320786eab43210658`.
@@ -87,11 +88,10 @@ Inspected commits (the native build pins MAWPF and WinkTPG):
 For assignment, first test min-cost robot/job matching with explicit feasible
 edges. Warehouse-specific code must select feasible shelves, picks, stations
 and return slots; matching alone does not solve inventory or service sequencing.
-Compare it with joint CBS-TA on a restricted one-goal-per-robot scenario before
-extending to multi-action warehouse jobs. This is a proposed experiment, not a
-claim that CBS-TA already supports the full API.
+The restricted two-robot, one-goal-per-robot experiment is complete, including assignment ties and a passing-bay detour.
+Shared task semantics and multi-action warehouse adaptation remain future work; CBS-TA does not support the full warehouse API.
 
-Stage 8 has a locally verified real single-lane staged chain. General native integration and joint TAPF remain planned.
+Stage 8 has a verified single-lane staged chain and an isolated native goal-assignment experiment. The joint warehouse pipeline and general native integration remain planned.
 
 ## Observability
 

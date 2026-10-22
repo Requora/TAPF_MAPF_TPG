@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBS / CBS-TA · Native replay</title>
+<style>
+body{font:16px system-ui;margin:32px auto;padding:0 20px;max-width:1100px;background:#faf8f4;color:#302e29}
+h1{font-size:clamp(28px,5vw,44px)}p{line-height:1.6;color:#666055}button,input{font:inherit}
+.panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+article,details{background:white;border:1px solid #ded9d0;border-radius:16px;padding:18px;margin-top:24px}
+svg{width:100%;height:auto}pre{overflow:auto;font-size:13px}input{max-width:45vw}button{padding:8px 14px}
+:focus-visible{outline:3px solid #8a6543;outline-offset:4px}
+</style>
+<h1>CBS / CBS-TA</h1>
+<p>真实上游离散轨迹 / Real upstream discrete traces.<br>
+两种分配的独立距离相同, 冲突代价不同. / Equal independent distances, different conflict costs.<br>
+每次移动或等待耗时一 tick. 目标点持续占用. 无连续几何或仓库动作验证.<br>
+One tick per move or wait. Goals stay occupied. No continuous geometry or warehouse-action validation.</p>
+<p id="summary"></p>
+<button id="previous" aria-label="Previous tick / 上一步">←</button>
+<label for="tick">Tick / 步</label> <input id="tick" type="range" min="0" value="0" step="1">
+<button id="next" aria-label="Next tick / 下一步">→</button> <output id="time" aria-live="polite"></output>
+<div id="panels" class="panels"></div>
+<details><summary>原始归一化结果与来源 / Normalized results and provenance</summary><pre id="raw"></pre></details>
+<script>
+const evidence = __EVIDENCE__;
+const rows = [...evidence.fixed, evidence.joint];
+const names = ["固定分配 0 / Fixed 0", "固定分配 1 / Fixed 1", "联合搜索 / Joint search"];
+const slider = document.querySelector("#tick");
+// 中文: map 的回调读取各方案的结束时间, 让滑块覆盖所有真实路径.
+// English: The map callback reads each plan's completion time so the slider covers every real route.
+slider.max = Math.max(...rows.map(row => row.statistics.makespan));
+document.querySelector("#summary").textContent = `独立分配代价 / Assignment cost: ${evidence.assignment.cost}. Selected assignment + CBS: ${evidence.selected_baseline.statistics.cost}. CBS-TA: ${evidence.joint.statistics.cost}.`;
+document.querySelector("#raw").textContent = JSON.stringify(evidence, null, 2);
+// 中文: draw 按所选 tick 绘制真实格点状态和完整路线, 让等待和会车口绕行可以逐步检查.
+// English: draw renders real grid states and complete routes at the chosen tick so waits and passing-bay detours can be inspected.
+function draw() {
+  const tick = Number(slider.value);
+  document.querySelector("#time").textContent = `${tick} / ${slider.max}`;
+  // 中文: map 的回调为每种求解结果生成独立面板, 使相同时间的机器人位置可以直接比较.
+  // English: The map callback builds one panel per result so robot positions can be compared at the same time.
+  document.querySelector("#panels").innerHTML = rows.map((row, index) => {
+    let cells = "";
+    for (let x = 0; x < 5; x++) for (let y = 0; y < 2; y++) {
+      // 中文: some 的回调标出输入障碍, 让图形保持与原生场景一致.
+      // English: The some callback identifies input obstacles so the drawing matches the native case.
+      const blocked = evidence.case.map.obstacles.some(cell => cell[0] === x && cell[1] === y);
+      cells += `<rect x="${x*50+5}" y="${(1-y)*50+5}" width="48" height="48" fill="${blocked ? "#b6afa4" : "#f6f3ed"}"/>`;
+    }
+    // 中文: map 的回调从原生 schedule 读取路线并保持终点, 让短路线完成后的占用仍然可见.
+    // English: The map callback reads native schedules and holds endpoints so occupancy remains visible after short routes finish.
+    const robots = Object.values(row.schedule).map((path, agent) => {
+      const current = path[Math.min(tick, path.length-1)], color = agent ? "#936b4d" : "#477b89";
+      // 中文: map 的回调将每个真实路径坐标转成画布坐标, 不插入未执行的运动.
+      // English: The map callback converts each real path coordinate to a drawing coordinate without inventing motion.
+      const points = path.map(p => `${p.x*50+29},${(1-p.y)*50+29}`).join(" ");
+      return `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="3" opacity=".4"/><circle cx="${current.x*50+29}" cy="${(1-current.y)*50+29}" r="15" fill="${color}"/><text x="${current.x*50+29}" y="${(1-current.y)*50+35}" text-anchor="middle" fill="white">${agent}</text>`;
+    }).join("");
+    return `<article><h2>${names[index]}</h2><p>Cost / 代价: ${row.statistics.cost}<br>Goals / 目标: ${JSON.stringify(row.goals)}</p><svg viewBox="0 0 258 110" role="img" aria-label="${names[index]}, tick ${tick}">${cells}${robots}</svg></article>`;
+  }).join("");
+}
+slider.addEventListener("input", draw);
+// 中文: 两个按钮的回调移动一个 tick 并重绘, 让键盘与鼠标都能单步检查轨迹.
+// English: Both button callbacks move one tick and redraw so keyboard and mouse users can inspect the trace step by step.
+document.querySelector("#previous").onclick = () => { slider.value = Number(slider.value)-1; draw(); };
+document.querySelector("#next").onclick = () => { slider.value = Number(slider.value)+1; draw(); };
+draw();
+</script>
+</html>
