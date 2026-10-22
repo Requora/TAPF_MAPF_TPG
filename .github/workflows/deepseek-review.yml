@@ -15,7 +15,7 @@ jobs:
   review:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 6
     steps:
       - name: PR-Agent review with DeepSeek Flash via OpenRouter
         # PR-Agent 0.48.0. Pin the runtime image, not only its Action wrapper.

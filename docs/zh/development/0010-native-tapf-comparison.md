@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
 
-<!-- doc-sync: native-tapf-comparison / 2026-10-21-r2 -->
+<!-- doc-sync: native-tapf-comparison / 2026-10-22-r3 -->
 
 ## 范围与来源
 
@@ -104,6 +104,12 @@ TDD Red: 新增测试先因 `tapf.replay` 尚未存在而失败. 实现后真实
 
 用户要求将自动 review 改走 OpenRouter. 本次在同一 PR #10 修改 review 工作流, 不开启后续规划模块开发.
 根据 [OpenRouter 官方接口说明](https://openrouter.ai/docs/quickstart)和实时 [模型列表](https://openrouter.ai/api/v1/models), 使用 `https://openrouter.ai/api/v1` 与 `deepseek/deepseek-v4.1-flash-1017`. PR-Agent 的 LiteLLM 兼容路由为 `openai/deepseek/deepseek-v4.1-flash-1017`; `openai/` 只是协议前缀.
-密钥经隐藏输入写入仓库 Actions Secret `OPENROUTER_API_KEY`, 由工作流的 OPENAI_KEY 读取. 密钥未写入仓库或日志. 按用户后续要求改为 `reasoning_effort=medium`. 保持固定 PR-Agent 镜像, 中文行内 review, 无模型 fallback 和原重试策略. 最终模型 token 上限为 81920, 其中输出含推理保留 65536, 输入仍保留 16384; AI 超时为 300 s, 工作流超时为 8 min.
+密钥经隐藏输入写入仓库 Actions Secret `OPENROUTER_API_KEY`, 由工作流的 OPENAI_KEY 读取. 密钥未写入仓库或日志. 按用户后续要求改为 `reasoning_effort=medium`. 保持固定 PR-Agent 镜像, 中文行内 review, 无模型 fallback 和原重试策略. 最终模型 token 上限为 81920, 其中输出含推理保留 65536, 输入仍保留 16384; AI 超时为 300 s, 迁移时工作流超时设为 8 min, 后按下节 review 核对恢复为 6 min.
 验证先后: LiteLLM 1.105.0 的离线 HTTP 拦截先因请求仍发往 api.deepseek.com 而失败; 修改后确认请求为 `https://openrouter.ai/api/v1/chat/completions`, 实际 model 为 `deepseek/deepseek-v4.1-flash-1017`, reasoning_effort 为 medium, 最终 max_tokens 为 65536. 先前 reasoning_effort=none 的真实 OpenRouter 小请求返回 OK, finish_reason=stop; 首次 medium 完整 [run 39544133063](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39544133063) 在原 16384 输出预算下返回空正文和 finish_reason=length. 依据 [OpenRouter 推理预算说明](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens), 增加输出预算并保留 medium, 不降低推理强度; 新预算的 [run 39544399291](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39544399291) 已在 `a822172` 成功完成, 日志确认 reasoning_effort=medium, 并发布 4 条行内意见和[中文摘要](https://github.com/Requora/TAPF_MAPF_TPG/pull/10#issuecomment-6284755464). 实际模型用时 60.6 s, 输入 16121 token, 输出 13317 token. 输入预算限制仍会裁剪部分 diff, 本次成功不表示覆盖全部 PR 文件. YAML 与 diff 检查通过. 未增加只复述配置的永久测试.
 本次改变审查服务路由和推理强度; 规划 API, 原生实验和架构证据不变. 工作区已有的 .gitignore 修改和 helloworld.md 未纳入提交. [同一提交的 CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39544399105) 全部通过. 上述运行证据固定于 `a822172`; 后续提交仅补充文档证据.
+
+## PR 评论复核, 2026-10-22
+
+[人工评论](https://github.com/Requora/TAPF_MAPF_TPG/pull/10#discussion_r4333078654)询问为何将 job 超时从 6 min 改为 8 min. 原因只是给 300 s 模型请求和周边操作增加余量, 不是修复已观察到的超时. 两次成功 job 耗时分别为 108 s 和 117 s; [最新运行](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39544812671)及同一提交的 [CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39544812778)均通过. 因没有证据需要扩大 job 上限, 本次恢复为 6 min. OpenRouter, medium, 65536 输出预算和 300 s AI 超时保持不变. 6 min 是整个 job 的硬上限, 周边操作也占用该预算, 不保证模型总能用满 300 s.
+五条机器人意见仍不需要修改算法: 非空目录在 compare 入口被拒绝; 失败目录保留证据; 目标名已经限定, 两种分配均被枚举; 联合结果必须允许改变独立分配; 隔离模式的测试发现可成功导入. 本次再次执行 `WAREHOUSE_TAPF_BIN=/tmp/warehouse-tapf-pinned /tmp/warehouse-tapf-wheel-venv/bin/python -I -m unittest discover -s tests -p test_comparison.py -v`, 6 项全部通过, 包含真实上游调用. 首次误将 wheel 安装目录当作虚拟环境导致命令未启动, 更正为已有虚拟环境后通过. YAML 和 diff 检查通过; 恢复 6 min 后的远端运行在提交后验证.
+本次只调整配置 1 行并同步双语日志, 不改变规划模块, 实验结论或进展网页. 每条评论分别回复核对依据, 不自动关闭审查线程或合并 PR.
