@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
 
-<!-- doc-sync: native-tapf-comparison / 2026-10-22-r4 -->
+<!-- doc-sync: native-tapf-comparison / 2026-10-22-r5 -->
 
 ## Scope and sources
 
@@ -119,3 +119,10 @@ This follow-up changes one configuration line and synchronizes bilingual logs, w
 The user requested high effort for review. The workflow changes `CONFIG.REASONING_EFFORT` from medium to high and updates both budget comments. OpenRouter, DeepSeek V4.1 Flash1017, the 65536 output budget, 16384 input budget, 300 s AI timeout and 6 min job limit remain unchanged.
 The [OpenRouter model catalog](https://openrouter.ai/api/v1/models) retrieved for this change lists supported_efforts max/high/low/none for this model, without medium. Earlier request-level verification did not establish native model support for medium. The [latest medium review](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39853238713) logged empty content with finish_reason=length after about 322 s and reached the job limit; [same-commit CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39853238750) passed. The effort mismatch is not a proven cause of the empty output, and high is not guaranteed to avoid output exhaustion or timeouts.
 Offline HTTP interception first required high and failed on actual medium; after the change, it confirmed reasoning_effort=high in the real client's request to OpenRouter, with the same model and max_tokens=65536. YAML and diff checks pass, with no business-code changes. Remote review and CI run after pushing; their results are recorded in the PR description, without treating offline request verification as a successful service run. Bilingual logs are synchronized; the progress website and planning architecture are unchanged.
+
+## Review input budget and timeout correction, 2026-10-22
+
+[High review 39855330148](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39855330148) was cancelled at the 6 min job limit. The last model-call log was at 21:13:04 UTC and cancellation at 21:18:52 UTC, without a logged model response. [Same-commit CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39855329923) passed. This is actual evidence that high reached the time limit, so this follow-up raises the job cap to 8 min instead of relying on the earlier assumption made without timeout evidence. AI_TIMEOUT=300 is not a verified wall-clock deadline for the entire request; the job still supplies a total runtime cap.
+That run logged about 37706 input tokens, but the 81920 total budget minus the 65536 output reserve left only 16384 for input, causing diff pruning. Both CUSTOM_MODEL_MAX_TOKENS and MAX_MODEL_TOKENS now become 131072; the output reserve stays 65536, leaving 65536 for input. The model catalog publishes a 1048576 context window, above this local budget. High effort, model, route, key mapping, 300 s AI setting and no-retry policy remain unchanged. Larger input capacity can increase per-call cost and latency; the bounded budget does not guarantee every PR will fit.
+Missing optional .secrets.toml files do not require creating credential files. The Actions token's /user 403 falls back to github-actions[bot] in upstream code, requiring neither broader permissions nor a personal token. This follow-up neither changes nor suppresses upstream warnings.
+The budget reproduction first failed because 16384 could not fit the observed 37706 tokens plus 4096 headroom; afterward 65536 fits the same input. Real-client HTTP interception confirms unchanged high effort, OpenRouter routing and max_tokens=65536; YAML and diff checks pass. These validate budgets and request parameters, not successful service review. Actual diff coverage and model results after pushing are recorded in the PR description. No business code or website changes are included; bilingual logs are synchronized.

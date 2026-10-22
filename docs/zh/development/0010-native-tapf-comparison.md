@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
 
-<!-- doc-sync: native-tapf-comparison / 2026-10-22-r4 -->
+<!-- doc-sync: native-tapf-comparison / 2026-10-22-r5 -->
 
 ## 范围与来源
 
@@ -119,3 +119,10 @@ TDD Red: 新增测试先因 `tapf.replay` 尚未存在而失败. 实现后真实
 用户要求 review 使用 high. 工作流将 `CONFIG.REASONING_EFFORT` 从 medium 改为 high, 并同步双语预算注释. 保留 OpenRouter, DeepSeek V4.1 Flash1017, 65536 输出预算, 16384 输入预算, 300 s AI 超时和 6 min job 上限.
 本次读取 [OpenRouter 模型列表](https://openrouter.ai/api/v1/models), 该模型列出的 supported_efforts 为 max/high/low/none, 未列 medium. 之前仅验证参数传出, 不能证明模型原生支持 medium. [最新 medium review](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39853238713)记录约 322 s 后返回空正文和 finish_reason=length, 并触及 job 上限; [同提交 CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39853238750)通过. 不将推理档位不匹配认定为已证明的空输出根因, 也不保证改成 high 就不会耗尽输出或超时.
 离线 HTTP 拦截先要求 high 并因实际 medium 失败, 修改后确认真实客户端发往 OpenRouter 的请求为 reasoning_effort=high, 模型和 max_tokens=65536 不变. YAML 和 diff 检查通过, 无业务代码修改. 远端 review 与 CI 在推送后运行, 结果记录于 PR 说明, 不以离线请求验证代替服务实际成功. 双语日志同步, 进展网页和规划架构不变.
+
+## Review 输入预算与超时修正, 2026-10-22
+
+[high review 39855330148](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39855330148)在 6 min job 上限下被取消. 最后模型调用日志为 21:13:04 UTC, 取消为 21:18:52 UTC, 没有模型返回记录. [同提交 CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39855329923)通过. 这是 high 已触及时间上限的实际证据, 因此本次将 job 上限改为 8 min, 而非沿用之前没有超时证据时的推测. AI_TIMEOUT=300 不等同于已验证的整个请求墙钟硬截止; job 仍提供总运行上限.
+该运行记录输入约 37706 token, 但 81920 总预算扣除 65536 输出预留后只有 16384 输入空间, 导致 diff 被裁剪. 本次同时将 CUSTOM_MODEL_MAX_TOKENS 和 MAX_MODEL_TOKENS 改为 131072, 输出预留仍为 65536, 输入空间增至 65536. 模型目录公布的上下文为 1048576, 本地预算未超出该上限. high, 模型, 路由, 密钥映射, 300 s AI 设置和无重试策略不变. 输入空间增大可能增加单次费用和延迟; 本次保留有界预算, 不保证任意 PR 全部装入.
+可选 .secrets.toml 缺失无需创建密钥文件. Actions token 查询 /user 的 403 在上游代码中回退为 github-actions[bot], 无需增加权限或使用个人 token. 本次不修改或屏蔽上游警告.
+预算复现先因 16384 无法容纳已观察的 37706 加 4096 余量而失败; 修改后 65536 可容纳相同输入. 实际客户端 HTTP 拦截确认 high, OpenRouter 和 max_tokens=65536 不变; YAML 与 diff 检查通过. 这只验证预算与请求参数, 不等同于服务审查成功. 推送后的真实 diff 覆盖和模型结果记录于 PR 说明. 本次没有业务代码或网页变更, 双语日志同步.

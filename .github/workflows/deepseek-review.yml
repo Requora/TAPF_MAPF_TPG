@@ -15,7 +15,7 @@ jobs:
   review:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
     steps:
       - name: PR-Agent review with DeepSeek Flash via OpenRouter
         # PR-Agent 0.48.0. Pin the runtime image, not only its Action wrapper.
@@ -31,10 +31,10 @@ jobs:
           CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek/deepseek-v4.1-flash-1017"]'
           CONFIG.REASONING_EFFORT: high
           CONFIG.RESPONSE_LANGUAGE: zh-CN
-          # 中文: 模型上限为 high 推理和正文保留 65536 token, 输入预算仍为 16384.
-          # English: The model limit reserves 65536 tokens for high reasoning plus text, retaining 16384 for input.
-          CONFIG.CUSTOM_MODEL_MAX_TOKENS: '81920'
-          CONFIG.MAX_MODEL_TOKENS: '81920'
+          # 中文: 模型上限为 high 推理和正文保留 65536 token, 另为 diff 和提示词提供 65536 输入 token 的预算.
+          # English: The model limit reserves 65536 tokens for high reasoning plus text, providing a separate 65536-token input budget for the diff and prompt.
+          CONFIG.CUSTOM_MODEL_MAX_TOKENS: '131072'
+          CONFIG.MAX_MODEL_TOKENS: '131072'
           CONFIG.MAX_OUTPUT_TOKENS: '65536'
           CONFIG.AI_TIMEOUT: '300'
           CONFIG.NUM_RETRIES: '0'
