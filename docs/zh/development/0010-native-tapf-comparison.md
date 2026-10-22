@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
 
-<!-- doc-sync: native-tapf-comparison / 2026-10-22-r3 -->
+<!-- doc-sync: native-tapf-comparison / 2026-10-22-r4 -->
 
 ## 范围与来源
 
@@ -113,3 +113,9 @@ TDD Red: 新增测试先因 `tapf.replay` 尚未存在而失败. 实现后真实
 [人工评论](https://github.com/Requora/TAPF_MAPF_TPG/pull/10#discussion_r4333078654)询问为何将 job 超时从 6 min 改为 8 min. 原因只是给 300 s 模型请求和周边操作增加余量, 不是修复已观察到的超时. 两次成功 job 耗时分别为 108 s 和 117 s; [最新运行](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39544812671)及同一提交的 [CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39544812778)均通过. 因没有证据需要扩大 job 上限, 本次恢复为 6 min. OpenRouter, medium, 65536 输出预算和 300 s AI 超时保持不变. 6 min 是整个 job 的硬上限, 周边操作也占用该预算, 不保证模型总能用满 300 s.
 五条机器人意见仍不需要修改算法: 非空目录在 compare 入口被拒绝; 失败目录保留证据; 目标名已经限定, 两种分配均被枚举; 联合结果必须允许改变独立分配; 隔离模式的测试发现可成功导入. 本次再次执行 `WAREHOUSE_TAPF_BIN=/tmp/warehouse-tapf-pinned /tmp/warehouse-tapf-wheel-venv/bin/python -I -m unittest discover -s tests -p test_comparison.py -v`, 6 项全部通过, 包含真实上游调用. 首次误将 wheel 安装目录当作虚拟环境导致命令未启动, 更正为已有虚拟环境后通过. YAML 和 diff 检查通过; [恢复 6 min 后的 CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39852122416)通过, 但 [review 39852122481](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39852122481)被取消. GitHub annotation 明确为 job 超过 6 min; 最后模型请求日志为 20:50:00 UTC, 取消为 20:55:46 UTC, 未记录模型返回. 因此此前两次快速成功不能证明 6 min 对所有请求足够, 300 s AI 配置也未在本次提供可观察的请求终止. 保留 6 min 作为总运行上限, 如实记录审查未完成, 不宣称本次 review 验证通过或 8 min 必定成功.
 本次只调整配置 1 行并同步双语日志, 不改变规划模块, 实验结论或进展网页. 6 条评论已分别回复核对依据, [超时回复](https://github.com/Requora/TAPF_MAPF_TPG/pull/10#discussion_r4353378181)已补充本次取消结果. 未关闭审查线程或合并 PR.
+
+## High 推理配置, 2026-10-22
+
+用户要求 review 使用 high. 工作流将 `CONFIG.REASONING_EFFORT` 从 medium 改为 high, 并同步双语预算注释. 保留 OpenRouter, DeepSeek V4.1 Flash1017, 65536 输出预算, 16384 输入预算, 300 s AI 超时和 6 min job 上限.
+本次读取 [OpenRouter 模型列表](https://openrouter.ai/api/v1/models), 该模型列出的 supported_efforts 为 max/high/low/none, 未列 medium. 之前仅验证参数传出, 不能证明模型原生支持 medium. [最新 medium review](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39853238713)记录约 322 s 后返回空正文和 finish_reason=length, 并触及 job 上限; [同提交 CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39853238750)通过. 不将推理档位不匹配认定为已证明的空输出根因, 也不保证改成 high 就不会耗尽输出或超时.
+离线 HTTP 拦截先要求 high 并因实际 medium 失败, 修改后确认真实客户端发往 OpenRouter 的请求为 reasoning_effort=high, 模型和 max_tokens=65536 不变. YAML 和 diff 检查通过, 无业务代码修改. 远端 review 与 CI 在推送后运行, 结果记录于 PR 说明, 不以离线请求验证代替服务实际成功. 双语日志同步, 进展网页和规划架构不变.

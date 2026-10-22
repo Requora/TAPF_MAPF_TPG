@@ -29,10 +29,10 @@ jobs:
           CONFIG.MODEL: openai/deepseek/deepseek-v4.1-flash-1017
           CONFIG.FALLBACK_MODELS: '[]'
           CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek/deepseek-v4.1-flash-1017"]'
-          CONFIG.REASONING_EFFORT: medium
+          CONFIG.REASONING_EFFORT: high
           CONFIG.RESPONSE_LANGUAGE: zh-CN
-          # 中文: 模型上限为中等推理和正文保留 65536 token, 输入预算仍为 16384.
-          # English: The model limit reserves 65536 tokens for medium reasoning plus text, retaining 16384 for input.
+          # 中文: 模型上限为 high 推理和正文保留 65536 token, 输入预算仍为 16384.
+          # English: The model limit reserves 65536 tokens for high reasoning plus text, retaining 16384 for input.
           CONFIG.CUSTOM_MODEL_MAX_TOKENS: '81920'
           CONFIG.MAX_MODEL_TOKENS: '81920'
           CONFIG.MAX_OUTPUT_TOKENS: '65536'
