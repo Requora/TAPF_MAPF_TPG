@@ -14,10 +14,12 @@ TDD: 新增回归测试先失败, 原因是 ValueError 未抛出; 加入入口�
 
 `PYTHONPATH=src python -m unittest discover -s tests -v`: 87 项, 83 通过, 4 项原生测试因未配置环境跳过. Ruff, 两个 JavaScript 文件的 node --check 和 git diff --check 通过. 原有绝对输出与 cwd 的真实 Python 子进程测试通过. 本轮没有重跑 MAWPF, WinkTPG 或 CBS-TA; 历史真实集成证据属于已合并 PR #10.
 
-网页同步快照日期, 合并基线和当前工作. 首次预览端口占用, 改为系统分配端口. Sites 源码助手两次返回 Unable to prepare the Site, 未改变远端访问范围. 发布和网页检查最终结果在下文补充.
+网页同步快照日期, 合并基线和当前工作. 首次预览端口占用, 改为系统分配端口. Sites 源码助手两次返回 Unable to prepare the Site, 未改变远端访问范围. 随后在独立 checkout 成功恢复源码, 标准助手完成推送与打包.
 
 ## PR 与下一步
 
-PR 链接待创建后补充. 本轮仅修复路径约束, 提交后等待用户 review. 联合仓库适配, 连续验证, Runtime 和执行仍未实现.
+[PR #11](https://github.com/Requora/TAPF_MAPF_TPG/pull/11) 已提交. 本轮仅修复路径约束, 提交后等待用户 review. 联合仓库适配, 连续验证, Runtime 和执行仍未实现.
 
 网页检查: `web/progress/check.py http://127.0.0.1:37663` 通过双语, 两类图, 30 次模块选择, 键盘与手机检查, 无 JS 错误. 桌面和手机截图已检查. 独立 gpt-6-luna/low 文档审查已执行.
+
+私有发布成功: [网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), 源码 `dfe22019e35de4f95c6b758a5374f555adbda3d2`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_92830b6d6e288191834091f03d1f9050`. 返回 succeeded, 保持仅所有者访问; 未验证托管登录流程. 主仓库 remote 未改变. 相对 `4560d8e` 的代码为 44 行 (+34/-10), 含测试和网页; 文档单独计数, 无配置变更. 用户已有修改未加入.

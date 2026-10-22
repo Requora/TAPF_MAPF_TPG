@@ -79,6 +79,7 @@ function render() {
   const evidence = [
     [text(["真实目标实验 CI · 下载单步重放", "Real goal experiment CI · download replay"]), `${project.repo}/actions/runs/39379639913/artifacts/12244991832`],
     [text(["真实原生 CI · HTML/JSON 重放", "Real native CI · HTML/JSON replay"]), `${project.repo}/actions/runs/39366365034`],
+    [text(["当前 PR #11 · 路径约束", "Current PR #11 · path contract"]), `${project.repo}/pull/11`],
     [text(["已合并 PR #10 · 实验证据", "Merged PR #10 · experiment evidence"]), `${project.repo}/pull/10`],
     [text(["已合并验证基线", "Merged verification baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
     [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0011-native-process-output-path.md`],
