@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
 
-<!-- doc-sync: native-tapf-comparison / 2026-10-22-r6 -->
+<!-- doc-sync: native-tapf-comparison / 2026-10-22-r7 -->
 
 ## 范围与来源
 
@@ -134,3 +134,9 @@ TDD Red: 新增测试先因 `tapf.replay` 尚未存在而失败. 实现后真实
 实测平均速度为 `51685 / 362.093 = 142.74 token/s`. 新输出上限为 131072, 同速跑满约 `131072 / 142.74 = 918.26 s = 15.30 min`. 增加 25% 余量后约 1147.82 s, 向上取整为 1200 s AI 超时. job 再留 2 min 启动和发布余量, 因此设为 22 min. 这是单次中途取消请求的速度估算, 不是服务 SLA 或模型必定完成的保证; 实际速度, 首 token 延迟, 路由和输入处理时间会变化, AI 超时也不被宣称为整个流式请求的墙钟硬截止.
 工作流将 MAX_OUTPUT_TOKENS 改为 131072, CUSTOM_MODEL_MAX_TOKENS 和 MAX_MODEL_TOKENS 同步改为 196608, 为输入保留 65536. high, 模型, OpenRouter, 密钥和无重试策略不变. 新预算不保证正文一定出现. 密钥仅通过隐藏输入用于本次只读查询, 未写入仓库或日志; 原始账户元数据未提交.
 离线客户端检查先因 max_tokens 仍为 65536 失败, 修改后确认发送 high 和 max_tokens=131072; 预算检查确认输入仍为 65536 且时间公式得到 AI=1200 s/job=22 min. YAML 与 diff 检查通过. 远端结果在推送后记录于 PR 说明, 不以参数验证代替真实审查成功. 本次仅修改配置及双语日志, 不改业务代码或网页.
+
+## CI 软件源修正, 2026-10-22
+
+用户要求将原生集成任务换源. [旧 CI 39856505754](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39856505754)记录 Azure 源下载 25.3 MB 用时 9 min 32 s, 另一个 job 下载 26.6 MB 用时 9 min 24 s. [后续 CI 39857834152](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39857834152)中 TAPF job 被取消, CI gate 失败; Python, 静态检查和另一个原生 job 通过. 这不是 review 仍在等待: [review 39857834193](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39857834193)已在 118 s 内成功, 确认 high 和完整 diff, 模型用时 75.9 s, 输入 40250/输出 5684 token, 发布 5 条行内意见.
+两个原生 job 固定使用 ubuntu-24.04, 与上述日志实际运行系统相同. 依据 [runner 官方软件源配置](https://github.com/actions/runner-images/blob/main/images/ubuntu/scripts/build/configure-apt-sources.sh), 在临时 runner 中重写 /etc/apt/apt-mirrors.txt, 使用 https://archive.ubuntu.com/ubuntu/ 为首选, https://security.ubuntu.com/ubuntu/ 为备用, 移除 Azure 下载源. 包列表, APT 签名验证, 原生构建, 测试和门禁保持不变. 不改本机软件源, 不加入自动测速或缓存实现.
+YAML 解析, 两个安装步骤的 bash 语法和实际 printf 输出检查通过, diff 检查通过. 镜像速度依赖运行网络, 本机下载探测不能证明 GitHub runner 会更快; 换源后的安装耗时和完整 CI 结果以推送后的真实运行及 PR 说明为准. 本次仅修改工作流配置和双语日志, 不改规划架构或网页.

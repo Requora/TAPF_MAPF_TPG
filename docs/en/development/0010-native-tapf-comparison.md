@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0010-native-tapf-comparison.md) | [English](../../en/development/0010-native-tapf-comparison.md)
 
-<!-- doc-sync: native-tapf-comparison / 2026-10-22-r6 -->
+<!-- doc-sync: native-tapf-comparison / 2026-10-22-r7 -->
 
 ## Scope and sources
 
@@ -134,3 +134,9 @@ The user supplied generation ID `gen-1792703584-tN4b4ljB9eB9KKym0mMO`. The [Open
 Measured average throughput is `51685 / 362.093 = 142.74 tokens/s`. At that rate, the new 131072 output cap takes about `131072 / 142.74 = 918.26 s = 15.30 min`. Adding 25% margin gives about 1147.82 s, rounded up to a 1200 s AI timeout. Another 2 min for startup and publishing sets the job cap to 22 min. This estimates speed from one interrupted request; it is not a service SLA or a guarantee that the model finishes. Actual speed, first-token latency, routing and input processing time vary, and the AI timeout is not claimed as a wall-clock deadline for the entire streaming request.
 The workflow sets MAX_OUTPUT_TOKENS to 131072 and both CUSTOM_MODEL_MAX_TOKENS and MAX_MODEL_TOKENS to 196608, retaining 65536 input tokens. High effort, model, OpenRouter, key mapping and no-retry policy stay unchanged. The new budget does not guarantee visible output. The key was supplied through hidden input for this read-only query and was not written to the repository or logs; raw account metadata is not committed.
 Offline client verification first failed on the old max_tokens=65536, then confirmed high and max_tokens=131072 after the edit. Budget checks retain 65536 input tokens and reproduce AI=1200 s/job=22 min from the time formula. YAML and diff checks pass. Remote results after pushing are recorded in the PR description, without treating parameter checks as successful live review. This change only updates configuration and bilingual logs, not business code or the website.
+
+## CI package mirror correction, 2026-10-22
+
+The user requested changing mirrors for native integration jobs. [Earlier CI 39856505754](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39856505754) logged Azure downloads of 25.3 MB in 9 min 32 s and 26.6 MB in 9 min 24 s in the other job. In [subsequent CI 39857834152](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39857834152), the TAPF job was cancelled and the CI gate failed; Python, static checks and the other native job passed. Review was no longer pending: [review 39857834193](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39857834193) succeeded in 118 s, confirming high effort and full diff, with 75.9 s of model time, 40250 input/5684 output tokens and five inline findings.
+Both native jobs now use ubuntu-24.04 explicitly, matching the system in those logs. Based on the [official runner source configuration](https://github.com/actions/runner-images/blob/main/images/ubuntu/scripts/build/configure-apt-sources.sh), they rewrite /etc/apt/apt-mirrors.txt in the temporary runner to prefer https://archive.ubuntu.com/ubuntu/ and fall back to https://security.ubuntu.com/ubuntu/, removing the Azure download source. Package lists, APT signature verification, native builds, tests and the gate remain unchanged. Local machine sources are untouched; no automatic benchmarking or caching implementation is added.
+YAML parsing, bash syntax for both install steps, actual printf output checks and diff checks pass. Mirror speed depends on the execution network; a local download probe cannot establish faster GitHub runner transfers. Post-change installation times and full CI outcomes are determined by real runs after pushing and recorded in the PR description. This only changes workflow configuration and bilingual logs, not planning architecture or the website.

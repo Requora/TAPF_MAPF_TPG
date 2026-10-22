@@ -58,14 +58,21 @@ jobs:
 
   native:
     name: Real MAWPF and WinkTPG chain
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"
-      - run: sudo apt-get update && sudo apt-get install -y cmake libboost-system-dev libboost-program-options-dev libboost-filesystem-dev
+      - name: Install native dependencies from Ubuntu HTTPS mirrors
+        # 中文: 原生任务使用官方 HTTPS 源, 避开已观察到下载缓慢的 Azure 源.
+        # English: Native jobs use official HTTPS mirrors to avoid the observed slow Azure downloads.
+        run: |
+          test -f /etc/apt/apt-mirrors.txt
+          printf 'https://archive.ubuntu.com/ubuntu/\tpriority:1\nhttps://security.ubuntu.com/ubuntu/\tpriority:2\n' | sudo tee /etc/apt/apt-mirrors.txt
+          sudo apt-get update
+          sudo apt-get install -y cmake libboost-system-dev libboost-program-options-dev libboost-filesystem-dev
       - name: Fetch pinned upstreams
         run: |
           git clone https://github.com/HirokiNagai-39/mawpf.git "$RUNNER_TEMP/mawpf"
@@ -88,14 +95,21 @@ jobs:
 
   native_tapf:
     name: Real assignment, CBS and CBS-TA comparison
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"
-      - run: sudo apt-get update && sudo apt-get install -y cmake libboost-program-options-dev libyaml-cpp-dev
+      - name: Install native dependencies from Ubuntu HTTPS mirrors
+        # 中文: 原生任务使用官方 HTTPS 源, 避开已观察到下载缓慢的 Azure 源.
+        # English: Native jobs use official HTTPS mirrors to avoid the observed slow Azure downloads.
+        run: |
+          test -f /etc/apt/apt-mirrors.txt
+          printf 'https://archive.ubuntu.com/ubuntu/\tpriority:1\nhttps://security.ubuntu.com/ubuntu/\tpriority:2\n' | sudo tee /etc/apt/apt-mirrors.txt
+          sudo apt-get update
+          sudo apt-get install -y cmake libboost-program-options-dev libyaml-cpp-dev
       - name: Fetch pinned MIT upstream
         run: |
           git clone https://github.com/whoenig/libMultiRobotPlanning.git "$RUNNER_TEMP/lmrp"
