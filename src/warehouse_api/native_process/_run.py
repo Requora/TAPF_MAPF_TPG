@@ -16,8 +16,12 @@ from warehouse_api.contracts import Failure
 # expired output cannot become a new plan.
 # 中文: 可选 cwd 指定子进程工作目录, 将上游辅助输出限制在证据目录内, 不改变调用者目录.
 # English: Optional cwd selects the child working directory to contain upstream side files without changing the caller's directory.
+# 中文: run_native 要求指定 cwd 时使用绝对 output, 避免猜测命令参数中的路径并防止父子进程访问不同结果.
+# English: run_native requires absolute output with cwd to avoid guessing paths in command arguments and mismatched result files.
 def run_native(command: list[str], output: Path, *, budget_s: float, request_id: str,
                cwd: Path | None = None) -> Failure | None:
+    if cwd is not None and not output.is_absolute():
+        raise ValueError("run_native requires absolute output when cwd is provided")
     if budget_s <= 0:
         return Failure("TIMEOUT", "Native process budget exhausted", (request_id,))
     output.unlink(missing_ok=True)

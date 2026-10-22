@@ -2,10 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r17 -->
+<!-- doc-sync: roadmap / 2026-10-22-r18 -->
 
-状态: PR #9 已由用户合并, 已确认远端基线 `04d4cda`.
-本轮在 `feat/native-tapf-comparison` 完成真实目标分配/CBS/CBS-TA 对照实验, [PR #10](https://github.com/Requora/TAPF_MAPF_TPG/pull/10) 等待 review.
+状态: PR #10 已由用户合并, 已确认远端基线 `4560d8e`.
+本轮 `fix/native-process-output-path` 修复原生进程的路径歧义. 指定 cwd 时要求绝对 output, 在副作用前拒绝错误配置.
+本轮本地 83 项通过, 4 项原生测试跳过; 历史原生验证见下文.
+见 [路径约束修复](0011-native-process-output-path.md).
 两种独立距离为 6 的分配, CBS 总代价分别为 6 和 8; CBS-TA 为 6.
 本地分配器选中的平局方案为 8; 枚举两种分配避免结论依赖平局顺序.
 源码和干净安装包各 86 项测试已通过, 远端 CI 39379639913 全部通过, 包含真实 MAWPF/WinkTPG 与 CBS-TA; 未配置二进制时为 82 项通过, 4 项跳过.
