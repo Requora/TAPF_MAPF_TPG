@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0013-motion-result-boundary.md) | [English](../../en/development/0013-motion-result-boundary.md)
 
-<!-- doc-sync: motion-result-boundary / 2026-10-23-r3 -->
+<!-- doc-sync: motion-result-boundary / 2026-10-23-r4 -->
 
 ## Scope and decisions
 
@@ -47,3 +47,9 @@ This private publication succeeded: Sites source `b772f42bf274a049e95d62fa15bdf5
 ## Review and delivery reporting rules
 
 At the user's request, root AGENTS.md now states that the agent decides whether to adopt each review finding based on evidence, but must reply in the corresponding thread with changes and validation or reasons for declining. Every PR submission or update must explain what changed and why, retaining implementation and validation details. This reduces repeated confirmation while keeping decisions and deliveries traceable. This increment changes only instructions and bilingual logs, not runtime code; document review and git diff --check pass, without repeating behavior tests or dashboard publication. The earlier 118-line document count describes the previous revision; PR documents now total 129 lines including AGENTS.md, while code remains 193 lines.
+
+## Automated review reasoning effort
+
+At the user's request, CONFIG.REASONING_EFFORT changes from high to low, with bilingual configuration comments updated. The model, 655360 output-token cap, 6000 s timeout and no-retry policy remain unchanged. This lowers the requested reasoning effort; it does not establish or claim to fix the root cause of the earlier empty-content length failure.
+
+Offline real-client request interception: `/tmp/warehouse-llm-probe/bin/python /tmp/warehouse-review-low-check.py`. Before the change, actual high failed the expected-low assertion; afterward, the request uses low and the existing output/time budget assertions pass. YAML loading and git diff --check pass. No application code or dashboard state changes; behavior tests and dashboard publication are not repeated. Pushing triggers a new remote review; actual service completion remains unverified.

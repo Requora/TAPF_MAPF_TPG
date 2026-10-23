@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0013-motion-result-boundary.md) | [English](../../en/development/0013-motion-result-boundary.md)
 
-<!-- doc-sync: motion-result-boundary / 2026-10-23-r3 -->
+<!-- doc-sync: motion-result-boundary / 2026-10-23-r4 -->
 
 ## 范围与决策
 
@@ -47,3 +47,9 @@ TDD: 新增三个测试, 四个子场景先失败后通过, 覆盖迟到的坏�
 ## Review 与交付说明约定
 
 按用户要求更新根目录 AGENTS.md: agent 根据证据自行决定是否采纳每条 review, 但必须在对应线程回复修改与验证结果或不采纳的理由. 每次提交 PR 或推送更新后, 必须说明做了什么以及为什么做, 并保留实现和验证说明. 目的是减少逐条确认, 同时让取舍和交付内容可追溯. 本次仅修改约定与双语日志, 不修改运行代码; 文档审查与 git diff --check 通过, 不重复运行行为测试或发布网页. 原有 118 行文档统计属于上一修订; 本次 PR 文档含 AGENTS.md 共 129 行, 代码仍为 193 行.
+
+## 自动 review 推理强度
+
+按用户要求将 CONFIG.REASONING_EFFORT 从 high 改为 low, 同步双语配置注释. 模型, 655360 输出 token 上限, 6000 s 超时和无重试策略保持不变. 此调整降低请求的推理强度, 不声称已证明或解决此前空正文 length 失败的根因.
+
+离线真实客户端请求拦截: `/tmp/warehouse-llm-probe/bin/python /tmp/warehouse-review-low-check.py`. 修改前因实际 high 不满足预期 low 而失败; 修改后确认请求为 low, 原有输出与时间预算断言通过. YAML 加载和 git diff --check 通过. 本次不改变业务代码或网页状态, 不重复运行行为测试或发布网页. 推送触发新的远端 review, 服务端实际完成情况仍待验证.
