@@ -2,12 +2,9 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r22 -->
+<!-- doc-sync: roadmap / 2026-10-23-r27 -->
 
-Status: PR #12 merged; baseline `5563fac` confirmed. This increment adds motion-result structural checks to StagedPipeline; [PR #13](https://github.com/Requora/TAPF_MAPF_TPG/pull/13) awaits review.
-Within-budget TPG results with missing fleet members, non-finite knots, non-increasing times, incorrect splices or moving stop endpoints return BAD_INPUT.
-Review fixes: late motion results return TIMEOUT first; a moving single-knot prefix may immediately join a complete stopping tail. A stationary single knot still supports indefinite holding. This is not continuous safety acceptance.
-See [motion-result boundary](0013-motion-result-boundary.md). Joint warehouse adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.
+Status: PR #13 is merged at `cabdac3`; C++ trajectory PR #14 remains under review. Current work independently repairs OpenRouter review transport: one attempt, explicit upstream errors, provider filtering and bounded runtime. Six transport tests pass; remote review verification is pending. See [review transport](0015-review-transport.md). Runtime, execution and continuous safety remain incomplete.
 
 ## Replaceable modules
 

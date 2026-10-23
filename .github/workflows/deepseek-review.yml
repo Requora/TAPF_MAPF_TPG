@@ -1,5 +1,11 @@
 name: OpenRouter review
 on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Same-repository PR number to review
+        required: true
+        type: number
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
@@ -8,21 +14,34 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: deepseek-review-${{ github.event.pull_request.number }}
+  group: deepseek-review-${{ github.event.pull_request.number || inputs.pr_number }}
   cancel-in-progress: true
 
 jobs:
   review:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    # 中文: job 按用户要求增至原来的 5 倍, 为 100 min 模型预算另留 10 min, 用于启动和发布评论.
-    # English: The user-requested fivefold job limit adds 10 min for startup and publishing to the 100 min model budget.
-    timeout-minutes: 110
+    # 中文: job 为单次 10 min 模型请求另留初始化和发布时间.
+    # English: The job adds setup and publishing time around one 10-minute model request.
+    timeout-minutes: 15
     steps:
-      - name: PR-Agent review with DeepSeek Flash via OpenRouter
-        # PR-Agent 0.48.0. Pin the runtime image, not only its Action wrapper.
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Transport regression tests in pinned runtime
         uses: docker://pragent/pr-agent@sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d
+        with:
+          entrypoint: python
+          args: -m unittest discover -s /github/workspace/.github/tests -v
+      - name: PR-Agent review with one observable OpenRouter attempt
+        # PR-Agent 0.48.0; retain review logic, replace only model transport.
+        uses: docker://pragent/pr-agent@sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d
+        with:
+          entrypoint: python
+          args: /github/workspace/.github/review_transport.py
         env:
+          PYTHONPATH: /app
+          REVIEW_PR_NUMBER: ${{ inputs.pr_number }}
           GITHUB_TOKEN: ${{ github.token }}
           OPENAI_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI.API_BASE: https://openrouter.ai/api/v1
@@ -36,14 +55,12 @@ jobs:
           # 中文: IGNORE.REGEX 在生成审查 diff 前排除文档, 网页, 参考包及展示资产, 让审查聚焦业务代码和构建配置.
           # English: IGNORE.REGEX excludes docs, websites, reference inputs and presentation assets before diff generation to focus review on application code and build configuration.
           IGNORE.REGEX: '["(?i)^(docs|web|warehouse_api_v0_7)/", "(?i).*\\.(md|markdown|rst|adoc|html?|css|svg|png|jpe?g|gif|webp|pdf)$"]'
-          # 中文: 模型上限为 low 推理和正文保留 655360 token, 另为 diff 和提示词提供 65536 输入 token 的预算.
-          # English: The model limit reserves 655360 tokens for low reasoning plus text, providing a separate 65536-token input budget for the diff and prompt.
-          CONFIG.CUSTOM_MODEL_MAX_TOKENS: '720896'
-          CONFIG.MAX_MODEL_TOKENS: '720896'
-          CONFIG.MAX_OUTPUT_TOKENS: '655360'
-          # 中文: 用户要求输出和时间上限均为原来的 5 倍; 100 min 是预算上限, 不保证上游完成.
-          # English: The user requested fivefold output and time limits; 100 min is a budget cap, not an upstream completion guarantee.
-          CONFIG.AI_TIMEOUT: '6000'
+          # 中文: 传输层固定 65536 输出 token 和 600 s 总时限; 输入另留 65536 token.
+          # English: The adapter enforces 65536 output tokens and a 600-second deadline, with 65536 input tokens reserved.
+          CONFIG.CUSTOM_MODEL_MAX_TOKENS: '131072'
+          CONFIG.MAX_MODEL_TOKENS: '131072'
+          CONFIG.MAX_OUTPUT_TOKENS: '65536'
+          CONFIG.AI_TIMEOUT: '600'
           CONFIG.NUM_RETRIES: '0'
           CONFIG.RETRY_SAME_MODEL_ON_TIMEOUT: 'false'
           CONFIG.RETRY_SAME_MODEL_ON_LENGTH: 'false'
