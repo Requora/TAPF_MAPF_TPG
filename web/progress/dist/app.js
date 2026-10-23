@@ -68,8 +68,8 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["模块边界组合测试", "Module boundary composition tests"], ["独立构造入口数据, 验证 10 种分配/编译/MAPF/TPG 组合. 两组参数共 20 次成功组合, 并检查错误输入停止. 不新增 joint 模块.", "Independent boundary inputs exercise 10 allocation/compiler/MAPF/TPG combinations: 20 successful slices across two cases, and early stops for invalid inputs. No joint module is added."]],
-    [["NEXT / 待审查", "NEXT / REVIEW"], ["审查组合功能证据", "Review composition evidence"], ["90 项通过, 1 项 CBS-TA 测试跳过. 本轮复用原生二进制, 未重新构建. 合并后扩展其他真实模块或受支持案例.", "90 tests pass, one CBS-TA test skips. Existing native binaries were reused, not rebuilt. Extend real modules or supported cases after merge."]],
+    [["NOW / 正在做", "NOW"], ["运动结果边界检查", "Motion-result boundary checks"], ["拒绝缺失车队, 非有限节点, 时间倒序, 衔接错误和未停稳的终点. 保留原始 TPG trace. 迟到优先 TIMEOUT; 移动零长度前缀可接完整停车尾段, 静止单节点尾段仍有效.", "Reject missing fleet members, non-finite knots, reversed times, broken splices and moving stop endpoints. Retain raw TPG traces. Late results prioritize TIMEOUT; moving zero-duration prefixes may join complete stopping tails, and stationary single-knot tails remain valid."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["审查运动结构回归", "Review motion-structure regressions"], ["96 项通过, 1 项 CBS-TA 测试跳过. 真实原生链复用已有二进制. 结构检查不证明连续碰撞, 动作或停车安全.", "96 tests pass, one CBS-TA test skips. The real native chain reuses existing binaries. Structure checks do not prove continuous collision, action or parking safety."]],
     [["NOT YET / 尚未完成", "NOT YET"], ["联合仓库与执行闭环", "Joint warehouse & execution loop"], ["目标实验未接 SKU, Lift/Serve/Drop, 共享编译或 TPG. 多车仓库, Runtime, 连续几何, 无限期停车和中央执行器仍未完成.", "The goal experiment has no SKU, Lift/Serve/Drop, shared compiler or TPG connection. Multi-robot warehouse planning, Runtime, continuous geometry, indefinite parking and execution remain incomplete."]],
   ];
   // 中文: map 的回调把每个工作状态条目转换为卡片, 分开显示当前工作和未实现项, 防止读者把计划当成已完成成果.
@@ -77,13 +77,14 @@ function render() {
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
+    [text(["当前 PR #13 · 运动结果边界", "Current PR #13 · motion-result boundary"]), `${project.repo}/pull/13`],
     [text(["真实目标实验 CI · 下载单步重放", "Real goal experiment CI · download replay"]), `${project.repo}/actions/runs/39379639913/artifacts/12244991832`],
     [text(["真实原生 CI · HTML/JSON 重放", "Real native CI · HTML/JSON replay"]), `${project.repo}/actions/runs/39366365034`],
-    [text(["当前 PR #12 · 组合测试", "Current PR #12 · composition tests"]), `${project.repo}/pull/12`],
+    [text(["已合并 PR #12 · 组合测试", "Merged PR #12 · composition tests"]), `${project.repo}/pull/12`],
     [text(["已合并 PR #11 · 路径约束", "Merged PR #11 · path contract"]), `${project.repo}/pull/11`],
     [text(["已合并 PR #10 · 实验证据", "Merged PR #10 · experiment evidence"]), `${project.repo}/pull/10`],
     [text(["已合并验证基线", "Merged verification baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
-    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0012-module-composition.md`],
+    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0013-motion-result-boundary.md`],
     [text(["路线图 · 阶段 1—11", "Roadmap · stages 1–11"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/ROADMAP.md`],
   ];
   // 中文: map 的回调把每条验证证据转换成链接, 让用户能从页面追查代码, 自动构建与测试记录(CI), 或开发日志.

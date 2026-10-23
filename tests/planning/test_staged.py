@@ -145,3 +145,112 @@ class StagedPipelineTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "adapter bug"):
             self.pipeline.solve(self.request)
         self.pipeline.path_planner.plan.assert_not_called()
+
+    # 中文: 本测试注入缺失车队和不连续的运动结果, 确认流水线拒绝不完整候选并保留原始轨迹供定位.
+    # English: This test injects missing fleet data and discontinuities so the pipeline rejects incomplete candidates and retains the raw trace for diagnosis.
+    def test_malformed_motion_cannot_become_a_proposal(self):
+        motion = self.pipeline.solve(self.request).motion
+        prefix, tail = motion.common_prefix[0], motion.stop_tail[0]
+        knot = prefix.knots[0]
+        cases = [
+            replace(motion, common_prefix=()),
+            replace(motion, stop_tail=()),
+            replace(motion, common_prefix=(prefix, prefix)),
+            replace(motion, stop_tail=(tail, tail)),
+            replace(motion, stop_tail=(replace(tail, robot_id="unknown"),)),
+            replace(motion, common_prefix=(replace(prefix, knots=()),)),
+            replace(motion, stop_tail=(replace(tail, knots=()),)),
+            replace(motion, common_prefix=(replace(prefix, knots=tuple(reversed(prefix.knots))),)),
+            replace(motion, common_prefix=(replace(prefix, knots=(replace(knot, time_s=0.1), *prefix.knots[1:])),)),
+            replace(motion, common_prefix=(replace(prefix, knots=(replace(knot, pose=replace(knot.pose, x_m=1)), *prefix.knots[1:])),)),
+            replace(motion, stop_tail=(replace(tail, knots=(replace(tail.knots[0], time_s=99), tail.knots[1])),)),
+            replace(motion, stop_tail=(replace(tail, knots=(replace(tail.knots[0], velocity=replace(knot.velocity, vx_mps=1)), tail.knots[1])),)),
+            replace(motion, stop_tail=(replace(tail, knots=(tail.knots[0], replace(tail.knots[1], velocity=replace(knot.velocity, omega_radps=1)))),)),
+        ]
+        for value in (float("nan"), float("inf")):
+            cases.append(replace(motion, stop_tail=(replace(tail, knots=(tail.knots[0], replace(tail.knots[1], pose=replace(knot.pose, x_m=value)))),)))
+        before = copy.deepcopy(self.request)
+        for malformed in cases:
+            with self.subTest(motion=malformed):
+                self.pipeline.motion_planner.prepare.side_effect = None
+                self.pipeline.motion_planner.prepare.return_value = malformed
+                result = self.pipeline.solve(self.request)
+                self.assertIsInstance(result, Failure)
+                self.assertEqual(result.code, "BAD_INPUT")
+                self.assertIs(self.pipeline.last_trace[-1][2], malformed)
+                self.assertEqual(self.request, before)
+
+    # 中文: 本测试保留 API 允许的单节点静止尾段, 防止结构检查误拒绝无限期保持的合法表示.
+    # English: This test preserves the API's stationary single-knot tail so structural checks do not reject a valid indefinite hold representation.
+    def test_stationary_single_knot_tail_is_supported(self):
+        motion = self.pipeline.solve(self.request).motion
+        tail = motion.stop_tail[0]
+        motion = replace(motion, stop_tail=(replace(tail, knots=tail.knots[:1]),))
+        self.pipeline.motion_planner.prepare.side_effect = None
+        self.pipeline.motion_planner.prepare.return_value = motion
+        self.assertEqual(self.pipeline.solve(self.request).motion, motion)
+
+    # 中文: 本测试使用双车替身验证按机器人 ID 衔接和共同分支时刻, 防止把列表顺序或单车成功误当作车队完整性.
+    # English: This test uses a two-robot double to verify ID-based splicing and a shared branch time so list order or single-robot success cannot substitute for fleet completeness.
+    def test_fleet_branch_time_and_id_based_splicing(self):
+        from warehouse_api.planning._validation import validate_motion
+
+        motion = self.pipeline.solve(self.request).motion
+        state = self.request.assignment.start.join_state
+        state = replace(state, robots=(*state.robots, replace(state.robots[0], robot_id="B")))
+        start = replace(self.request.assignment.start, join_state=state)
+        request = replace(self.request, assignment=replace(self.request.assignment, start=start))
+        prefix, tail = motion.common_prefix[0], motion.stop_tail[0]
+        second_prefix, second_tail = replace(prefix, robot_id="B"), replace(tail, robot_id="B")
+        fleet = replace(motion, common_prefix=(prefix, second_prefix), stop_tail=(second_tail, tail))
+        self.assertIsNone(validate_motion(request, fleet))
+        end = replace(second_prefix.knots[-1], time_s=second_prefix.knots[-1].time_s + 0.1)
+        shifted = replace(fleet, common_prefix=(prefix, replace(second_prefix, knots=(*second_prefix.knots[:-1], end))),
+                          stop_tail=(replace(second_tail, knots=(end, second_tail.knots[-1])), tail))
+        self.assertEqual(validate_motion(request, shifted).message, "Motion must have one fleet branch time")
+
+    # 中文: 本测试让错误运动结果在预算到期时返回, 确认超时优先且不执行额外检查, 避免调用方把迟到结果误判成输入错误.
+    # English: This test returns malformed motion at the deadline so timeout takes priority without extra validation, preventing callers from treating late output as an input error.
+    def test_late_malformed_motion_returns_timeout_before_validation(self):
+        motion = replace(self.pipeline.solve(self.request).motion, stop_tail=())
+        self.pipeline.motion_planner.prepare.side_effect = None
+        self.pipeline.motion_planner.prepare.return_value = motion
+        with patch("warehouse_api.planning._staged.monotonic", side_effect=chain(repeat(0, 5), repeat(10))), \
+                patch("warehouse_api.planning._staged.validate_motion",
+                      return_value=Failure("BAD_INPUT", "missing tail", ())) as validate:
+            result = self.pipeline.solve(self.request)
+        self.assertEqual(result.code, "TIMEOUT")
+        validate.assert_not_called()
+        self.assertIs(self.pipeline.last_trace[-1][2], motion)
+
+    # 中文: 本测试让运动检查本身耗尽预算, 确认流水线不会发布迟到候选或优先报告坏运动, 保留共享预算的约束.
+    # English: This test exhausts the budget during motion validation so neither late candidates nor malformed-motion diagnostics bypass the shared timeout boundary.
+    def test_motion_validation_time_counts_toward_budget(self):
+        for validation_result in (None, Failure("BAD_INPUT", "bad motion", ())):
+            with self.subTest(validation_result=validation_result), \
+                    patch("warehouse_api.planning._staged.monotonic", side_effect=chain(repeat(0, 6), repeat(10))), \
+                    patch("warehouse_api.planning._staged.validate_motion", return_value=validation_result):
+                result = self.pipeline.solve(self.request)
+                self.assertIsInstance(result, Failure)
+                self.assertEqual(result.code, "TIMEOUT")
+
+    # 中文: 本测试用移动状态构造零长度前缀和立即减速的尾段, 确认边界节点不会被误当作无限期移动, 同时拒绝缺失的停车轨迹.
+    # English: This test pairs a moving zero-duration prefix with an immediate braking tail so a boundary knot is not mistaken for indefinite motion, while missing stopping trajectories remain rejected.
+    def test_moving_zero_duration_prefix_requires_a_complete_stop_tail(self):
+        from warehouse_api.contracts import Knot, MotionPlan, RobotSegment, Twist2
+        from warehouse_api.planning._validation import validate_motion
+
+        state = self.request.assignment.start.join_state
+        robot = replace(state.robots[0], velocity=Twist2(1, 0, 0))
+        state = replace(state, robots=(robot,))
+        start = replace(self.request.assignment.start, join_state=state)
+        request = replace(self.request, assignment=replace(self.request.assignment, start=start))
+        first = Knot(state.time_s, robot.pose, robot.velocity)
+        stopped = Knot(state.time_s + 1, replace(robot.pose, x_m=robot.pose.x_m + 0.5), Twist2(0, 0, 0))
+        prefix = RobotSegment(robot.robot_id, (first,), ())
+        tail = RobotSegment(robot.robot_id, (first, stopped), ())
+        motion = MotionPlan((prefix,), (tail,))
+        self.assertIsNone(validate_motion(request, motion))
+        self.assertEqual(validate_motion(request, replace(motion, stop_tail=())).code, "BAD_INPUT")
+        moving_tail = replace(tail, knots=(first,))
+        self.assertEqual(validate_motion(request, replace(motion, stop_tail=(moving_tail,))).code, "BAD_INPUT")
