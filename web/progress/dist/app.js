@@ -68,8 +68,8 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["运动结果边界检查", "Motion-result boundary checks"], ["拒绝缺失车队, 非有限节点, 时间倒序, 衔接错误和未停稳的终点. 保留原始 TPG trace, 支持单节点静止尾段.", "Reject missing fleet members, non-finite knots, reversed times, broken splices and moving stop endpoints. Retain raw TPG traces and support stationary single-knot tails."]],
-    [["NEXT / 待审查", "NEXT / REVIEW"], ["审查运动结构回归", "Review motion-structure regressions"], ["93 项通过, 1 项 CBS-TA 测试跳过. 真实原生链复用已有二进制. 结构检查不证明连续碰撞, 动作或停车安全.", "93 tests pass, one CBS-TA test skips. The real native chain reuses existing binaries. Structure checks do not prove continuous collision, action or parking safety."]],
+    [["NOW / 正在做", "NOW"], ["运动结果边界检查", "Motion-result boundary checks"], ["拒绝缺失车队, 非有限节点, 时间倒序, 衔接错误和未停稳的终点. 保留原始 TPG trace. 迟到优先 TIMEOUT; 移动零长度前缀可接完整停车尾段, 静止单节点尾段仍有效.", "Reject missing fleet members, non-finite knots, reversed times, broken splices and moving stop endpoints. Retain raw TPG traces. Late results prioritize TIMEOUT; moving zero-duration prefixes may join complete stopping tails, and stationary single-knot tails remain valid."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["审查运动结构回归", "Review motion-structure regressions"], ["96 项通过, 1 项 CBS-TA 测试跳过. 真实原生链复用已有二进制. 结构检查不证明连续碰撞, 动作或停车安全.", "96 tests pass, one CBS-TA test skips. The real native chain reuses existing binaries. Structure checks do not prove continuous collision, action or parking safety."]],
     [["NOT YET / 尚未完成", "NOT YET"], ["联合仓库与执行闭环", "Joint warehouse & execution loop"], ["目标实验未接 SKU, Lift/Serve/Drop, 共享编译或 TPG. 多车仓库, Runtime, 连续几何, 无限期停车和中央执行器仍未完成.", "The goal experiment has no SKU, Lift/Serve/Drop, shared compiler or TPG connection. Multi-robot warehouse planning, Runtime, continuous geometry, indefinite parking and execution remain incomplete."]],
   ];
   // 中文: map 的回调把每个工作状态条目转换为卡片, 分开显示当前工作和未实现项, 防止读者把计划当成已完成成果.

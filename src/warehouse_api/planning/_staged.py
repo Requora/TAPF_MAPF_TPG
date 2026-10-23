@@ -38,10 +38,15 @@ class StagedPipeline:
         self.motion_planner = motion_planner
         self.last_trace: list[tuple[str, object, object]] = []
 
-    # 中文: solve 将同一规划请求和剩余计算时间传给各阶段, 记录中间结果并检查运动结构, 在失败或超时后停止, 使调用方只收到结构完整的候选方案. 该方法不提交库存, 任务进度等实时账本.
-    # English: solve passes the same planning request and remaining computation time through the stages,
-    # records intermediate results, checks motion structure and stops on failure or timeout so callers receive complete
-    # candidates; the method does not commit live records such as stock or task progress.
+    # 中文: solve 依次调用分配器, 任务编译器, 路径规划器和运动规划器, 共用请求中的总计算时间预算.
+    # solve 检查运动结果是否覆盖每台机器人, 轨迹是否正确接上旧状态, 停车尾段是否接上前缀并以零速度结束.
+    # solve 在结果迟到时优先返回 TIMEOUT, 避免调用方把迟到的坏结果误认为输入错误; last_trace 保留各阶段输入和输出.
+    # solve 只返回待验收的方案, 不扣减库存或更新任务进度; 后续 Runtime 必须验证安全性并统一提交这些修改.
+    # English: solve calls allocation, task compilation, routing and motion planning under the request's total computation budget.
+    # solve checks that motion covers each robot, starts at the old state, and joins a stop tail ending at zero velocity.
+    # solve gives TIMEOUT priority for late results so callers do not mistake late malformed output for an input error;
+    # last_trace retains each stage's inputs and outputs. solve returns an unaccepted proposal without changing stock or task progress.
+    # The future Runtime must validate safety and commit these changes together.
     def solve(self, request: PlanningRequest) -> ExecutableProposal | Failure:
         started = monotonic()
         self.last_trace = []
@@ -95,11 +100,13 @@ class StagedPipeline:
         self.last_trace.append(("tpg", motion_request, motion))
         if isinstance(motion, Failure):
             return motion
-        failure = validate_motion(request, motion)
-        if failure is not None:
-            return failure
         if monotonic() >= deadline:
             return timeout
+        failure = validate_motion(request, motion)
+        if monotonic() >= deadline:
+            return timeout
+        if failure is not None:
+            return failure
         # 中文: solve 返回的完整候选尚未获准执行; Runtime 运行协调模块仍须独立验证, 并一次性提交完整方案.
         # English: solve returns an unaccepted candidate; the Runtime coordination module must validate it and commit the complete plan atomically.
         return ExecutableProposal(assignment.start.request_id, draft, motion)

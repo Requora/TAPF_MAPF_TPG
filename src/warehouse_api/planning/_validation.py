@@ -42,6 +42,8 @@ def validate_plan(request: PlanningRequest, jobs: tuple[RobotJobs, ...],
 
 
 # 中文: validate_motion 检查运动结果的车队覆盖, 有限节点, 时间顺序和精确衔接, 防止不完整候选离开流水线; 该函数不证明碰撞, 动作或运动限制安全.
+# 中文: 单节点前缀只标记立即切换到停车尾段的边界, 不是无限期移动授权; 尾段仍须完整且终点静止.
+# English: A single-knot prefix marks an immediate switch to the stop tail, not indefinite motion; the tail must remain complete and end at rest.
 # English: validate_motion checks fleet coverage, finite knots, time order and exact splices so incomplete candidates cannot leave the pipeline; it does not prove collision, action or motion-limit safety.
 def validate_motion(request: PlanningRequest, motion: MotionPlan) -> Failure | None:
     state = request.assignment.start.join_state
@@ -75,6 +77,4 @@ def validate_motion(request: PlanningRequest, motion: MotionPlan) -> Failure | N
             return Failure("BAD_INPUT", "Stop tail does not match the prefix endpoint", (prefix.robot_id,))
         if tail.knots[-1].velocity != Twist2(0, 0, 0):
             return Failure("BAD_INPUT", "Stop tail must end at rest", (prefix.robot_id,))
-        if len(prefix.knots) == 1 and first.velocity != Twist2(0, 0, 0):
-            return Failure("BAD_INPUT", "Single-knot prefix must be stationary", (prefix.robot_id,))
     return None

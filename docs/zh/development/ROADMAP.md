@@ -2,11 +2,11 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r21 -->
+<!-- doc-sync: roadmap / 2026-10-23-r22 -->
 
 状态: PR #12 已合并, 已确认基线 `5563fac`. 本轮补齐 StagedPipeline 的运动结果结构检查, [PR #13](https://github.com/Requora/TAPF_MAPF_TPG/pull/13) 等待 review.
-TPG 返回缺失车队, 非有限节点, 非递增时间, 错误衔接或非静止停车终点时返回 BAD_INPUT.
-单个静止节点的无限期保持仍受支持. 这不是连续安全验收.
+预算内的 TPG 结果缺失车队, 非有限节点, 非递增时间, 错误衔接或非静止停车终点时返回 BAD_INPUT.
+Review 修正: 迟到运动结果优先返回 TIMEOUT; 移动单节点前缀可立即衔接完整停车尾段. 单个静止节点的无限期保持仍受支持. 这不是连续安全验收.
 见 [运动结果边界](0013-motion-result-boundary.md). 联合仓库适配, 连续碰撞/停车验证, Runtime 和执行仍未完成.
 
 ## 可替换模块

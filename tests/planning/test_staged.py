@@ -208,3 +208,49 @@ class StagedPipelineTests(unittest.TestCase):
         shifted = replace(fleet, common_prefix=(prefix, replace(second_prefix, knots=(*second_prefix.knots[:-1], end))),
                           stop_tail=(replace(second_tail, knots=(end, second_tail.knots[-1])), tail))
         self.assertEqual(validate_motion(request, shifted).message, "Motion must have one fleet branch time")
+
+    # 中文: 本测试让错误运动结果在预算到期时返回, 确认超时优先且不执行额外检查, 避免调用方把迟到结果误判成输入错误.
+    # English: This test returns malformed motion at the deadline so timeout takes priority without extra validation, preventing callers from treating late output as an input error.
+    def test_late_malformed_motion_returns_timeout_before_validation(self):
+        motion = replace(self.pipeline.solve(self.request).motion, stop_tail=())
+        self.pipeline.motion_planner.prepare.side_effect = None
+        self.pipeline.motion_planner.prepare.return_value = motion
+        with patch("warehouse_api.planning._staged.monotonic", side_effect=chain(repeat(0, 5), repeat(10))), \
+                patch("warehouse_api.planning._staged.validate_motion",
+                      return_value=Failure("BAD_INPUT", "missing tail", ())) as validate:
+            result = self.pipeline.solve(self.request)
+        self.assertEqual(result.code, "TIMEOUT")
+        validate.assert_not_called()
+        self.assertIs(self.pipeline.last_trace[-1][2], motion)
+
+    # 中文: 本测试让运动检查本身耗尽预算, 确认流水线不会发布迟到候选或优先报告坏运动, 保留共享预算的约束.
+    # English: This test exhausts the budget during motion validation so neither late candidates nor malformed-motion diagnostics bypass the shared timeout boundary.
+    def test_motion_validation_time_counts_toward_budget(self):
+        for validation_result in (None, Failure("BAD_INPUT", "bad motion", ())):
+            with self.subTest(validation_result=validation_result), \
+                    patch("warehouse_api.planning._staged.monotonic", side_effect=chain(repeat(0, 6), repeat(10))), \
+                    patch("warehouse_api.planning._staged.validate_motion", return_value=validation_result):
+                result = self.pipeline.solve(self.request)
+                self.assertIsInstance(result, Failure)
+                self.assertEqual(result.code, "TIMEOUT")
+
+    # 中文: 本测试用移动状态构造零长度前缀和立即减速的尾段, 确认边界节点不会被误当作无限期移动, 同时拒绝缺失的停车轨迹.
+    # English: This test pairs a moving zero-duration prefix with an immediate braking tail so a boundary knot is not mistaken for indefinite motion, while missing stopping trajectories remain rejected.
+    def test_moving_zero_duration_prefix_requires_a_complete_stop_tail(self):
+        from warehouse_api.contracts import Knot, MotionPlan, RobotSegment, Twist2
+        from warehouse_api.planning._validation import validate_motion
+
+        state = self.request.assignment.start.join_state
+        robot = replace(state.robots[0], velocity=Twist2(1, 0, 0))
+        state = replace(state, robots=(robot,))
+        start = replace(self.request.assignment.start, join_state=state)
+        request = replace(self.request, assignment=replace(self.request.assignment, start=start))
+        first = Knot(state.time_s, robot.pose, robot.velocity)
+        stopped = Knot(state.time_s + 1, replace(robot.pose, x_m=robot.pose.x_m + 0.5), Twist2(0, 0, 0))
+        prefix = RobotSegment(robot.robot_id, (first,), ())
+        tail = RobotSegment(robot.robot_id, (first, stopped), ())
+        motion = MotionPlan((prefix,), (tail,))
+        self.assertIsNone(validate_motion(request, motion))
+        self.assertEqual(validate_motion(request, replace(motion, stop_tail=())).code, "BAD_INPUT")
+        moving_tail = replace(tail, knots=(first,))
+        self.assertEqual(validate_motion(request, replace(motion, stop_tail=(moving_tail,))).code, "BAD_INPUT")
