@@ -40,6 +40,6 @@ TDD: 15 个坏运动子用例最初全部错误返回 ExecutableProposal, 新检
 
 TDD: 新增三个测试, 四个子场景先失败后通过, 覆盖迟到的坏运动, 检查期间超时的合法/坏结果和移动零长度前缀. 缺失尾段和单节点移动尾段仍被拒绝. `WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges PYTHONPATH=src python -m unittest discover -s tests -v`: 97 项, 96 通过, 1 项 CBS-TA 实验跳过. `/tmp/motion-review-red.log` 和 `/tmp/motion-review-tests.log` 保留失败与完整结果. Ruff 和 diff 检查通过. 真实原生链复用已有二进制, 没有重新构建. 上文 94 项与 136 行是初次提交快照, 非本次修订总数.
 
-干净源码重建并安装的 wheel 同样 96 通过, 1 跳过, pip check 通过. 双语文档经独立 gpt-6-luna/low 审查, 已将路线图的 BAD_INPUT 限定为预算内结果, 并同步网页当前工作卡. 网页双语, 键盘和手机检查通过, 桌面与手机截图已检查. 最终 PR 相对 `5563fac` 的代码含测试/网页为 193 行 (+176/-17), 文档为 114 行 (+98/-16), 无配置修改.
+干净源码重建并安装的 wheel 同样 96 通过, 1 跳过, pip check 通过. 双语文档经独立 gpt-6-luna/low 审查, 已将路线图的 BAD_INPUT 限定为预算内结果, 并同步网页当前工作卡. 网页双语, 键盘和手机检查通过, 桌面与手机截图已检查. 最终 PR 相对 `5563fac` 的代码含测试/网页为 193 行 (+176/-17), 文档为 118 行 (+102/-16), 无配置修改.
 
 本次私有发布成功: Sites 源码 `b772f42bf274a049e95d62fa15bdf594ad56a5bc`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_0639b3f51864819184efd4345040b906`. 继续使用上文网页地址, 仅所有者访问不变. 未验证托管登录; 新提交远端 CI 在推送后运行, 不用本地测试代替远端结果. Review 线程逐条回复, 不自动标记 resolved 或合并 PR.
