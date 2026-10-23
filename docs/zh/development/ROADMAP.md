@@ -2,14 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r20 -->
+<!-- doc-sync: roadmap / 2026-10-23-r21 -->
 
-状态: PR #11 已合并, 已确认基线 `5e35ee0`. 当前 [PR #12](https://github.com/Requora/TAPF_MAPF_TPG/pull/12) 等待 review.
-本轮只增加模块边界组合测试, 不增加 joint 生产模块或契约.
-分配, 编译, MAPF, TPG 共 10 种有效连续组合在两组参数下验证; MAPF/TPG 复用真实原生二进制.
-91 项测试中 90 通过, 1 项 CBS-TA 测试跳过; 无二进制时为 86 通过, 5 跳过.
-见 [组合测试与重放](0012-module-composition.md). 单车单架向东单位车道之外的组合没有据此宣称支持.
-历史目标实验的固定分配代价为 6/8, 联合为 6. 联合仓库适配, 连续碰撞/停车验证, Runtime 和执行仍未完成.
+状态: PR #12 已合并, 已确认基线 `5563fac`. 本轮补齐 StagedPipeline 的运动结果结构检查, PR 待创建.
+TPG 返回缺失车队, 非有限节点, 非递增时间, 错误衔接或非静止停车终点时返回 BAD_INPUT.
+单个静止节点的无限期保持仍受支持. 这不是连续安全验收.
+见 [运动结果边界](0013-motion-result-boundary.md). 联合仓库适配, 连续碰撞/停车验证, Runtime 和执行仍未完成.
 
 ## 可替换模块
 

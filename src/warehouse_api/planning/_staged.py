@@ -5,7 +5,7 @@ English: This module computes complete candidates sequentially so stages share a
 from dataclasses import replace
 from time import monotonic
 
-from ._validation import validate_plan, validate_request
+from ._validation import validate_motion, validate_plan, validate_request
 from warehouse_api.contracts import (
     Allocator, ExecutableProposal, Failure, MotionPlanner, MotionRequest,
     PathPlanner, PathRequest, PlanningRequest, SharedCompiler,
@@ -38,9 +38,9 @@ class StagedPipeline:
         self.motion_planner = motion_planner
         self.last_trace: list[tuple[str, object, object]] = []
 
-    # 中文: solve 将同一规划请求和剩余计算时间传给各阶段, 记录中间结果并在失败或超时后停止, 使调用方只收到完整候选方案. 该方法不提交库存, 任务进度等实时账本.
+    # 中文: solve 将同一规划请求和剩余计算时间传给各阶段, 记录中间结果并检查运动结构, 在失败或超时后停止, 使调用方只收到结构完整的候选方案. 该方法不提交库存, 任务进度等实时账本.
     # English: solve passes the same planning request and remaining computation time through the stages,
-    # records intermediate results and stops on failure or timeout so callers receive only complete
+    # records intermediate results, checks motion structure and stops on failure or timeout so callers receive complete
     # candidates; the method does not commit live records such as stock or task progress.
     def solve(self, request: PlanningRequest) -> ExecutableProposal | Failure:
         started = monotonic()
@@ -95,6 +95,9 @@ class StagedPipeline:
         self.last_trace.append(("tpg", motion_request, motion))
         if isinstance(motion, Failure):
             return motion
+        failure = validate_motion(request, motion)
+        if failure is not None:
+            return failure
         if monotonic() >= deadline:
             return timeout
         # 中文: solve 返回的完整候选尚未获准执行; Runtime 运行协调模块仍须独立验证, 并一次性提交完整方案.

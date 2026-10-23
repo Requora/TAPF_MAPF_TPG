@@ -2,14 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r20 -->
+<!-- doc-sync: roadmap / 2026-10-23-r21 -->
 
-Status: PR #11 is merged at confirmed baseline `5e35ee0`. Current [PR #12](https://github.com/Requora/TAPF_MAPF_TPG/pull/12) awaits review.
-This increment adds module boundary composition tests only, without a joint production module or contracts.
-All 10 valid contiguous allocation/compilation/MAPF/TPG slices are checked with two parameter sets; MAPF/TPG reuse real native binaries.
-Of 91 tests, 90 pass and one CBS-TA test skips; without binaries, 86 pass and five skip.
-See [composition tests and replay](0012-module-composition.md). These results do not extend support beyond one robot/shelf on an eastbound unit lane.
-Historical fixed goal-assignment costs remain 6/8 and joint cost 6. Joint warehouse adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.
+Status: PR #12 merged; baseline `5563fac` confirmed. This increment adds motion-result structural checks to StagedPipeline; PR pending creation.
+TPG results with missing fleet members, non-finite knots, non-increasing times, incorrect splices or moving stop endpoints return BAD_INPUT.
+A single stationary knot still supports indefinite holding. This is not continuous safety acceptance.
+See [motion-result boundary](0013-motion-result-boundary.md). Joint warehouse adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.
 
 ## Replaceable modules
 
