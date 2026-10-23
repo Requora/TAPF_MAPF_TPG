@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0013-motion-result-boundary.md) | [English](../../en/development/0013-motion-result-boundary.md)
 
-<!-- doc-sync: motion-result-boundary / 2026-10-23-r2 -->
+<!-- doc-sync: motion-result-boundary / 2026-10-23-r3 -->
 
 ## 范围与决策
 
@@ -43,3 +43,7 @@ TDD: 新增三个测试, 四个子场景先失败后通过, 覆盖迟到的坏�
 干净源码重建并安装的 wheel 同样 96 通过, 1 跳过, pip check 通过. 双语文档经独立 gpt-6-luna/low 审查, 已将路线图的 BAD_INPUT 限定为预算内结果, 并同步网页当前工作卡. 网页双语, 键盘和手机检查通过, 桌面与手机截图已检查. 最终 PR 相对 `5563fac` 的代码含测试/网页为 193 行 (+176/-17), 文档为 118 行 (+102/-16), 无配置修改.
 
 本次私有发布成功: Sites 源码 `b772f42bf274a049e95d62fa15bdf594ad56a5bc`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_0639b3f51864819184efd4345040b906`. 继续使用上文网页地址, 仅所有者访问不变. 未验证托管登录; 新提交远端 CI 在推送后运行, 不用本地测试代替远端结果. Review 线程逐条回复, 不自动标记 resolved 或合并 PR.
+
+## Review 与交付说明约定
+
+按用户要求更新根目录 AGENTS.md: agent 根据证据自行决定是否采纳每条 review, 但必须在对应线程回复修改与验证结果或不采纳的理由. 每次提交 PR 或推送更新后, 必须说明做了什么以及为什么做, 并保留实现和验证说明. 目的是减少逐条确认, 同时让取舍和交付内容可追溯. 本次仅修改约定与双语日志, 不修改运行代码; 文档审查与 git diff --check 通过, 不重复运行行为测试或发布网页. 原有 118 行文档统计属于上一修订; 本次 PR 文档含 AGENTS.md 共 129 行, 代码仍为 193 行.

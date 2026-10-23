@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0013-motion-result-boundary.md) | [English](../../en/development/0013-motion-result-boundary.md)
 
-<!-- doc-sync: motion-result-boundary / 2026-10-23-r2 -->
+<!-- doc-sync: motion-result-boundary / 2026-10-23-r3 -->
 
 ## Scope and decisions
 
@@ -43,3 +43,7 @@ TDD: three added tests cover four initially failing subcases: late malformed mot
 The wheel rebuilt and installed from clean source also yields 96 pass and one skip; pip check passes. Independent gpt-6-luna/low bilingual review completed; the roadmap now limits BAD_INPUT to within-budget results, and the dashboard's current-work card is synchronized. Bilingual, keyboard and mobile browser checks passed; desktop/mobile screenshots were inspected. The final PR against `5563fac` totals 193 code lines including tests/web (+176/-17), plus 118 document lines (+102/-16), with no configuration changes.
 
 This private publication succeeded: Sites source `b772f42bf274a049e95d62fa15bdf594ad56a5bc`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_0639b3f51864819184efd4345040b906`. The URL above remains in use with unchanged owner-only access. Hosted sign-in is untested; new-commit remote CI runs after pushing, and local tests do not substitute for remote results. Review threads receive individual replies, without automatically resolving threads or merging the PR.
+
+## Review and delivery reporting rules
+
+At the user's request, root AGENTS.md now states that the agent decides whether to adopt each review finding based on evidence, but must reply in the corresponding thread with changes and validation or reasons for declining. Every PR submission or update must explain what changed and why, retaining implementation and validation details. This reduces repeated confirmation while keeping decisions and deliveries traceable. This increment changes only instructions and bilingual logs, not runtime code; document review and git diff --check pass, without repeating behavior tests or dashboard publication. The earlier 118-line document count describes the previous revision; PR documents now total 129 lines including AGENTS.md, while code remains 193 lines.
