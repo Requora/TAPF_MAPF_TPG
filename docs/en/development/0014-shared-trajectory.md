@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-10-23-r1 -->
+<!-- doc-sync: shared-trajectory / 2026-10-23-r2 -->
 
 ## Scope and decisions
 
@@ -41,3 +41,15 @@ Private publication succeeded: [progress site](https://warehouse-planning-observ
 Process failures: the first Sites helper initialization returned a generic failure; a later opening in the independent directory succeeded without changing business code. After a session restart stopped the preview server, browser checks reported connection refusal; restarting the local server restored all browser checks. The initial TDD failure is recorded above.
 
 Final diff against `cabdac3`: 295 code lines including tests/web, 134 documentation lines, no configuration changes. Existing user .gitignore changes, helloworld.md and the reference bundle are excluded. Final-commit remote CI awaits confirmation.
+
+## Performance benchmark follow-up
+
+At the user's request, this PR adds [performance measurements and all raw samples](0014-trajectory-performance.md). The 36 synthetic cases cover 1/100/1000 robots, 16/128/1024 knots per robot and 10/50 Hz evaluation and slicing. At 1000 robots, 128 knots and 50 Hz, median fleet evaluation takes 80.406 ms, exceeding the 20 ms period. Separate cProfile analysis identifies repeated knot validation as the main cost. No production code changes or speedups are claimed.
+
+The new workload test first failed because its module was absent, then passed. Source and the existing clean-installed wheel both run 104 tests: 103 pass, one skip; no wheel rebuild. `/tmp/trajectory-benchmark.json` and `/tmp/trajectory-benchmark.log` retain the benchmark; `/tmp/trajectory-profile.log` retains separate hotspot analysis. This is a serial synthetic measurement, excludes the full system and does not isolate shared-host load. The 295/134-line figures above describe the initial delivery.
+
+Follow-up validation: Ruff, JS syntax, diff and bilingual/keyboard/mobile browser checks pass; desktop and mobile screenshots inspected. Independent gpt-6-luna/low review confirmed numbers, bilingual facts and links; stdout redirection was added so the command reproduces the benchmark log.
+
+Performance snapshot privately published: Sites source `8654dfb66516ce6a4fbd84551751253e6f2eb443`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_ad011024774c81918acc26bd0515ad57`. The URL and owner-only access above are retained; the independent checkout preserves the repository remote. Hosted sign-in is unverified.
+
+After this update, the whole PR against `cabdac3` contains 416 code lines including tests/web, 412 documentation lines and no configuration changes. Raw measured samples are retained as documentation tables, not generated code to bypass the limit. Final remote CI awaits confirmation; wait for review after pushing.

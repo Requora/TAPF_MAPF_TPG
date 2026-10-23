@@ -2,12 +2,13 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r23 -->
+<!-- doc-sync: roadmap / 2026-10-23-r24 -->
 
 状态: PR #13 已合并, 已确认基线 `cabdac3`. 本轮实现共享轨迹求值与精确切片, [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 待 review.
 `trajectory.evaluate / slice_curve` 读取已有 Hermite 曲线, 保留全部内部节点.
 解析曲线测试和真实原生轨迹 36 次切片比较已通过, 最大位置/速度误差 1.67e-15.
 这是共享工具, 尚未接入连续验证器或中央执行器. Runtime, 连续安全和联合仓库适配仍未完成.
+性能基准: 1000 台, 128 节点, 50 Hz 的整车队求值中位数 80.406 ms, 超过 20 ms 周期; 重复校验是热点, 尚未优化.
 见 [共享轨迹](0014-shared-trajectory.md).
 
 ## 可替换模块

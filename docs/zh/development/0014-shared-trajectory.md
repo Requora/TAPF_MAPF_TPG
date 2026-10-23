@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-10-23-r1 -->
+<!-- doc-sync: shared-trajectory / 2026-10-23-r2 -->
 
 ## 范围与决策
 
@@ -41,3 +41,15 @@ git diff --check
 过程失败记录: Sites helper 首次初始化返回通用失败, 后续独立目录打开成功; 未修改业务代码规避. 会话重启后预览服务停止, 浏览器报连接拒绝; 重启本地服务后全部网页检查通过. 原始 TDD 失败记录见上文.
 
 最终相对 `cabdac3` 的代码含测试/网页变更为 295 行, 文档为 134 行, 配置无变化. 用户已有 .gitignore 改动, helloworld.md 和参考包未加入. 最终提交远端 CI 待确认.
+
+## 性能基准补充
+
+按用户要求在同一 PR 补充 [性能基准与全部原始样本](0014-trajectory-performance.md). 36 组合成案例覆盖 1/100/1000 台, 每车 16/128/1024 节点, 10/50 Hz 的求值和切片. 1000 台, 128 节点, 50 Hz 的全车队求值中位数 80.406 ms, 超过 20 ms 周期. 独立 cProfile 显示主要耗时来自重复节点校验. 本次未修改生产代码, 不宣称加速.
+
+新增工作量测试先因模块缺失而失败后通过. 源码和既有干净安装 wheel 都为 104 项, 103 通过, 1 跳过; 未重建 wheel. `/tmp/trajectory-benchmark.json` 和 `/tmp/trajectory-benchmark.log` 保留基准, `/tmp/trajectory-profile.log` 保留独立热点分析. 基准是串行合成测量, 不含完整系统, 共享主机负载未隔离. 上文 295/134 行是初次交付统计.
+
+补充验证: Ruff, JS 语法, diff 和双语/键盘/手机网页检查通过, 桌面和手机截图已检查. gpt-6-luna/low 独立审查确认数值, 双语事实及链接一致; 已补 stdout 重定向让命令复现基准日志.
+
+性能快照私有发布成功: Sites 源码 `8654dfb66516ce6a4fbd84551751253e6f2eb443`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_ad011024774c81918acc26bd0515ad57`. 继续使用上文地址和仅所有者访问, 独立 checkout 未改变仓库 remote; 托管登录未验证.
+
+本次更新后整个 PR 相对 `cabdac3` 的代码含测试/网页为 416 行, 文档为 412 行, 配置无变化. 原始测量样本作为文档表格保留, 未通过生成代码规避限制. 最终远端 CI 待确认, 提交后等待 review.

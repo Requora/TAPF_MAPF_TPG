@@ -68,8 +68,8 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["共享轨迹求值与切片", "Shared evaluation and slicing"], ["读取 TPG 适配器已定义的曲线, 保留加减速切换点. 精确静止终点可延伸; 移动单节点只覆盖该瞬间. 不重新规划.", "Read curves already defined by the TPG adapter and retain acceleration switches. Exactly stopped endpoints extend; moving singletons cover only their instant. No replanning."]],
-    [["NEXT / 待审查", "NEXT / REVIEW"], ["审查曲线一致性", "Review curve preservation"], ["103 项测试: 102 通过, 1 跳过. 真实原生轨迹 36 次切片比较, 最大位置/速度误差 1.67e-15. 不证明碰撞或停车安全.", "103 tests: 102 pass, 1 skip. 36 real native slice comparisons; maximum position/velocity error 1.67e-15. No collision or parking safety proof."]],
+    [["NOW / 正在做", "NOW"], ["轨迹性能基准", "Trajectory performance benchmark"], ["36 组合成案例: 1/100/1000 台, 16/128/1024 节点, 10/50 Hz. 原始样本和独立热点分析已记录. 不含求解器, 连续安全或后端; 未修改生产实现.", "36 synthetic cases: 1/100/1000 robots, 16/128/1024 knots, 10/50 Hz. Raw samples and separate hotspot analysis recorded. Excludes solvers, continuous safety and backends; production code unchanged."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["审查性能适用边界", "Review performance limits"], ["104 项测试: 103 通过, 1 跳过. 100 台各 128 节点在 50 Hz 下求值中位数 8.234 ms; 1000 台为 80.406 ms. 高频大规模使用前需优化, 不是实时保证.", "104 tests: 103 pass, 1 skip. At 50 Hz and 128 knots, median evaluation is 8.234 ms for 100 robots and 80.406 ms for 1000. Large high-rate workloads need optimization; no real-time guarantee."]],
     [["NOT YET / 尚未完成", "NOT YET"], ["联合仓库与执行闭环", "Joint warehouse & execution loop"], ["目标实验未接 SKU, Lift/Serve/Drop, 共享编译或 TPG. 多车仓库, Runtime, 连续几何, 无限期停车和中央执行器仍未完成.", "The goal experiment has no SKU, Lift/Serve/Drop, shared compiler or TPG connection. Multi-robot warehouse planning, Runtime, continuous geometry, indefinite parking and execution remain incomplete."]],
   ];
   // 中文: map 的回调把每个工作状态条目转换为卡片, 分开显示当前工作和未实现项, 防止读者把计划当成已完成成果.
@@ -77,6 +77,7 @@ function render() {
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
+    [text(["性能基准 · 对比表与原始样本", "Performance · comparison and raw samples"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-trajectory-performance.md`],
     [text(["当前 PR #14 · 共享轨迹", "Current PR #14 · shared trajectories"]), `${project.repo}/pull/14`],
     [text(["已合并 PR #13 · 运动结果边界", "Merged PR #13 · motion-result boundary"]), `${project.repo}/pull/13`],
     [text(["真实目标实验 CI · 下载单步重放", "Real goal experiment CI · download replay"]), `${project.repo}/actions/runs/39379639913/artifacts/12244991832`],
