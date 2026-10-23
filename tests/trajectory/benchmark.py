@@ -14,7 +14,7 @@ import subprocess
 from time import perf_counter_ns
 
 from warehouse_api.contracts import Knot, Pose2, Twist2
-from warehouse_api.trajectory import evaluate, slice_curve
+from warehouse_api.trajectory import PreparedTrajectory, evaluate, slice_curve
 import warehouse_api.trajectory
 
 
@@ -25,12 +25,17 @@ def make_fleet(robots, knots):
                        for i in range(knots)) for robot in range(robots))
 
 
-# 中文: measure 测量中段连续查询的整车队耗时, 包含公共 API 校验和结果分配, 排除建模与结果核对.
-# English: measure times consecutive mid-curve fleet queries, including public validation and output allocation but excluding setup and result checks.
-def measure(fleet, hz, operation, *, frames, repeats):
+# 中文: measure 测量中段连续查询的整车队耗时, 包含绑定和结果分配; 可选快照准备单独计时, 建模与结果核对不计时.
+# English: measure times consecutive mid-curve fleet queries, including bindings and output allocation; optional snapshot preparation is timed separately, setup and result checks excluded.
+def measure(fleet, hz, operation, *, frames, repeats, prepared=False):
     dt = 1/hz
     start = (len(fleet[0]) - 1)/2 + 0.125
     assert start + frames*dt < fleet[0][-1].time_s, 'Queries must remain inside the curve'
+    knot_count = len(fleet[0])
+    before = perf_counter_ns()
+    if prepared:
+        fleet = tuple(PreparedTrajectory(curve) for curve in fleet)
+    preparation_ms = (perf_counter_ns() - before)/1e6
     samples, max_error = [], 0.0
     for repeat in range(repeats + 1):
         for frame in range(frames):
@@ -49,7 +54,7 @@ def measure(fleet, hz, operation, *, frames, repeats):
                     error = max(abs(node.pose.x_m - node.time_s), abs(node.pose.y_m - robot))
                     max_error = max(max_error, error)
                     assert error < 1e-9 and abs(node.velocity.vx_mps - 1) < 1e-9
-    return {'robots': len(fleet), 'knots': len(fleet[0]), 'hz': hz, 'operation': operation,
+    return {'robots': len(fleet), 'knots': knot_count, 'prepared': prepared, 'preparation_ms': preparation_ms, 'hz': hz, 'operation': operation,
             'frames_per_repeat': frames, 'repeats': repeats, 'warmup_frames': frames,
             'timed_calls': len(samples)*len(fleet), 'query_start_s': start,
             'frame_ms': samples, 'median_frame_ms': median(samples),
@@ -65,6 +70,7 @@ def main():
     parser.add_argument('--robots', type=int, nargs='+', default=[1, 100, 1000])
     parser.add_argument('--knots', type=int, nargs='+', default=[16, 128, 1024])
     parser.add_argument('--hz', type=int, nargs='+', default=[10, 50])
+    parser.add_argument('--prepared', action='store_true')
     parser.add_argument('--frames', type=int, default=3)
     parser.add_argument('--repeats', type=int, default=5)
     parser.add_argument('--output', type=Path, required=True)
@@ -77,7 +83,7 @@ def main():
     evidence = {'utc': datetime.now(timezone.utc).isoformat(), 'python': platform.python_version(),
                 'platform': platform.platform(), 'cpu': cpu, 'affinity': sorted(os.sched_getaffinity(0)),
                 'base_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
-                'source_sha256': {p.name: sha256(p.read_bytes()).hexdigest() for p in sorted(source.glob('*.py'))},
+                'source_sha256': {p.name: sha256(p.read_bytes()).hexdigest() for p in sorted(source.iterdir()) if p.suffix in ('.py', '.cpp', '.hpp')},
                 'benchmark_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
                 'limits': 'Synthetic serial hot-repeat microbenchmark; no pacing, solver, geometry, IPC or backend. GC enabled; setup excluded. p95 describes only 15 frames by default.',
                 'cases': []}
@@ -86,7 +92,7 @@ def main():
             fleet = make_fleet(robots, knots)
             for hz in args.hz:
                 for operation in ('evaluate', 'slice_curve'):
-                    row = measure(fleet, hz, operation, frames=args.frames, repeats=args.repeats)
+                    row = measure(fleet, hz, operation, frames=args.frames, repeats=args.repeats, prepared=args.prepared)
                     evidence['cases'].append(row)
                     args.output.write_text(json.dumps(evidence, indent=2) + '\n')
                     print(f'{robots:4} robots {knots:4} knots {hz:2} Hz {operation:11} '

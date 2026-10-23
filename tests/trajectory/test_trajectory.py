@@ -6,7 +6,7 @@ import math
 import unittest
 
 from warehouse_api.contracts import Knot, Pose2, Twist2
-from warehouse_api.trajectory import evaluate, slice_curve
+from warehouse_api.trajectory import PreparedTrajectory, evaluate, slice_curve
 
 
 # 中文: cubic 定义独立的解析位置与导数, 为三个坐标及未折返朝向提供测试基准.
@@ -96,3 +96,17 @@ class TrajectoryTests(unittest.TestCase):
         result = evaluate(curve, 5e-11)
         self.assertEqual(result.pose.x_m, 5e-11)
         self.assertAlmostEqual(result.velocity.vx_mps, 1)
+
+    # 中文: 本测试验证原生快照可重复查询且切片保持曲线, 防止绑定改变契约或跳过范围检查.
+    # English: This test checks reusable native snapshots and preserved slices so bindings cannot change contracts or bypass coverage.
+    def test_prepared_snapshot(self):
+        curve = PreparedTrajectory((cubic(0), cubic(1), cubic(2)))
+        for t in (0.25, 0.5, 1.5):
+            self.assert_knot(evaluate(curve, t), cubic(t))
+        cut = slice_curve(curve, 0.25, 1.75)
+        self.assertEqual(tuple(k.time_s for k in cut), (0.25, 1, 1.75))
+        self.assert_knot(evaluate(cut, 1.5), cubic(1.5))
+        with self.assertRaises(ValueError):
+            evaluate(curve, 3)
+        with self.assertRaises(ValueError):
+            PreparedTrajectory((cubic(1), cubic(0)))

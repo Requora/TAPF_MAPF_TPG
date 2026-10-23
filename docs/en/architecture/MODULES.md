@@ -2,7 +2,7 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-23-r10 -->
+<!-- doc-sync: module-boundaries / 2026-10-23-r11 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
@@ -21,7 +21,9 @@ src/warehouse_api/
   trajectory/
     __init__.py
     _curve.py
-    _validation.py
+    _native.cpp
+    _validation.hpp
+    PYBIND11_LICENSE.txt
   serialization/
     __init__.py
     _json.py
@@ -110,7 +112,7 @@ flowchart LR
 | tpg | NativeWinkTpgPlanner | Pinned speedSolver primitives to Hermite knots and action holds |
 | validation | check_single_lane, check_jobs, check_assignment | Supported-subset checks; continuous Validator remains unimplemented |
 | native_process | run_native | Process budgets and retained raw evidence |
-| trajectory | evaluate, slice_curve | Evaluate and exactly slice existing Hermite curves; depends only on contracts, consumer integration pending |
+| trajectory | PreparedTrajectory, evaluate, slice_curve | Evaluate and exactly slice existing Hermite curves; depends only on contracts, consumer integration pending |
 | serialization | dumps, loads, from_data, to_data | JSON structure conversion |
 
 Cross-module imports use package entry points or contracts. For example, the
@@ -170,3 +172,7 @@ Experimental JSON is research evidence, not a new public DTO; it returns no Exec
 `tests/composition/` selects allocation, compilation, MAPF and TPG entry/exit boundaries in the test layer, covering four same-module and six cross-module contiguous slices. Intermediate entries use independently constructed public contract data without running preceding modules. Real outputs are checked against task, action, route and motion constraints, not just call order. This driver is not a production pipeline and performs no Runtime commits or total-budget management. No joint module is added; production APIs and dependencies are unchanged.
 
 See [composition tests and replay](../development/0012-module-composition.md).
+
+## Native trajectory boundary
+
+The trajectory Python layer only converts shared contracts; C++ evaluates/slices, while `_validation.hpp` centralizes curve/query checks. PreparedTrajectory is a reusable read-only computation snapshot, not a DTO replacing contracts; pybind11 objects are not public. The only production module dependency remains trajectory -> contracts. setup.py builds the internal extension, with pybind11 3.0.1 as a build-only dependency. Source usage requires `pip install -e .`; wheels are platform/CPython ABI specific. See [current log](../development/0014-shared-trajectory.md) for installation and performance evidence.

@@ -2,13 +2,19 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-10-23-r3 -->
+<!-- doc-sync: shared-trajectory / 2026-10-23-r4 -->
+
+## 当前实现: C++ 核心
+
+用户要求正式使用 C++. 求值, 切片和结构校验现由包内 `_native.cpp` / `_validation.hpp` 执行. Python `_curve.py` 仅转换统一契约. `PreparedTrajectory(knots)` 创建独立只读原生快照, 一次转换并校验; `evaluate(snapshot, t)` 和 `slice_curve(snapshot, a, b)` 复用快照. 原有 tuple 输入仍兼容, 但每次调用都会转换和校验. 返回值仍为 Knot 或 tuple[Knot, ...], 不暴露原生类作为公共 API.
+
+这不是重新规划, 不包含连续碰撞验收或执行器. 不缓存实时账本. 节点仍顺序查找, 当前绑定保持 GIL; 未声称并行加速. 旧 Python 插值/校验实现及临时 C++ 对照程序已删除, 避免保留两套运行核心. 下方旧验证数字与无绑定对照属于历史记录, 以本节和末尾新证据为当前状态.
 
 ## 范围与决策
 
 PR #13 已确认合并于 `cabdac3572290707cbf3405d850031632ea62b1f`. 分支: `feat/shared-trajectory`. 本 PR 新增 `warehouse_api.trajectory.evaluate` 和 `slice_curve`, 使用已有 Knot/Pose2/Twist2 契约. 唯一新增生产依赖为 trajectory -> contracts. 不修改求解器, 执行器, Runtime 或后端行为.
 
-API 0.7 第 8 和 10 节规定三次 Hermite 曲线和精确切片. 适配器已经定义曲线; 该工具读取已有曲线, 不再规划另一条曲线. 来源为保持原样的用户参考 `warehouse_api_v0_7/package/warehouse_api/trajectory.py`, SHA256 为 `13bb45ebb55468bd0af2c6f51f87df7ea359df1be51b0e97f4c566835d8eec62`. 不新增外部库或改变上游版本. 不移植 ReferenceExecutor.
+API 0.7 第 8 和 10 节规定三次 Hermite 曲线和精确切片. 适配器已经定义曲线; 该工具读取已有曲线, 不再规划另一条曲线. 来源为保持原样的用户参考 `warehouse_api_v0_7/package/warehouse_api/trajectory.py`, SHA256 为 `13bb45ebb55468bd0af2c6f51f87df7ea359df1be51b0e97f4c566835d8eec62`. 不新增运行时库或改变规划器上游版本; 当前新增的构建依赖 pybind11 见下文. 不移植 ReferenceExecutor.
 
 两个 API 返回不可变契约对象, 非法曲线或范围抛出 ValueError. 包内校验检查有限值, 正且有限的时间间隔及覆盖范围. 位置和速度使用参考 Hermite 公式, 朝向不折返. 切片保留两端及全部内部节点, 包括加速度切换点, 允许浮点运算误差.
 
@@ -61,3 +67,22 @@ git diff --check
 C++ 使用 g++ 的 C++17/O3 编译并通过解析检查. 另以 `-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer` 构建, 在 1000 台/1024 节点/50 Hz 案例运行通过, 无 sanitizer 诊断. 源码测试 104 项, 103 通过, 1 跳过. JS 语法, diff, 双语/键盘/手机网页检查通过, 截图已检查; gpt-6-luna/low 确认双语与样本一致. 全 PR 相对 `cabdac3` 为代码 498 行, 文档 514 行, 配置无变化. 最终远端 CI 待确认.
 
 C++ 快照私有发布成功: Sites 源码 `23ce8e4b93365ba0041f037670a8a845ad1b57b5`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_93e9783413048191b9c06c887a6989ef`. 继续使用上文地址, 保持仅所有者访问. 独立 checkout 未改变仓库 remote; 托管登录未验证. 提交后等待当前 PR review.
+
+## C++ 绑定与安装验证
+
+TDD: 新增快照复用测试先因 PreparedTrajectory 不存在而失败 (`/tmp/trajectory-cpp-binding-red.log`), 实现后通过. 全部已有曲线边界与切片测试现在经过 C++ 核心. 源码与干净 sdist -> wheel 安装均为 105 项, 104 通过, 1 项 CBS-TA 跳过. pip check 通过. `/tmp/trajectory-native-wheel-tests.log` 与 `/tmp/trajectory-native-wheel-build.log` 保留安装证据. 真实 MAWPF/WinkTPG 输出经 C++ 核心的 36 次切片比较最大 x/vx 误差仍为 1.67e-15.
+
+构建依赖固定为 [pybind11 v3.0.1](https://github.com/pybind/pybind11/tree/v3.0.1), commit `f5fbe867d2d26e4a0a9177a51f6e568868ad3dc8`, BSD-3-Clause; 包内保留原始许可证. 按 [官方构建方法](https://pybind11.readthedocs.io/en/stable/compiling.html) 用 setuptools/Pybind11Extension 和 C++17 构建. pybind11 仅为构建依赖; wheel 为平台/CPython ABI 专用, Linux x86_64/CPython 3.14.7 已验证, 其他平台与 Python 版本尚未验证. 本机实际编译使用 g++ 和 Python 工具链的 `-O2`, 并非前述独立对照的 `-O3`.
+
+```bash
+python -m pip install -e .
+WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges python -m unittest discover -s tests -v
+PYTHONPATH=tests python -m trajectory.replay /tmp/tapf-chain-bridges --output /tmp/trajectory-bound-native-replay.json
+PYTHONPATH=tests python -m trajectory.benchmark --prepared --robots 100 1000 --knots 128 1024 --hz 50 --output /tmp/trajectory-bound-prepared.json
+```
+
+开发时先安装扩展, 不能只设置 PYTHONPATH 就使用未编译的源码. 安装 wheel 后不需要本地编译器. 原生求解器仍为可选外部依赖; 轨迹模块自身现需编译扩展.
+
+最终绑定检查: Ruff 和 JS 语法通过. 首次页面语法检查发现缺失右括号; 修复后双语, 键盘和手机浏览器检查通过. 已检查桌面和手机截图. 最终 wheel 包含扩展, 校验头文件和上游许可证. 整个 PR 相对 `cabdac3`: 472 行代码, 658 行文档, 29 行许可证和 5 行配置 (新增 + 删除). 远端 CI 尚未确认; 不宣称完整系统实时性或连续安全已验证.
+
+绑定快照已私有发布: Sites 源码 `ec92f51bfe65bd8a83aac9bbe5cc3b49cebde10d`, 版本 `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_321aaf3740e88191b13fceac536af1a3`, 部署成功. 上述 URL 和仅所有者访问权限不变; 托管登录尚未验证. 独立 checkout 保持本仓库 remote 不变. 推送后等待 PR #14 review.

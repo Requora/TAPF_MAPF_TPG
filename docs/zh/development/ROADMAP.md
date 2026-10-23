@@ -2,14 +2,14 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r25 -->
+<!-- doc-sync: roadmap / 2026-10-23-r26 -->
 
-状态: PR #13 已合并, 已确认基线 `cabdac3`. 本轮实现共享轨迹求值与精确切片, [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 待 review.
-`trajectory.evaluate / slice_curve` 读取已有 Hermite 曲线, 保留全部内部节点.
-解析曲线测试和真实原生轨迹 36 次切片比较已通过, 最大位置/速度误差 1.67e-15.
-这是共享工具, 尚未接入连续验证器或中央执行器. Runtime, 连续安全和联合仓库适配仍未完成.
-性能基准: 1000 台, 128 节点, 50 Hz 的整车队求值中位数 80.406 ms, 超过 20 ms 周期; 重复校验是热点. C++ 段内求值对照约快 117-172 倍, 尚未接绑定或替换生产代码.
-见 [共享轨迹](0014-shared-trajectory.md).
+状态: PR #13 已合并, 基线 `cabdac3`. [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 已改用 C++ 求值/切片核心, 等待 review.
+PreparedTrajectory 一次转换并校验; evaluate / slice_curve 保留 Python 契约和 tuple 兼容调用.
+105 项测试中 104 通过, 1 跳过; 干净 sdist -> wheel 验证通过, 原生轨迹 36 次切片比较误差 1.67e-15.
+1000 台/1024 节点快照准备约 267-270 ms, 后续整车队求值约 3.928 ms, 切片约 8.391 ms; 包含绑定, 不是完整实时闭环.
+共享工具尚未接入连续验证器或执行器. Runtime, 连续安全与联合仓库适配仍未完成.
+见 [共享轨迹](0014-shared-trajectory.md) 和 [性能证据](0014-trajectory-performance.md).
 
 ## 可替换模块
 

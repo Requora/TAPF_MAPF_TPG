@@ -2,14 +2,14 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r25 -->
+<!-- doc-sync: roadmap / 2026-10-23-r26 -->
 
-Status: PR #13 merged; confirmed baseline `cabdac3`. This increment implements shared trajectory evaluation and exact slicing; [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) awaits review.
-`trajectory.evaluate / slice_curve` reads existing Hermite curves and retains all internal knots.
-Analytic tests and 36 real native slice comparisons pass; maximum position/velocity error is 1.67e-15.
-This is a shared utility, not yet connected to the continuous validator or central executor. Runtime, continuous safety and joint warehouse integration remain incomplete.
-Performance benchmark: 1000 robots, 128 knots, 50 Hz fleet evaluation has median 80.406 ms, exceeding the 20 ms period; repeated validation is the hotspot. C++ interior evaluation measures about 117-172x faster, without bindings or production replacement.
-See [shared trajectories](0014-shared-trajectory.md).
+Status: PR #13 merged at `cabdac3`. [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) now uses a C++ evaluation/slicing core and awaits review.
+PreparedTrajectory converts and validates once; evaluate / slice_curve preserve Python contracts and tuple-call compatibility.
+105 tests: 104 pass, one skip; clean sdist -> wheel verified; 36 native trajectory slice comparisons have error 1.67e-15.
+For 1000 robots/1024 knots, snapshot preparation costs about 267-270 ms, subsequent fleet evaluation 3.928 ms and slicing 8.391 ms; bindings included, not a full real-time loop.
+The shared utility is not connected to the continuous validator or executor. Runtime, continuous safety and joint warehouse integration remain incomplete.
+See [shared trajectories](0014-shared-trajectory.md) and [performance evidence](0014-trajectory-performance.md).
 
 ## Replaceable modules
 

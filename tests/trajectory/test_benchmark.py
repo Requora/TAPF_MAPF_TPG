@@ -14,8 +14,8 @@ class BenchmarkTests(unittest.TestCase):
         fleet = make_fleet(2, 4)
         self.assertIsNot(fleet[0], fleet[1])
         self.assertNotEqual(fleet[0][0].pose.y_m, fleet[1][0].pose.y_m)
-        for operation in ('evaluate', 'slice_curve'):
-            result = measure(fleet, 10, operation, frames=2, repeats=2)
+        for operation, prepared in (('evaluate', False), ('slice_curve', False), ('evaluate', True), ('slice_curve', True)):
+            result = measure(fleet, 10, operation, frames=2, repeats=2, prepared=prepared)
             self.assertEqual(result['timed_calls'], 8)
             self.assertEqual(len(result['frame_ms']), 4)
             self.assertEqual(result['period_ms'], 100)
