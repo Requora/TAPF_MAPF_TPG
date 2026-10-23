@@ -9,6 +9,8 @@ from time import monotonic
 
 from warehouse_api.contracts import Failure
 
+from ._validation import check_output_path
+
 
 # 中文: run_native 在剩余实际计算时间内运行已编译的上游桥接程序, 清理旧输出并保存命令, 标准输出, 错误输出及退出信息, 让调用可追溯且过期结果不会被当成新方案.
 # English: run_native executes a compiled upstream bridge within the remaining wall-clock budget, removes
@@ -16,12 +18,11 @@ from warehouse_api.contracts import Failure
 # expired output cannot become a new plan.
 # 中文: 可选 cwd 指定子进程工作目录, 将上游辅助输出限制在证据目录内, 不改变调用者目录.
 # English: Optional cwd selects the child working directory to contain upstream side files without changing the caller's directory.
-# 中文: run_native 要求指定 cwd 时使用绝对 output, 避免猜测命令参数中的路径并防止父子进程访问不同结果.
-# English: run_native requires absolute output with cwd to avoid guessing paths in command arguments and mismatched result files.
+# 中文: run_native 在入口调用独立路径校验, 将配置规则与进程执行分开, 并保证校验先于文件副作用.
+# English: run_native calls separate path validation at entry to separate configuration rules from execution and validate before file side effects.
 def run_native(command: list[str], output: Path, *, budget_s: float, request_id: str,
                cwd: Path | None = None) -> Failure | None:
-    if cwd is not None and not output.is_absolute():
-        raise ValueError("run_native requires absolute output when cwd is provided")
+    check_output_path(output, cwd)
     if budget_s <= 0:
         return Failure("TIMEOUT", "Native process budget exhausted", (request_id,))
     output.unlink(missing_ok=True)

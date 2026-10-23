@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0011-native-process-output-path.md) | [English](../../en/development/0011-native-process-output-path.md)
 
-<!-- doc-sync: native-process-output-path / 2026-10-22-r2 -->
+<!-- doc-sync: native-process-output-path / 2026-10-23-r3 -->
 
 ## 范围与决策
 
@@ -31,3 +31,11 @@ TDD: 新增回归测试先失败, 原因是 ValueError 未抛出; 加入入口�
 [失败 review 39861571315](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39861571315)在约 367 s 后返回空正文和 finish_reason=length, 未触及旧时间上限. 日志没有实际 token usage, 因此未证明耗尽 131072; 这次增大按用户要求执行, 不声称已证明根因或能保证 provider 接受和完成. 同提交 CI 39861571297 全部通过.
 
 离线真实客户端拦截先因 max_tokens=131072 不满足 655360 而失败, 修改后通过; 同时校验输入容量, 总预算和两个时限, YAML 与 diff 检查通过. 本次仅工作流配置与双语日志变化; 规划代码和网页内容不变. 上文无配置变更与代码行数描述的是原始路径修复交付. 新远端 review 在推送后运行, 不将离线检查当成服务实际成功.
+
+## Review 修正与回复, 2026-10-23
+
+用户意见 r4355183212 已采纳. 路径配置规则移入 native_process 内部 `_validation.py` 的 check_output_path, run_native 在任何文件副作用前显式调用. 模块间公开 API 和依赖不变. 本次属于保持行为的重构: 原有四项进程行为测试先通过, 移动后仍通过; 未增加只重复实现结构的测试.
+
+机器人意见 r4355212527 已核对, 暂不降低用户指定的 5 倍预算. [OpenRouter 端点目录](https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-1017/endpoints)在检查时列出 OpenInference, Relace, Cloudflare 等端点支持 1048576 上下文和 943718 输出 token, 能容纳配置预算. 并非所有 provider 都支持该上限; 本次未固定 provider. [真实 review 39883608837](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39883608837)成功并发布意见, 汇总为输入 15473 / 输出 18983 token, AI 时间 50.9 s; [同提交 CI](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39883608860)全部通过. 这证明该请求成功, 不证明实际生成满 655360 token 或所有路由都能成功. 旧 length 失败仍没有 usage, 不据此认定耗尽指定上限. 两条线程均在推送后回复, 不自动标记 resolved.
+
+重构后 `PYTHONPATH=src python -m unittest discover -s tests -v`: 83 通过, 4 原生测试跳过. Ruff 和 diff 检查通过. 本次未重跑原生规划器. 网页的公开行为, 模块连接和已展示验证范围不变, 不重复发布网页. 新提交的远端检查在推送后运行, 不用旧 CI 代替新提交验证.

@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0011-native-process-output-path.md) | [English](../../en/development/0011-native-process-output-path.md)
 
-<!-- doc-sync: native-process-output-path / 2026-10-22-r2 -->
+<!-- doc-sync: native-process-output-path / 2026-10-23-r3 -->
 
 ## Scope and decision
 
@@ -28,6 +28,14 @@ Private publication succeeded: [website](https://warehouse-planning-observatory.
 
 The user requested fivefold output and time limits. Output rises from 131072 to 655360 tokens, AI timeout from 1200 to 6000 s (100 min), and job timeout from 22 to 110 min. Total token capacity becomes 720896, retaining 65536 input tokens. High effort, model, OpenRouter and the no-retry policy remain unchanged.
 
-[Failed review 39861571315](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39861571315)returned empty content and finish_reason=length after about 367 s, without reaching the old time limits. The logs contain no actual token usage, so exhaustion of 131072 is unproven. This increase follows the user request; it does not establish the root cause or guarantee provider acceptance or completion. CI 39861571297 passed all jobs on the same commit.
+[Failed review 39861571315](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39861571315) returned empty content and finish_reason=length after about 367 s, without reaching the old time limits. The logs contain no actual token usage, so exhaustion of 131072 is unproven. This increase follows the user request; it does not establish the root cause or guarantee provider acceptance or completion. CI 39861571297 passed all jobs on the same commit.
 
 Offline real-client interception first failed because max_tokens=131072 did not meet 655360, then passed after the edit. Checks also cover input capacity, total budget and both time limits; YAML and diff checks pass. This follow-up changes only workflow configuration and bilingual logs; planning code and website content are unchanged. Earlier no-configuration-change and code-count statements describe the original path-fix delivery. Remote review runs after push; offline checks do not establish live service success.
+
+## Review fixes and replies, 2026-10-23
+
+User finding r4355183212 is accepted. Path configuration rules move into check_output_path in the internal native_process `_validation.py`; run_native calls it explicitly before any file side effects. Cross-module public API and dependencies are unchanged. This is a behavior-preserving refactor: the four existing process behavior tests passed before and after extraction. No tests were added merely to mirror implementation structure.
+
+Bot finding r4355212527 was checked; the user-requested fivefold budget is retained. The [OpenRouter endpoint catalog](https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-1017/endpoints) at inspection lists endpoints including OpenInference, Relace and Cloudflare with 1048576 context and 943718 output tokens, sufficient for the configured budget. Not every provider supports that limit; this increment does not pin a provider. [Live review 39883608837](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39883608837) succeeded and published a finding, reporting 15473 input / 18983 output tokens and 50.9 s AI time; [CI on the same commit](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39883608860) passed all jobs. This proves that request succeeded, not full 655360-token generation or success on every route. The earlier length failure still lacks usage and does not establish exhaustion of the configured cap. Both threads receive replies after push and are not automatically marked resolved.
+
+After refactoring, `PYTHONPATH=src python -m unittest discover -s tests -v`: 83 passed, four native tests skipped. Ruff and diff checks pass. Native planners were not rerun locally. Public behavior, module connections and the website verification scope are unchanged, so the website is not republished. New remote checks run after push; old CI does not validate the new commit.
