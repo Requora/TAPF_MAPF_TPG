@@ -10,7 +10,7 @@ window.PROJECT = {
     tests: ["本轮测试总数 · 103 通过, 1 跳过", "current test total · 103 pass, 1 skip"],
     implemented: ["已有实现的模块", "Modules with implementations"], native: ["已验证的原生求解器集成", "Verified native solver integrations"],
     snapshotNote: ["仓库原生链已通过 CI. 新增双车目标分配实验已通过本地与远端 CI; 仓库 API 与连续安全尚未接入.", "Warehouse native chain passes CI. New two-robot goal-assignment experiment passes locally and in remote CI; no warehouse API or continuous safety connection."],
-    focusLabel: ["正在做", "IN FOCUS"], focus: ["PR #14 补充性能基准: 1000 台, 每车 128 节点, 50 Hz 求值中位数 80.406 ms, 超过 20 ms 周期. 重复节点校验是热点; 尚未优化.", "PR #14 adds performance evidence: 1000 robots, 128 knots each, 50 Hz evaluation has median 80.406 ms, exceeding a 20 ms period. Repeated knot validation is the hotspot; no optimization yet."],
+    focusLabel: ["正在做", "IN FOCUS"], focus: ["PR #14 补充 C++ 对照: 1000 台, 1024 节点的求值中位数为 Python 649.473 ms / C++ 4.903 ms. 包含全量校验, 未计绑定或完整执行链.", "PR #14 adds C++ evidence: 1000 robots, 1024 knots, median evaluation Python 649.473 ms / C++ 4.903 ms. Includes full validation, excludes bindings and the full execution chain."],
     mapHeading: ["一张图, 看清整个系统.", "One system. Every connection."], flow: ["目标业务流程", "Target workflow"], imports: ["现有代码依赖", "Current imports"],
     flowNote: ["实线为已本地验证的单车道规划连接; 虚线为计划连接. Order 转 Demand 在重放驱动中完成, Runtime 和执行闭环未实现.", "Solid edges are locally verified single-lane planning calls; dashed edges remain planned. The replay harness converts Order to Demand. Runtime and the execution loop remain absent."],
     importsNote: ["实线为当前工作树的公开 API 导入. 12 个模块, 17 条依赖; 研究实验不增加生产依赖.", "Solid edges show public imports in the current working tree: 12 modules, 17 dependencies. The research experiment adds no production dependencies."],

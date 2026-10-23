@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-trajectory-performance.md) | [English](../../en/development/0014-trajectory-performance.md)
 
-<!-- doc-sync: trajectory-performance / 2026-10-23-r1 -->
+<!-- doc-sync: trajectory-performance / 2026-10-23-r2 -->
 
 ## Findings and scope
 
@@ -122,5 +122,48 @@ All measured samples below match frame_ms in the JSON, in ms. Every case has ana
 | 1000 / 1024 / 10 / slice_curve | 681.675946, 674.707271, 676.334500, 680.525681, 680.669264, 682.735096, 678.446732, 678.059997, 678.388131, 677.741813, 1211.333952, 676.004413, 670.619166, 668.162860, 673.290018 |
 | 1000 / 1024 / 50 / evaluate | 616.219201, 619.971277, 617.055419, 613.638079, 616.638988, 609.821129, 609.404339, 613.698403, 608.267388, 612.874699, 608.287727, 617.921423, 605.144378, 606.257902, 611.019915 |
 | 1000 / 1024 / 50 / slice_curve | 660.272895, 671.456174, 687.490676, 659.271603, 660.862604, 667.165515, 659.300709, 661.101929, 658.321389, 660.375239, 675.002538, 667.685341, 659.615325, 668.585321, 663.702898 |
+
+</details>
+
+## C++ evaluation comparison
+
+At the user's request, `integrations/trajectory/evaluate_benchmark.cpp` adds an experiment for valid interior evaluation only, not a production API or binding. Every call still checks all seven scalars for finiteness, increasing times, query coverage and finite outputs, then scans intervals sequentially. It uses the same three-axis Hermite formulas and allocates outputs per frame. C++ uses contiguous arrays/vectors; Python uses dataclass/tuple objects, so the comparison includes both language and data-layout effects. No fast-math, LTO or multithreading. Slicing, singleton/terminal holds, Python bindings and data conversion are not measured.
+
+- UTC: `2026-10-23T06:34:47.018873+00:00`. Python: `3.14.7`.
+- Compiler: `g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`. Flags: `-std=c++17 -O3 -DNDEBUG -Wall -Wextra -pedantic`.
+- C++ source SHA256: `9a000f3bcfeb7f3520722f55b023bc430fc311ad625f36c25b1f6f2a4a26ec39`. Binary SHA256: `55be5caa8ecc9da18dab2bf2cb1b9c98f1fb1014f37e8bb9251a33522d99fe0f`.
+
+Same 3990X host, 50 Hz, three warmup frames and fifteen timed frames per case. Each case runs C++ first, then remeasures Python evaluation; the table does not reuse earlier Python times. Setup, C++ process startup and result checking are untimed. All C++ output components participate in analytic checks to prevent dead-code elimination; a separate startup check verifies x=t³, y=2t², yaw=6+t³ and derivatives at t=0.5. These checks do not establish complete semantic compatibility or safety acceptance.
+
+```bash
+g++ -std=c++17 -O3 -DNDEBUG -Wall -Wextra -pedantic integrations/trajectory/evaluate_benchmark.cpp -o /tmp/trajectory-cpp-benchmark
+for robots in 100 1000; do
+  for knots in 128 1024; do
+    /tmp/trajectory-cpp-benchmark "$robots" "$knots" 50 > "/tmp/cpp-${robots}-${knots}.txt"
+  done
+done
+PYTHONPATH=src:tests python -m trajectory.benchmark --robots 100 1000 --knots 128 1024 --hz 50 --output /tmp/python-comparison.json
+```
+
+The Python command also measures slicing; compare only evaluate rows. This run called the same evaluation workload directly through benchmark.measure. Combined raw record: `/tmp/trajectory-cpp-comparison.json`; stdout: `/tmp/trajectory-cpp-comparison.log`.
+
+| Robots | Knots/robot | Python median ms | C++ median ms | Ratio |
+| --- | --- | --- | --- | --- |
+| 100 | 128 | 8.012 | 0.068 | 117.1 |
+| 100 | 1024 | 66.359 | 0.388 | 171.0 |
+| 1000 | 128 | 85.160 | 0.494 | 172.3 |
+| 1000 | 1024 | 649.473 | 4.903 | 132.5 |
+
+This local experiment shows about 117-172x speedup. The largest C++ median, 4.903 ms, is below the 20 ms period, but does not establish full-system capacity or a real-time guarantee. It motivates evaluating a future batch C++ interface, including binding and data movement costs; Python production code remains unchanged.
+
+<details>
+<summary>Expand raw C++/Python times, ms</summary>
+
+| robots / knots | C++ frame_ms | Python frame_ms |
+| --- | --- | --- |
+| 100 / 128 | 0.068520, 0.071486, 0.068470, 0.068410, 0.068560, 0.068270, 0.068350, 0.068310, 0.068320, 0.068470, 0.076976, 0.068149, 0.068259, 0.068379, 0.068710 | 7.935191, 8.030311, 7.911286, 8.011666, 7.970137, 8.023879, 7.998250, 7.987940, 8.055218, 7.952343, 8.007979, 8.026224, 8.075557, 8.054757, 8.019190 |
+| 100 / 1024 | 0.391232, 0.386864, 0.388247, 0.387335, 0.388046, 0.390401, 0.386263, 0.391313, 0.381865, 0.390872, 0.390371, 0.385081, 0.389870, 0.385471, 0.384019 | 66.431863, 66.297849, 66.211966, 65.812437, 66.040971, 66.358755, 65.959708, 66.138657, 68.414376, 67.058693, 66.710141, 67.314288, 66.553865, 66.649256, 65.945721 |
+| 1000 / 128 | 0.494278, 0.491543, 0.495000, 0.489829, 0.494007, 0.498526, 0.497665, 0.492244, 0.499378, 0.493677, 0.500079, 0.491954, 0.498096, 0.492064, 0.498016 | 84.403503, 84.741835, 84.170871, 85.160399, 85.272011, 84.432117, 85.660709, 87.112935, 86.286988, 86.044467, 86.012075, 85.096027, 85.273654, 84.627508, 84.211869 |
+| 1000 / 1024 | 4.892967, 4.904418, 4.903396, 4.897275, 4.890932, 4.895381, 4.909969, 4.981274, 4.892456, 4.911351, 4.889571, 4.899218, 4.911983, 4.933824, 4.918976 | 633.356648, 634.946727, 636.947305, 644.713165, 636.227831, 641.398455, 637.897140, 649.472651, 674.879543, 668.432327, 669.093133, 670.268855, 667.791904, 668.994438, 666.080027 |
 
 </details>

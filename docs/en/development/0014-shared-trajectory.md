@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-10-23-r2 -->
+<!-- doc-sync: shared-trajectory / 2026-10-23-r3 -->
 
 ## Scope and decisions
 
@@ -53,3 +53,11 @@ Follow-up validation: Ruff, JS syntax, diff and bilingual/keyboard/mobile browse
 Performance snapshot privately published: Sites source `8654dfb66516ce6a4fbd84551751253e6f2eb443`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_ad011024774c81918acc26bd0515ad57`. The URL and owner-only access above are retained; the independent checkout preserves the repository remote. Hosted sign-in is unverified.
 
 After this update, the whole PR against `cabdac3` contains 416 code lines including tests/web, 412 documentation lines and no configuration changes. Raw measured samples are retained as documentation tables, not generated code to bypass the limit. Final remote CI awaits confirmation; wait for review after pushing.
+
+## C++ comparison follow-up
+
+At the user's request, an 82-line C++ interior-evaluation experiment retains full validation and sequential lookup per query, without caching or indexing. Four fresh comparisons show about 117-172x difference; 1000 robots/1024 knots take Python 649.473 ms versus C++ 4.903 ms. Three-axis analytic cubic states and all constant-speed outputs pass checks. Results include language and data-layout effects; slicing, bindings, conversion and the full execution chain are unmeasured. See [raw samples and commands](0014-trajectory-performance.md#c-evaluation-comparison).
+
+C++ builds with g++ C++17/O3 and passes analytic checks. A separate `-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer` build passes the 1000-robot/1024-knot/50-Hz case without sanitizer diagnostics. Source tests: 104 total, 103 pass, one skip. JS syntax, diff and bilingual/keyboard/mobile browser checks pass; screenshots inspected. gpt-6-luna/low confirmed bilingual facts and samples. Whole PR against `cabdac3`: 498 code lines, 514 documentation lines, no configuration changes. Final remote CI awaits confirmation.
+
+C++ snapshot privately published: Sites source `23ce8e4b93365ba0041f037670a8a845ad1b57b5`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_93e9783413048191b9c06c887a6989ef`. The URL above and owner-only access remain unchanged. The independent checkout preserves the repository remote; hosted sign-in is unverified. Wait for current PR review after pushing.

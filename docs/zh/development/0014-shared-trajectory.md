@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-10-23-r2 -->
+<!-- doc-sync: shared-trajectory / 2026-10-23-r3 -->
 
 ## 范围与决策
 
@@ -53,3 +53,11 @@ git diff --check
 性能快照私有发布成功: Sites 源码 `8654dfb66516ce6a4fbd84551751253e6f2eb443`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_ad011024774c81918acc26bd0515ad57`. 继续使用上文地址和仅所有者访问, 独立 checkout 未改变仓库 remote; 托管登录未验证.
 
 本次更新后整个 PR 相对 `cabdac3` 的代码含测试/网页为 416 行, 文档为 412 行, 配置无变化. 原始测量样本作为文档表格保留, 未通过生成代码规避限制. 最终远端 CI 待确认, 提交后等待 review.
+
+## C++ 对照补充
+
+按用户要求增加 82 行 C++ 段内求值实验. 相同车队和节点数, 每次仍全量校验并顺序查找; 不做缓存或索引优化. 4 组新鲜对照显示约 117-172 倍差异, 1000 台/1024 节点为 Python 649.473 ms 对 C++ 4.903 ms. 三轴三次解析状态及全部匀速输出检查通过. 结果包含语言和数据布局影响, 未测切片, 绑定, 数据转换或完整执行链. 详见 [原始样本与命令](0014-trajectory-performance.md#c-求值对照).
+
+C++ 使用 g++ 的 C++17/O3 编译并通过解析检查. 另以 `-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer` 构建, 在 1000 台/1024 节点/50 Hz 案例运行通过, 无 sanitizer 诊断. 源码测试 104 项, 103 通过, 1 跳过. JS 语法, diff, 双语/键盘/手机网页检查通过, 截图已检查; gpt-6-luna/low 确认双语与样本一致. 全 PR 相对 `cabdac3` 为代码 498 行, 文档 514 行, 配置无变化. 最终远端 CI 待确认.
+
+C++ 快照私有发布成功: Sites 源码 `23ce8e4b93365ba0041f037670a8a845ad1b57b5`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_93e9783413048191b9c06c887a6989ef`. 继续使用上文地址, 保持仅所有者访问. 独立 checkout 未改变仓库 remote; 托管登录未验证. 提交后等待当前 PR review.
