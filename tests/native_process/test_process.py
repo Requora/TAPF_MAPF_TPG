@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
@@ -26,6 +27,24 @@ class ProcessTests(unittest.TestCase):
             self.assertEqual((root / "debug.dot").read_text(), str(root))
             self.assertEqual(Path.cwd(), original)
             self.assertEqual(json.loads(output.with_suffix(".run.json").read_text())["cwd"], str(root))
+
+    # 中文: 本测试拒绝 cwd 配合相对输出路径, 防止父子进程读取不同文件或删除调用者的旧证据.
+    # English: This test rejects relative output with cwd so parent and child cannot use different files or delete caller evidence.
+    def test_cwd_requires_absolute_output_before_any_side_effect(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "result.txt"
+            output.write_text("caller evidence")
+            child = root / "child"
+            child.mkdir()
+            relative_output = Path(os.path.relpath(output))
+            command = [sys.executable, "-c", "from pathlib import Path; Path('started').touch()"]
+            with self.assertRaisesRegex(ValueError, "absolute output.*cwd"):
+                run_native(command, relative_output, budget_s=5, request_id="relative", cwd=child)
+            self.assertEqual(output.read_text(), "caller evidence")
+            self.assertEqual(list(child.iterdir()), [])
+            self.assertFalse(output.with_suffix(".stdout").exists())
+            self.assertFalse(output.with_suffix(".run.json").exists())
 
     # 中文: 本测试运行会超时的真实休眠进程, 检查 TIMEOUT 和证据, 确认进程边界实际生效而非仅模拟返回码.
     # English: This test runs a real sleeping child and inspects TIMEOUT evidence so process enforcement is

@@ -1,16 +1,16 @@
 // Curated snapshot. Update with the roadmap and evidence whenever project state changes.
 window.PROJECT = {
-  date: "2026-10-20", evidenceCommit: "b2a3f77", branch: "feat/native-tapf-comparison",
-  repo: "https://github.com/Requora/TAPF_MAPF_TPG", current: ["joint_tapf", "native_process"],
+  date: "2026-10-22", evidenceCommit: "4560d8e", branch: "fix/native-process-output-path",
+  repo: "https://github.com/Requora/TAPF_MAPF_TPG", current: ["native_process"],
   copy: {
     navMap: ["架构", "Architecture"], navWork: ["当前进展", "Progress"],
     headline: ["让系统的每一步,\n都看得见.", "Every part.\nA clearer picture."],
     intro: ["从订单到安全执行, 看清模块如何连接, 哪些能力已有证据, 哪些仍待实现. 一个持续维护的研究项目窗口.", "From orders to safe execution. See how the pieces connect, what the evidence supports, and what remains to be built."],
     explore: ["探索系统架构 ↓", "Explore the architecture ↓"], snapshot: ["验证快照 / 非完成率", "EVIDENCE SNAPSHOT / NOT A COMPLETION SCORE"],
-    tests: ["源码测试通过 · 含 6 项目标分配实验检查", "source tests passed · includes 6 goal-assignment experiment checks"],
+    tests: ["PR #10 历史源码测试通过 · 本轮 83 通过, 4 跳过", "historical PR #10 source tests passed · current: 83 pass, 4 skip"],
     implemented: ["已有实现的模块", "Modules with implementations"], native: ["已验证的原生求解器集成", "Verified native solver integrations"],
     snapshotNote: ["仓库原生链已通过 CI. 新增双车目标分配实验已通过本地与远端 CI; 仓库 API 与连续安全尚未接入.", "Warehouse native chain passes CI. New two-robot goal-assignment experiment passes locally and in remote CI; no warehouse API or continuous safety connection."],
-    focusLabel: ["正在做", "IN FOCUS"], focus: ["PR #9 已合并. 本轮真实 CBS/CBS-TA 对照为 6/8/6; PR #10 的 CI 已通过, 待 review, 遵守 500 行限制.", "PR #9 merged. Real CBS/CBS-TA comparison: 6/8/6; PR #10 passes CI and awaits review within the 500-line limit."],
+    focusLabel: ["正在做", "IN FOCUS"], focus: ["PR #10 已合并于 4560d8e. 本轮修复 cwd 与相对输出路径的歧义; 83 项本地测试通过, 4 项原生测试跳过.", "PR #10 merged at 4560d8e. This increment rejects ambiguous relative output with cwd; 83 local tests pass, four native tests skip."],
     mapHeading: ["一张图, 看清整个系统.", "One system. Every connection."], flow: ["目标业务流程", "Target workflow"], imports: ["现有代码依赖", "Current imports"],
     flowNote: ["实线为已本地验证的单车道规划连接; 虚线为计划连接. Order 转 Demand 在重放驱动中完成, Runtime 和执行闭环未实现.", "Solid edges are locally verified single-lane planning calls; dashed edges remain planned. The replay harness converts Order to Demand. Runtime and the execution loop remain absent."],
     importsNote: ["实线为当前工作树的公开 API 导入. 11 个模块, 16 条依赖; 研究实验不增加生产依赖.", "Solid edges show public imports in the current working tree: 11 modules, 16 dependencies. The research experiment adds no production dependencies."],

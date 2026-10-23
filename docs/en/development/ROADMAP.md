@@ -2,10 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-20-r17 -->
+<!-- doc-sync: roadmap / 2026-10-22-r18 -->
 
-Status: the user merged PR #9; remote baseline `04d4cda` is confirmed.
-This increment on `feat/native-tapf-comparison` completes a real assignment/CBS/CBS-TA comparison, [PR #10](https://github.com/Requora/TAPF_MAPF_TPG/pull/10) awaits review.
+Status: the user merged PR #10; remote baseline `4560d8e` is confirmed.
+This increment on `fix/native-process-output-path` fixes ambiguous native process paths. With cwd, output must be absolute; invalid configuration is rejected before side effects.
+This increment passes 83 local tests; four native tests skip. Historical native evidence follows.
+See [output path fix](0011-native-process-output-path.md).
 Two assignments with independent distance 6 have CBS total costs 6 and 8; CBS-TA returns 6.
 The local assignment solver selected the cost-8 tie; enumerating both avoids dependence on tie order.
 86 source and clean installed-wheel tests pass, and remote CI 39379639913 passes all jobs, including real MAWPF/WinkTPG and CBS-TA; without binaries, 82 tests pass and four skip.

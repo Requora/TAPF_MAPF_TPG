@@ -68,8 +68,8 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["真实联合目标实验", "Real joint-goal experiment"], ["PR #9 已合并. 两种独立距离同为 6 的分配, CBS 代价为 6/8; CBS-TA 得到 6. 当前实验的四次原生调用与单步重放已通过远端 CI, PR #10 待 review.", "PR #9 merged. Two assignments share distance 6 but have CBS costs 6/8; CBS-TA returns 6. Four native calls and stepwise replay pass remote CI; PR #10 awaits review."]],
-    [["NEXT / 待审查", "NEXT / REVIEW"], ["核对真实路径与边界", "Inspect real paths and limits"], ["本地独立分配器选中代价 8 的平局方案. 枚举两种分配验证联合结果, 不声称普遍性能优势. 本轮遵守 500 行限制, 等待用户 review 后再继续.", "The local standalone allocator selected the cost-8 tie. Enumerating both verifies the joint result without claiming a general performance advantage. This increment stays within 500 lines and awaits user review before further work."]],
+    [["NOW / 正在做", "NOW"], ["原生进程路径约束", "Native process path contract"], ["PR #10 已合并于 4560d8e. 指定 cwd 时要求绝对输出路径, 在删除旧证据或启动进程前拒绝歧义. 回归测试先失败, 修复后通过.", "PR #10 merged at 4560d8e. With cwd, output must be absolute; ambiguous paths are rejected before deleting evidence or starting the child. The regression failed before the fix and passes afterward."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["审查最小修复", "Review the focused fix"], ["83 项本地测试通过, 4 项原生测试跳过. 目标实验历史代价仍为 6/8/6. 联合仓库适配在本 PR 合并后再继续.", "83 local tests pass, four native tests skip. Historical goal-experiment costs remain 6/8/6. Joint warehouse adaptation follows after this PR merges."]],
     [["NOT YET / 尚未完成", "NOT YET"], ["联合仓库与执行闭环", "Joint warehouse & execution loop"], ["目标实验未接 SKU, Lift/Serve/Drop, 共享编译或 TPG. 多车仓库, Runtime, 连续几何, 无限期停车和中央执行器仍未完成.", "The goal experiment has no SKU, Lift/Serve/Drop, shared compiler or TPG connection. Multi-robot warehouse planning, Runtime, continuous geometry, indefinite parking and execution remain incomplete."]],
   ];
   // 中文: map 的回调把每个工作状态条目转换为卡片, 分开显示当前工作和未实现项, 防止读者把计划当成已完成成果.
@@ -79,9 +79,10 @@ function render() {
   const evidence = [
     [text(["真实目标实验 CI · 下载单步重放", "Real goal experiment CI · download replay"]), `${project.repo}/actions/runs/39379639913/artifacts/12244991832`],
     [text(["真实原生 CI · HTML/JSON 重放", "Real native CI · HTML/JSON replay"]), `${project.repo}/actions/runs/39366365034`],
-    [text(["当前 PR · 变更与 review", "Current PR · changes & review"]), `${project.repo}/pull/10`],
-    [text(["目标实验验证基线", "Goal-experiment baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
-    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0010-native-tapf-comparison.md`],
+    [text(["当前 PR #11 · 路径约束", "Current PR #11 · path contract"]), `${project.repo}/pull/11`],
+    [text(["已合并 PR #10 · 实验证据", "Merged PR #10 · experiment evidence"]), `${project.repo}/pull/10`],
+    [text(["已合并验证基线", "Merged verification baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
+    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0011-native-process-output-path.md`],
     [text(["路线图 · 阶段 1—11", "Roadmap · stages 1–11"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/ROADMAP.md`],
   ];
   // 中文: map 的回调把每条验证证据转换成链接, 让用户能从页面追查代码, 自动构建与测试记录(CI), 或开发日志.
