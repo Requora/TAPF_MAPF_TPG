@@ -77,6 +77,7 @@ function render() {
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
+    [text(["当前 PR #13 · 运动结果边界", "Current PR #13 · motion-result boundary"]), `${project.repo}/pull/13`],
     [text(["真实目标实验 CI · 下载单步重放", "Real goal experiment CI · download replay"]), `${project.repo}/actions/runs/39379639913/artifacts/12244991832`],
     [text(["真实原生 CI · HTML/JSON 重放", "Real native CI · HTML/JSON replay"]), `${project.repo}/actions/runs/39366365034`],
     [text(["已合并 PR #12 · 组合测试", "Merged PR #12 · composition tests"]), `${project.repo}/pull/12`],

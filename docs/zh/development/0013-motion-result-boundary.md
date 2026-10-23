@@ -22,6 +22,10 @@ TDD: 15 个坏运动子用例最初全部错误返回 ExecutableProposal, 新检
 
 ## PR 与下一步
 
-PR 待创建. 提交后等待 review, 不推进下一 PR. 进展网页同步当前工作和合并基线. 发布和最终检查结果待记录.
+[PR #13](https://github.com/Requora/TAPF_MAPF_TPG/pull/13) 等待 review. 提交后等待 review, 不推进下一 PR. 进展网页同步当前工作和合并基线. 最终检查与发布记录见下文.
 
 非有限值回归将 NaN/Inf 注入 x 坐标; 其他标量的有限性由同一检查覆盖, 未逐字段注入. Ruff 在独立工具环境安装后通过; JS 语法, diff 和网页双语/键盘/手机检查通过, 桌面与手机截图已检查. 初次 wheel 从旧 build/ 混入历史模块, 架构检查如期失败; 改用独立干净源码目录重建并重新验证.
+
+干净 wheel: `/tmp/motion-wheel-env/bin/python -m unittest discover -s tests -v`, 设置同一 WAREHOUSE_NATIVE_BIN 后 93 通过, 1 跳过; pip check 通过. 独立 gpt-6-luna/low 双语审查完成, 已修正旧 PR 焦点链接并明确非有限值测试范围. 相对 `5563fac` 的代码含测试/网页共 136 行 (+121/-15), 配置无变化; 文档单独计数. 用户已有文件改动未加入.
+
+私有发布 succeeded: [进展页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site). Sites 源码 `1c9a53097d2a07e709faf1ab0babd4afdc1bfce2`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_4c245494a37c8191849ae1af069b3db0`. 仅所有者访问保持不变; 托管登录流程未验证. 发布使用独立临时 checkout, 主仓库 remote 未改变. 最终提交远端 CI 仍待结果.

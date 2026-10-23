@@ -4,7 +4,7 @@
 
 <!-- doc-sync: roadmap / 2026-10-23-r21 -->
 
-Status: PR #12 merged; baseline `5563fac` confirmed. This increment adds motion-result structural checks to StagedPipeline; PR pending creation.
+Status: PR #12 merged; baseline `5563fac` confirmed. This increment adds motion-result structural checks to StagedPipeline; [PR #13](https://github.com/Requora/TAPF_MAPF_TPG/pull/13) awaits review.
 TPG results with missing fleet members, non-finite knots, non-increasing times, incorrect splices or moving stop endpoints return BAD_INPUT.
 A single stationary knot still supports indefinite holding. This is not continuous safety acceptance.
 See [motion-result boundary](0013-motion-result-boundary.md). Joint warehouse adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.
