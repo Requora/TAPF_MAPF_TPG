@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0011-native-process-output-path.md) | [English](../../en/development/0011-native-process-output-path.md)
 
-<!-- doc-sync: native-process-output-path / 2026-10-23-r3 -->
+<!-- doc-sync: native-process-output-path / 2026-10-23-r4 -->
 
 ## Scope and decision
 
@@ -39,3 +39,9 @@ User finding r4355183212 is accepted. Path configuration rules move into check_o
 Bot finding r4355212527 was checked; the user-requested fivefold budget is retained. The [OpenRouter endpoint catalog](https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-1017/endpoints) at inspection lists endpoints including OpenInference, Relace and Cloudflare with 1048576 context and 943718 output tokens, sufficient for the configured budget. Not every provider supports that limit; this increment does not pin a provider. [Live review 39883608837](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39883608837) succeeded and published a finding, reporting 15473 input / 18983 output tokens and 50.9 s AI time; [CI on the same commit](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/39883608860) passed all jobs. This proves that request succeeded, not full 655360-token generation or success on every route. The earlier length failure still lacks usage and does not establish exhaustion of the configured cap. Both threads receive replies after push and are not automatically marked resolved.
 
 After refactoring, `PYTHONPATH=src python -m unittest discover -s tests -v`: 83 passed, four native tests skipped. Ruff and diff checks pass. Native planners were not rerun locally. Public behavior, module connections and the website verification scope are unchanged, so the website is not republished. New remote checks run after push; old CI does not validate the new commit.
+
+## Exclude Markdown from automated review
+
+The user requested that automated review skip .md files. A case-insensitive suffix rule in workflow `IGNORE.REGEX` filters root and nested Markdown files before PR-Agent generates the review diff. Python, YAML, JS and the existing vendor exclusion are retained. This rule limits changed-file review scope; it does not disable required project instruction loading. Manual bilingual log checks still follow AGENTS.
+
+Offline verification used the actual pinned v0.48.0 upstream settings loader and filter_ignored. Before the edit, it failed because README.md, nested Markdown and mixed-case extensions remained; afterward those files were excluded, Python/YAML/JS were retained, and vendor files stayed excluded. The script is `/tmp/warehouse-review-md-check.py`, run with `PYTHONPATH=/tmp/warehouse-pr-agent-research /tmp/warehouse-llm-probe/bin/python /tmp/warehouse-review-md-check.py`. Initial verification lacked loguru; after adding it to the temporary verification environment, the expected behavioral failure was observed. Project dependencies were unchanged. YAML and diff checks pass. Only configuration and bilingual logs change; business behavior and website content are unchanged. A new remote review runs after push; offline results do not substitute for remote verification.

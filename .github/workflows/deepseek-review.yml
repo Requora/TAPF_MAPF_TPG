@@ -33,6 +33,9 @@ jobs:
           CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek/deepseek-v4.1-flash-1017"]'
           CONFIG.REASONING_EFFORT: high
           CONFIG.RESPONSE_LANGUAGE: zh-CN
+          # 中文: IGNORE.REGEX 在生成审查 diff 前排除所有目录的 Markdown 文件, 保留代码和配置审查.
+          # English: IGNORE.REGEX excludes Markdown files at any depth before review diff generation, retaining code and configuration review.
+          IGNORE.REGEX: '["(?i).*\\.md$"]'
           # 中文: 模型上限为 high 推理和正文保留 655360 token, 另为 diff 和提示词提供 65536 输入 token 的预算.
           # English: The model limit reserves 655360 tokens for high reasoning plus text, providing a separate 65536-token input budget for the diff and prompt.
           CONFIG.CUSTOM_MODEL_MAX_TOKENS: '720896'
