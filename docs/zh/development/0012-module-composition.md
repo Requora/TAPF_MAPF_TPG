@@ -50,3 +50,5 @@ PYTHONPATH=src:tests python -m composition.replay /tmp/tapf-chain-bridges --firs
 按用户要求, IGNORE.REGEX 在生成 diff 前排除 docs/, web/ 全目录, warehouse_api_v0_7/ 参考包, 以及任意目录的 Markdown, RST, AsciiDoc, HTML, CSS, SVG, 图片和 PDF. 因此网页中的 JS 和检查脚本也不参与自动 review. 业务源码, 测试, 集成适配器, 构建及 CI 配置仍保留, 包括 CMakeLists.txt. 审查提示明确不评论网页, 文档, 样式, 翻译, 发布记录或进展统计. 项目指令读取和人工文档校验不受影响.
 
 固定 PR-Agent v0.48.0 的真实配置加载器和 filter_ignored 离线验证先失败, 修改后通过. 命令: `PYTHONPATH=/tmp/warehouse-pr-agent-research /tmp/warehouse-llm-probe/bin/python /tmp/warehouse-review-scope-check.py`. 测试覆盖排除项和保留项, 原有 vendor 排除仍有效. YAML 解析和 diff 检查通过. 本次仅配置和双语日志变化, 不改变规划代码, 模型预算或网页内容. 推送后触发新 review; 离线验证不代表远端运行成功.
+
+私有网页发布成功, 保持仅所有者访问; 未验证托管登录流程. [Site](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), source `488596b7548860f7f6408adef82d9cb7be1f4ce0`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_6f9d95eaba7c8191b58b26321ed36d93`.
