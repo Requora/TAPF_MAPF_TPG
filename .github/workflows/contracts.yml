@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: "3.14"
       - run: python -m pip install ruff==0.14.0
-      - run: ruff check src tests
+      - run: ruff check src tests .github/review_transport.py .github/tests
 
   test:
     name: Tests (Python 3.14)
