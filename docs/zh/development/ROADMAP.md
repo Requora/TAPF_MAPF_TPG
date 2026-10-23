@@ -2,15 +2,14 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r19 -->
+<!-- doc-sync: roadmap / 2026-10-23-r20 -->
 
-状态: PR #11 已合并, 远端基线 `5e35ee0` 已确认.
-本轮 `feat/joint-tapf-boundary` 增加 JointPipeline 和统一契约 JointPlanner/JointPlan.
-联合求解器返回任务草稿和路线; 真实共享编译器重新解析草稿, 路线检查通过后才进入 TPG.
-本轮为 fixture 联接验证: 93 项测试中 89 通过, 4 项原生测试跳过. 不代表 CBS-TA 仓库适配已完成.
-[联合入口日志与重放](0012-joint-pipeline.md)记录失败传播, 共享预算和输入不变的证据.
-历史 PR #10 的真实目标实验代价为固定分配 6/8, 联合 6; 单车道仓库原生链证据保持有效且未在本轮重跑.
-CBS-TA 仓库动作适配, 多机器人仓库, 连续碰撞/停车验证, Runtime 和执行仍未完成.
+状态: PR #11 已合并, 已确认基线 `5e35ee0`. 当前 [PR #12](https://github.com/Requora/TAPF_MAPF_TPG/pull/12) 等待 review.
+本轮只增加模块边界组合测试, 不增加 joint 生产模块或契约.
+分配, 编译, MAPF, TPG 共 10 种有效连续组合在两组参数下验证; MAPF/TPG 复用真实原生二进制.
+91 项测试中 90 通过, 1 项 CBS-TA 测试跳过; 无二进制时为 86 通过, 5 跳过.
+见 [组合测试与重放](0012-module-composition.md). 单车单架向东单位车道之外的组合没有据此宣称支持.
+历史目标实验的固定分配代价为 6/8, 联合为 6. 联合仓库适配, 连续碰撞/停车验证, Runtime 和执行仍未完成.
 
 ## 可替换模块
 
