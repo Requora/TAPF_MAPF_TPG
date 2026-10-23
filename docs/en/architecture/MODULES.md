@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-23-r9 -->
+<!-- doc-sync: module-boundaries / 2026-10-23-r10 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
-The private website tracks PR #11 merged baseline `5e35ee0` and module composition tests, retaining native evidence and remaining limits.
+The private website tracks PR #13 merged baseline `cabdac3` and shared trajectory utilities, retaining native evidence and remaining limits.
 
 ## Implemented directories
 
@@ -18,6 +18,10 @@ Tests are grouped by module; test cases and serialization fixtures retain their 
 ```text
 src/warehouse_api/
   contracts.py
+  trajectory/
+    __init__.py
+    _curve.py
+    _validation.py
   serialization/
     __init__.py
     _json.py
@@ -56,6 +60,7 @@ src/warehouse_api/
     _current_task.py
     _validation.py
 tests/
+  trajectory/
   composition/
   native/
   native_process/
@@ -76,6 +81,7 @@ structures and does not depend on concrete contracts or business modules.
 flowchart LR
     Compiler[task_compiler] --> Contracts[contracts.py]
     Planning[planning] --> Contracts
+    Trajectory[trajectory: evaluate / slice_curve] --> Contracts
     Compiler --> Codec[serialization]
     Compiler --> Durations[action_timing]
     Orders[order_source] --> Contracts
@@ -104,6 +110,7 @@ flowchart LR
 | tpg | NativeWinkTpgPlanner | Pinned speedSolver primitives to Hermite knots and action holds |
 | validation | check_single_lane, check_jobs, check_assignment | Supported-subset checks; continuous Validator remains unimplemented |
 | native_process | run_native | Process budgets and retained raw evidence |
+| trajectory | evaluate, slice_curve | Evaluate and exactly slice existing Hermite curves; depends only on contracts, consumer integration pending |
 | serialization | dumps, loads, from_data, to_data | JSON structure conversion |
 
 Cross-module imports use package entry points or contracts. For example, the

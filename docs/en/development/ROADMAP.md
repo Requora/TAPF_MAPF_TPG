@@ -2,12 +2,13 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r22 -->
+<!-- doc-sync: roadmap / 2026-10-23-r23 -->
 
-Status: PR #12 merged; baseline `5563fac` confirmed. This increment adds motion-result structural checks to StagedPipeline; [PR #13](https://github.com/Requora/TAPF_MAPF_TPG/pull/13) awaits review.
-Within-budget TPG results with missing fleet members, non-finite knots, non-increasing times, incorrect splices or moving stop endpoints return BAD_INPUT.
-Review fixes: late motion results return TIMEOUT first; a moving single-knot prefix may immediately join a complete stopping tail. A stationary single knot still supports indefinite holding. This is not continuous safety acceptance.
-See [motion-result boundary](0013-motion-result-boundary.md). Joint warehouse adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.
+Status: PR #13 merged; confirmed baseline `cabdac3`. This increment implements shared trajectory evaluation and exact slicing, awaiting review.
+`trajectory.evaluate / slice_curve` reads existing Hermite curves and retains all internal knots.
+Analytic tests and 36 real native slice comparisons pass; maximum position/velocity error is 1.67e-15.
+This is a shared utility, not yet connected to the continuous validator or central executor. Runtime, continuous safety and joint warehouse integration remain incomplete.
+See [shared trajectories](0014-shared-trajectory.md).
 
 ## Replaceable modules
 
@@ -56,7 +57,7 @@ Do not add a mandatory intermediate submit or claim TAPF covers warehouse stock.
 | 8 | Staged and joint TAPF composition | Replace standalone assignment/MAPF with CBS-TA on the same supported fixture |
 | 9 | Continuous validator | Crossing between samples, following, turning loads, resource capacities, indefinite terminal holds |
 | 10 | Runtime transactions and branches | No double reservation, idempotent submit, stale rejection, protected Lift, due branch wins |
-| 11 | Central executor and integrated replay | Exact Hermite slices, retained switch knots, action starts once, event deduplication |
+| 11 | Central executor and integrated replay | Integrate shared Hermite slices, retained switch knots, action starts once, event deduplication |
 
 Before extending upstream integration, define and test the adapter's supported subset.
 Refuse unsupported mid-edge starts, loaded handovers, geometry, cyclic rotations,
