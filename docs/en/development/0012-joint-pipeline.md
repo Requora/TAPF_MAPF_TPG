@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0012-joint-pipeline.md) | [English](../../en/development/0012-joint-pipeline.md)
 
-<!-- doc-sync: joint-pipeline / 2026-10-23-r1 -->
+<!-- doc-sync: joint-pipeline / 2026-10-23-r2 -->
 
 ## Scope and decision
 
@@ -23,3 +23,9 @@ The initial focused test failed because JointPlan did not exist. After implement
 Source and a clean installed wheel each pass 89 tests with four skips; pip check passes. Clean build directory: `/tmp/warehouse-joint-wheel-82xyvfjv`. Independent gpt-6-luna/low bilingual review passes. Dashboard checks pass for both languages, both diagrams, 30 module selections, keyboard and mobile, with no JS errors; desktop and mobile screenshots were inspected.
 
 Private dashboard publication succeeded with owner-only access retained; hosted sign-in was not tested. [Site](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), source `3f5aa0eafbc3afc7f619f4654086fcc69fb184b1`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_3acb3f2c6aec819187870c5cc05927b7`.
+
+## Automated review covers code-related changes only
+
+At the user's request, IGNORE.REGEX excludes the entire docs/ and web/ directories, the warehouse_api_v0_7/ reference package, and Markdown, RST, AsciiDoc, HTML, CSS, SVG, images and PDF at any depth before diff generation. Website JS and check scripts are therefore excluded too. Application source, tests, integration adapters, build and CI configuration remain, including CMakeLists.txt. Review instructions explicitly exclude website, documentation, styling, translation, publication records and progress statistics. Project instruction reading and manual documentation checks remain unaffected.
+
+The pinned PR-Agent v0.48.0 real settings loader and filter_ignored failed the offline behavior check before the edit and passed afterward. Command: `PYTHONPATH=/tmp/warehouse-pr-agent-research /tmp/warehouse-llm-probe/bin/python /tmp/warehouse-review-scope-check.py`. The check covers excluded and retained files; the default vendor exclusion still works. YAML parsing and diff checks pass. This follow-up changes configuration and paired logs only, without changing planning code, model budgets or dashboard content. Pushing triggers a new review; offline verification does not establish remote success.

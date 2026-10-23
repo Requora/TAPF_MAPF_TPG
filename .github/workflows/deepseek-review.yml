@@ -33,9 +33,9 @@ jobs:
           CONFIG.ADDITIONAL_REASONING_EFFORT_MODELS: '["openai/deepseek/deepseek-v4.1-flash-1017"]'
           CONFIG.REASONING_EFFORT: high
           CONFIG.RESPONSE_LANGUAGE: zh-CN
-          # 中文: IGNORE.REGEX 在生成审查 diff 前排除所有目录的 Markdown 文件, 保留代码和配置审查.
-          # English: IGNORE.REGEX excludes Markdown files at any depth before review diff generation, retaining code and configuration review.
-          IGNORE.REGEX: '["(?i).*\\.md$"]'
+          # 中文: IGNORE.REGEX 在生成审查 diff 前排除文档, 网页, 参考包及展示资产, 让审查聚焦业务代码和构建配置.
+          # English: IGNORE.REGEX excludes docs, websites, reference inputs and presentation assets before diff generation to focus review on application code and build configuration.
+          IGNORE.REGEX: '["(?i)^(docs|web|warehouse_api_v0_7)/", "(?i).*\\.(md|markdown|rst|adoc|html?|css|svg|png|jpe?g|gif|webp|pdf)$"]'
           # 中文: 模型上限为 high 推理和正文保留 655360 token, 另为 diff 和提示词提供 65536 输入 token 的预算.
           # English: The model limit reserves 655360 tokens for high reasoning plus text, providing a separate 65536-token input budget for the diff and prompt.
           CONFIG.CUSTOM_MODEL_MAX_TOKENS: '720896'
@@ -69,4 +69,6 @@ jobs:
           PR_REVIEWER.EXTRA_INSTRUCTIONS: >-
             所有审查意见使用简体中文和英文标点. 每条意见说明严重程度,
             具体失败场景和修复建议. 只报告可操作的缺陷, 不重复已修复的问题.
+            审查范围仅限业务代码, 测试, 集成适配器及影响代码行为的构建和 CI 配置.
+            不审查网页, 文档, 展示样式, 文案翻译, 发布记录或进展统计; 不因这些内容提出意见.
             不声称执行过测试. 项目暂不实现模拟器或原生后端.
