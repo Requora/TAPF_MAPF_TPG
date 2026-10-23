@@ -18,4 +18,8 @@ PR #11 合并于 `5e35ee0`, 开始前已确认远端状态. JointPipeline 用注
 
 ## PR 与下一步
 
-创建后补充 PR 链接. 本轮实现编排并提供 fixture 证据, 不代表原生联合仓库求解器. review 和合并后, 下一步将受支持仓库任务适配到联合原生搜索. 连续几何, 无限期停车, Runtime 和执行仍未实现. 按用户要求优先主线, 独立网页修正已搁置; 本轮同步维护状态内容.
+[PR #12](https://github.com/Requora/TAPF_MAPF_TPG/pull/12) 已提交, 等待 review. 本轮实现编排并提供 fixture 证据, 不代表原生联合仓库求解器. review 和合并后, 下一步将受支持仓库任务适配到联合原生搜索. 连续几何, 无限期停车, Runtime 和执行仍未实现. 按用户要求优先主线, 独立网页修正已搁置; 本轮同步维护状态内容.
+
+源码和干净安装 wheel 各 89 通过, 4 跳过; pip check 通过. 干净构建目录为 `/tmp/warehouse-joint-wheel-82xyvfjv`. gpt-6-luna/low 双语审查通过. 网页双语, 两类图, 30 次模块选择, 键盘和手机检查通过, 无 JS 错误; 已检查桌面和手机截图.
+
+私有网页发布成功, 保持仅所有者访问; 未验证托管登录流程. [Site](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), source `3f5aa0eafbc3afc7f619f4654086fcc69fb184b1`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_3acb3f2c6aec819187870c5cc05927b7`.

@@ -18,4 +18,8 @@ The initial focused test failed because JointPlan did not exist. After implement
 
 ## PR and next step
 
-PR link will be recorded after creation. This increment implements composition with fixture evidence, not a native joint warehouse solver. Next, after review and merge, adapt supported warehouse tasks to joint native search. Continuous geometry, indefinite parking, Runtime and execution remain unimplemented. The standalone dashboard correction was set aside at the user's request to prioritize mainline development; status content is maintained with this increment.
+[PR #12](https://github.com/Requora/TAPF_MAPF_TPG/pull/12) is submitted and awaiting review. This increment implements composition with fixture evidence, not a native joint warehouse solver. Next, after review and merge, adapt supported warehouse tasks to joint native search. Continuous geometry, indefinite parking, Runtime and execution remain unimplemented. The standalone dashboard correction was set aside at the user's request to prioritize mainline development; status content is maintained with this increment.
+
+Source and a clean installed wheel each pass 89 tests with four skips; pip check passes. Clean build directory: `/tmp/warehouse-joint-wheel-82xyvfjv`. Independent gpt-6-luna/low bilingual review passes. Dashboard checks pass for both languages, both diagrams, 30 module selections, keyboard and mobile, with no JS errors; desktop and mobile screenshots were inspected.
+
+Private dashboard publication succeeded with owner-only access retained; hosted sign-in was not tested. [Site](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), source `3f5aa0eafbc3afc7f619f4654086fcc69fb184b1`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_3acb3f2c6aec819187870c5cc05927b7`.
