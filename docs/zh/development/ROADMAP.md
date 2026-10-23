@@ -2,12 +2,14 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r22 -->
+<!-- doc-sync: roadmap / 2026-10-23-r26 -->
 
-状态: PR #12 已合并, 已确认基线 `5563fac`. 本轮补齐 StagedPipeline 的运动结果结构检查, [PR #13](https://github.com/Requora/TAPF_MAPF_TPG/pull/13) 等待 review.
-预算内的 TPG 结果缺失车队, 非有限节点, 非递增时间, 错误衔接或非静止停车终点时返回 BAD_INPUT.
-Review 修正: 迟到运动结果优先返回 TIMEOUT; 移动单节点前缀可立即衔接完整停车尾段. 单个静止节点的无限期保持仍受支持. 这不是连续安全验收.
-见 [运动结果边界](0013-motion-result-boundary.md). 联合仓库适配, 连续碰撞/停车验证, Runtime 和执行仍未完成.
+状态: PR #13 已合并, 基线 `cabdac3`. [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 已改用 C++ 求值/切片核心, 等待 review.
+PreparedTrajectory 一次转换并校验; evaluate / slice_curve 保留 Python 契约和 tuple 兼容调用.
+105 项测试中 104 通过, 1 跳过; 干净 sdist -> wheel 验证通过, 原生轨迹 36 次切片比较误差 1.67e-15.
+1000 台/1024 节点快照准备约 267-270 ms, 后续整车队求值约 3.928 ms, 切片约 8.391 ms; 包含绑定, 不是完整实时闭环.
+共享工具尚未接入连续验证器或执行器. Runtime, 连续安全与联合仓库适配仍未完成.
+见 [共享轨迹](0014-shared-trajectory.md) 和 [性能证据](0014-trajectory-performance.md).
 
 ## 可替换模块
 
@@ -54,7 +56,7 @@ flowchart TD
 | 8 | 分阶段与联合 TAPF 组合 | 在同一受支持 fixture 上用 CBS-TA 替换独立分配/MAPF |
 | 9 | 连续验证器 | 采样间交叉, 跟随, 载货转弯, 资源容量, 无限期终点占用 |
 | 10 | Runtime 事务与分支 | 不重复预留, 幂等提交, 拒绝过期结果, 保护 Lift, 到期分支优先 |
-| 11 | 中央执行器与集成重放 | 精确 Hermite 切片, 保留切换节点, 动作只启动一次, 事件去重 |
+| 11 | 中央执行器与集成重放 | 接入共享 Hermite 切片, 保留切换节点, 动作只启动一次, 事件去重 |
 
 扩展上游集成前先定义并测试适配器支持的子集.
 不支持的边中间起步, 载货交接, 几何, 循环旋转或动作语义必须明确拒绝,

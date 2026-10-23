@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-23-r9 -->
+<!-- doc-sync: module-boundaries / 2026-10-23-r11 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 
-私有网页同步 PR #11 合并基线 `5e35ee0` 与模块组合测试进展, 保留原生证据和未完成边界.
+私有网页记录 PR #13 已合并基线 `cabdac3` 和共享轨迹工具, 保留原生证据和未完成边界.
 
 ## 已实现目录
 
@@ -17,6 +17,12 @@
 ```text
 src/warehouse_api/
   contracts.py
+  trajectory/
+    __init__.py
+    _curve.py
+    _native.cpp
+    _validation.hpp
+    PYBIND11_LICENSE.txt
   serialization/
     __init__.py
     _json.py
@@ -55,6 +61,7 @@ src/warehouse_api/
     _current_task.py
     _validation.py
 tests/
+  trajectory/
   composition/
   native/
   native_process/
@@ -75,6 +82,7 @@ tests/
 flowchart LR
     Compiler[task_compiler] --> Contracts[contracts.py]
     Planning[planning] --> Contracts
+    Trajectory[trajectory: evaluate / slice_curve] --> Contracts
     Compiler --> Codec[serialization]
     Compiler --> Durations[action_timing]
     Orders[order_source] --> Contracts
@@ -103,6 +111,7 @@ flowchart LR
 | tpg | NativeWinkTpgPlanner | 固定版本 speedSolver 原语转为 Hermite 节点和动作静止段 |
 | validation | check_single_lane, check_jobs, check_assignment | 支持范围检查; 连续 Validator 未实现 |
 | native_process | run_native | 进程预算与原始证据保留 |
+| trajectory | PreparedTrajectory, evaluate, slice_curve | 读取与精确切片已有 Hermite 曲线; 仅依赖 contracts, 消费者接入待实现 |
 | serialization | dumps, loads, from_data, to_data | JSON 结构转换 |
 
 跨模块只从包入口或 contracts 导入. 例如编译器调用
@@ -156,3 +165,7 @@ flowchart LR
 `tests/composition/` 在测试层选择分配, 编译, MAPF, TPG 的入口与出口, 覆盖四个同模块和六个跨模块连续组合. 中间入口使用独立构造的公开契约数据, 不要求先运行前置模块. 真实模块输出按任务, 动作, 路线和运动约束检查, 不只比较调用顺序. 该驱动不是生产流水线, 不执行 Runtime 提交或总预算管理. 没有新增 joint 模块, 生产 API 和依赖不变.
 
 见 [组合测试与重放](../development/0012-module-composition.md).
+
+## 轨迹原生边界
+
+trajectory 的 Python 层只转换统一契约, C++ 核心负责求值/切片, `_validation.hpp` 集中检查曲线和查询. PreparedTrajectory 是可复用的只读计算快照, 不是替代 contracts 的 DTO; 不公开 pybind11 对象. 只有 trajectory -> contracts 的生产模块依赖. setup.py 构建内部扩展, pybind11 3.0.1 仅作构建依赖. 源码使用前需 `pip install -e .`, wheel 为平台/CPython ABI 专用. 安装与性能证据见 [当前日志](../development/0014-shared-trajectory.md).

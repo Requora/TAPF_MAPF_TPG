@@ -2,12 +2,14 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r22 -->
+<!-- doc-sync: roadmap / 2026-10-23-r26 -->
 
-Status: PR #12 merged; baseline `5563fac` confirmed. This increment adds motion-result structural checks to StagedPipeline; [PR #13](https://github.com/Requora/TAPF_MAPF_TPG/pull/13) awaits review.
-Within-budget TPG results with missing fleet members, non-finite knots, non-increasing times, incorrect splices or moving stop endpoints return BAD_INPUT.
-Review fixes: late motion results return TIMEOUT first; a moving single-knot prefix may immediately join a complete stopping tail. A stationary single knot still supports indefinite holding. This is not continuous safety acceptance.
-See [motion-result boundary](0013-motion-result-boundary.md). Joint warehouse adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.
+Status: PR #13 merged at `cabdac3`. [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) now uses a C++ evaluation/slicing core and awaits review.
+PreparedTrajectory converts and validates once; evaluate / slice_curve preserve Python contracts and tuple-call compatibility.
+105 tests: 104 pass, one skip; clean sdist -> wheel verified; 36 native trajectory slice comparisons have error 1.67e-15.
+For 1000 robots/1024 knots, snapshot preparation costs about 267-270 ms, subsequent fleet evaluation 3.928 ms and slicing 8.391 ms; bindings included, not a full real-time loop.
+The shared utility is not connected to the continuous validator or executor. Runtime, continuous safety and joint warehouse integration remain incomplete.
+See [shared trajectories](0014-shared-trajectory.md) and [performance evidence](0014-trajectory-performance.md).
 
 ## Replaceable modules
 
@@ -56,7 +58,7 @@ Do not add a mandatory intermediate submit or claim TAPF covers warehouse stock.
 | 8 | Staged and joint TAPF composition | Replace standalone assignment/MAPF with CBS-TA on the same supported fixture |
 | 9 | Continuous validator | Crossing between samples, following, turning loads, resource capacities, indefinite terminal holds |
 | 10 | Runtime transactions and branches | No double reservation, idempotent submit, stale rejection, protected Lift, due branch wins |
-| 11 | Central executor and integrated replay | Exact Hermite slices, retained switch knots, action starts once, event deduplication |
+| 11 | Central executor and integrated replay | Integrate shared Hermite slices, retained switch knots, action starts once, event deduplication |
 
 Before extending upstream integration, define and test the adapter's supported subset.
 Refuse unsupported mid-edge starts, loaded handovers, geometry, cyclic rotations,
