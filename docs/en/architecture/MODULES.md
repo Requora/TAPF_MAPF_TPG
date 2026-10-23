@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r7 -->
+<!-- doc-sync: module-boundaries / 2026-10-23-r9 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
-The private website tracks merged PR #9 and the goal-assignment experiment at `b2a3f77`, retaining native-chain CI and remaining limits.
+The private website tracks PR #11 merged baseline `5e35ee0` and module composition tests, retaining native evidence and remaining limits.
 
 ## Implemented directories
 
@@ -56,6 +56,7 @@ src/warehouse_api/
     _current_task.py
     _validation.py
 tests/
+  composition/
   native/
   native_process/
   planning/
@@ -156,3 +157,9 @@ Native tests exercise real upstreams and exact Hermite kinematic bounds. They do
 `tests/tapf/` and `integrations/tapf/` run pinned libMultiRobotPlanning assignment, CBS and CBS-TA. The experiment reuses `native_process.run_native` without adding production modules or module dependencies. Two point robots on the same grid have fixed-assignment total costs 6/8 and joint cost 6.
 
 Experimental JSON is research evidence, not a new public DTO; it returns no ExecutableProposal. Joint TAPF connections in the target workflow remain planned. SKU, Lift/Serve/Drop, the shared compiler, TPG, Runtime and continuous safety are not connected to this experiment. See [development record and real replay](../development/0010-native-tapf-comparison.md).
+
+## Module boundary composition tests
+
+`tests/composition/` selects allocation, compilation, MAPF and TPG entry/exit boundaries in the test layer, covering four same-module and six cross-module contiguous slices. Intermediate entries use independently constructed public contract data without running preceding modules. Real outputs are checked against task, action, route and motion constraints, not just call order. This driver is not a production pipeline and performs no Runtime commits or total-budget management. No joint module is added; production APIs and dependencies are unchanged.
+
+See [composition tests and replay](../development/0012-module-composition.md).

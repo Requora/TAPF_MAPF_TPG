@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r7 -->
+<!-- doc-sync: module-boundaries / 2026-10-23-r9 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 
-私有网页同步 PR #9 已合并状态和 `b2a3f77` 的目标分配实验, 保留原生链 CI 与未完成边界.
+私有网页同步 PR #11 合并基线 `5e35ee0` 与模块组合测试进展, 保留原生证据和未完成边界.
 
 ## 已实现目录
 
@@ -55,6 +55,7 @@ src/warehouse_api/
     _current_task.py
     _validation.py
 tests/
+  composition/
   native/
   native_process/
   planning/
@@ -149,3 +150,9 @@ flowchart LR
 `tests/tapf/` 和 `integrations/tapf/` 运行固定版本 libMultiRobotPlanning 的 assignment, CBS 与 CBS-TA. 实验复用 `native_process.run_native`, 不新增生产模块或模块依赖. 两台点机器人在同一格图上的目标分配总代价为 6/8, 联合结果为 6.
 
 实验 JSON 是研究证据, 不作为新的公共 DTO, 不返回 ExecutableProposal. 目标业务图中的联合 TAPF 连接仍为计划. SKU, Lift/Serve/Drop, 共享编译器, TPG, Runtime 和连续安全尚未接入该实验. 见 [开发记录与真实重放](../development/0010-native-tapf-comparison.md).
+
+## 模块边界组合测试
+
+`tests/composition/` 在测试层选择分配, 编译, MAPF, TPG 的入口与出口, 覆盖四个同模块和六个跨模块连续组合. 中间入口使用独立构造的公开契约数据, 不要求先运行前置模块. 真实模块输出按任务, 动作, 路线和运动约束检查, 不只比较调用顺序. 该驱动不是生产流水线, 不执行 Runtime 提交或总预算管理. 没有新增 joint 模块, 生产 API 和依赖不变.
+
+见 [组合测试与重放](../development/0012-module-composition.md).

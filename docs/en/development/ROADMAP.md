@@ -2,19 +2,14 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-22-r18 -->
+<!-- doc-sync: roadmap / 2026-10-23-r20 -->
 
-Status: the user merged PR #10; remote baseline `4560d8e` is confirmed.
-This increment on `fix/native-process-output-path` fixes ambiguous native process paths. With cwd, output must be absolute; invalid configuration is rejected before side effects.
-This increment passes 83 local tests; four native tests skip. Historical native evidence follows.
-See [output path fix](0011-native-process-output-path.md).
-Two assignments with independent distance 6 have CBS total costs 6 and 8; CBS-TA returns 6.
-The local assignment solver selected the cost-8 tie; enumerating both avoids dependence on tie order.
-86 source and clean installed-wheel tests pass, and remote CI 39379639913 passes all jobs, including real MAWPF/WinkTPG and CBS-TA; without binaries, 82 tests pass and four skip.
-The warehouse order-to-TPG chain still supports only one robot/shelf on an eastbound unit lane, with default action starts at 2.0/5.2/8.4 s and completion at 8.7 s.
-This increment only extends the process utility with optional cwd; it adds no warehouse planning API or dependencies and does not complete the joint warehouse pipeline; the 500-line limit applies.
-Multi-robot warehouse integration, joint API adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.
-See [goal-assignment experiment and replay](0010-native-tapf-comparison.md), [warehouse-chain evidence](0009-staged-pipeline.md) and [architecture](../architecture/MODULES.md).
+Status: PR #11 is merged at confirmed baseline `5e35ee0`. Current [PR #12](https://github.com/Requora/TAPF_MAPF_TPG/pull/12) awaits review.
+This increment adds module boundary composition tests only, without a joint production module or contracts.
+All 10 valid contiguous allocation/compilation/MAPF/TPG slices are checked with two parameter sets; MAPF/TPG reuse real native binaries.
+Of 91 tests, 90 pass and one CBS-TA test skips; without binaries, 86 pass and five skip.
+See [composition tests and replay](0012-module-composition.md). These results do not extend support beyond one robot/shelf on an eastbound unit lane.
+Historical fixed goal-assignment costs remain 6/8 and joint cost 6. Joint warehouse adaptation, continuous collision/parking validation, Runtime and execution remain incomplete.
 
 ## Replaceable modules
 

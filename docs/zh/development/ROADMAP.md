@@ -2,19 +2,14 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-22-r18 -->
+<!-- doc-sync: roadmap / 2026-10-23-r20 -->
 
-状态: PR #10 已由用户合并, 已确认远端基线 `4560d8e`.
-本轮 `fix/native-process-output-path` 修复原生进程的路径歧义. 指定 cwd 时要求绝对 output, 在副作用前拒绝错误配置.
-本轮本地 83 项通过, 4 项原生测试跳过; 历史原生验证见下文.
-见 [路径约束修复](0011-native-process-output-path.md).
-两种独立距离为 6 的分配, CBS 总代价分别为 6 和 8; CBS-TA 为 6.
-本地分配器选中的平局方案为 8; 枚举两种分配避免结论依赖平局顺序.
-源码和干净安装包各 86 项测试已通过, 远端 CI 39379639913 全部通过, 包含真实 MAWPF/WinkTPG 与 CBS-TA; 未配置二进制时为 82 项通过, 4 项跳过.
-仓库订单到 TPG 链仍限于一车一架向东单位车道, 默认动作开始于 2.0/5.2/8.4 s, 8.7 s 完成.
-本轮仅扩展进程工具的可选 cwd 参数, 没有新增仓库规划 API 或依赖, 不是联合仓库流水线完成; 继续遵守 500 行限制.
-多机器人仓库集成, 联合 API 适配, 连续碰撞/停车验证, Runtime 和执行仍未完成.
-见 [目标分配实验与重放](0010-native-tapf-comparison.md), [仓库链证据](0009-staged-pipeline.md) 和 [模块架构](../architecture/MODULES.md).
+状态: PR #11 已合并, 已确认基线 `5e35ee0`. 当前 [PR #12](https://github.com/Requora/TAPF_MAPF_TPG/pull/12) 等待 review.
+本轮只增加模块边界组合测试, 不增加 joint 生产模块或契约.
+分配, 编译, MAPF, TPG 共 10 种有效连续组合在两组参数下验证; MAPF/TPG 复用真实原生二进制.
+91 项测试中 90 通过, 1 项 CBS-TA 测试跳过; 无二进制时为 86 通过, 5 跳过.
+见 [组合测试与重放](0012-module-composition.md). 单车单架向东单位车道之外的组合没有据此宣称支持.
+历史目标实验的固定分配代价为 6/8, 联合为 6. 联合仓库适配, 连续碰撞/停车验证, Runtime 和执行仍未完成.
 
 ## 可替换模块
 
