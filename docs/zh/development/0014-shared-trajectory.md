@@ -30,8 +30,14 @@ git diff --check
 
 ## PR 与下一步
 
-交付前补充 PR 链接以及最终安装, 浏览器, 文档审查和发布证据. 网页与路线图区分已实现的共享工具和仍仅接口的 CentralExecutor 及连续 Validator. 提交后等待 review, 不启动下一 PR.
+[PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 等待 review. 网页与路线图区分已实现的共享工具和仍仅接口的 CentralExecutor 及连续 Validator. 提交后等待 review, 不启动下一 PR.
 
 连续碰撞, 资源容量, 运动限制校验, 无限期停车安全, Runtime 提交, 动作分发, 事件去重, 联合仓库适配和后端执行仍未验证或未实现. 曲线一致性测试不证明安全.
 
 最终本地检查: 干净源码目录构建并安装 wheel 后, 103 项测试中 102 通过, 1 跳过, pip check 通过. 环境: `/tmp/trajectory-wheel-kt1j73tx/venv`; 日志: `/tmp/trajectory-wheel-tests.log`. Ruff, JS 语法及 diff 检查通过. 网页检查通过双语, 两张图, 32 次模块选择, 键盘和手机布局, 无 JS 错误; 桌面和手机截图已人工检查. gpt-6-luna/low 独立审查通过双语事实及本地链接, 已按建议将路线图阶段 11 明确为执行器接入共享切片. 未检查托管登录或本 PR 远端 CI.
+
+私有发布成功: [进展页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site). Sites 源码 `d8d144d24535054714802de812f49510840a71ad`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_298c14963dd481919fd1aacd4f712ddc`. 使用独立临时 checkout, 仓库 remote 未改变, 仅所有者访问不变. 托管登录未验证.
+
+过程失败记录: Sites helper 首次初始化返回通用失败, 后续独立目录打开成功; 未修改业务代码规避. 会话重启后预览服务停止, 浏览器报连接拒绝; 重启本地服务后全部网页检查通过. 原始 TDD 失败记录见上文.
+
+最终相对 `cabdac3` 的代码含测试/网页变更为 295 行, 文档为 134 行, 配置无变化. 用户已有 .gitignore 改动, helloworld.md 和参考包未加入. 最终提交远端 CI 待确认.

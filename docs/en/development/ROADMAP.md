@@ -4,7 +4,7 @@
 
 <!-- doc-sync: roadmap / 2026-10-23-r23 -->
 
-Status: PR #13 merged; confirmed baseline `cabdac3`. This increment implements shared trajectory evaluation and exact slicing, awaiting review.
+Status: PR #13 merged; confirmed baseline `cabdac3`. This increment implements shared trajectory evaluation and exact slicing; [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) awaits review.
 `trajectory.evaluate / slice_curve` reads existing Hermite curves and retains all internal knots.
 Analytic tests and 36 real native slice comparisons pass; maximum position/velocity error is 1.67e-15.
 This is a shared utility, not yet connected to the continuous validator or central executor. Runtime, continuous safety and joint warehouse integration remain incomplete.

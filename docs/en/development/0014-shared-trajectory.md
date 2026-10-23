@@ -30,8 +30,14 @@ Full suite: 103 tests, 102 pass, one optional CBS-TA test skips. The native repl
 
 ## PR and next step
 
-PR link and final installation, browser, document-review and publication evidence will be recorded before handoff. The dashboard and roadmap distinguish the implemented shared utility from the still interface-only CentralExecutor and continuous Validator. Await review after submission. No next PR is started.
+[PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) awaits review. The dashboard and roadmap distinguish the implemented shared utility from the still interface-only CentralExecutor and continuous Validator. Await review after submission. No next PR is started.
 
 Continuous collision, resource capacity, motion-limit validation, indefinite parking safety, runtime commits, action dispatch, event deduplication, joint warehouse adaptation and backend execution remain unverified or unimplemented. Curve preservation tests are not a safety proof.
 
 Final local checks: a wheel built from clean source and installed separately passes 102 of 103 tests with one skip; pip check passes. Environment: `/tmp/trajectory-wheel-kt1j73tx/venv`; log: `/tmp/trajectory-wheel-tests.log`. Ruff, JS syntax and diff checks pass. Browser checks cover both languages, both graphs, 32 module selections, keyboard and mobile layout with no JS errors; desktop and mobile screenshots were inspected. Independent gpt-6-luna/low review verified bilingual facts and local links; its suggestion clarified roadmap stage 11 as executor integration of shared slicing. Hosted sign-in and this PR's remote CI are unverified.
+
+Private publication succeeded: [progress site](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site). Sites source `d8d144d24535054714802de812f49510840a71ad`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_298c14963dd481919fd1aacd4f712ddc`. An independent temporary checkout preserved the repository remote and owner-only access. Hosted sign-in is unverified.
+
+Process failures: the first Sites helper initialization returned a generic failure; a later opening in the independent directory succeeded without changing business code. After a session restart stopped the preview server, browser checks reported connection refusal; restarting the local server restored all browser checks. The initial TDD failure is recorded above.
+
+Final diff against `cabdac3`: 295 code lines including tests/web, 134 documentation lines, no configuration changes. Existing user .gitignore changes, helloworld.md and the reference bundle are excluded. Final-commit remote CI awaits confirmation.
