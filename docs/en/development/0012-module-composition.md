@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0012-module-composition.md) | [English](../../en/development/0012-module-composition.md)
 
-<!-- doc-sync: module-composition / 2026-10-23-r1 -->
+<!-- doc-sync: module-composition / 2026-10-23-r2 -->
 
 ## Scope and decision
 
@@ -47,8 +47,14 @@ Source and a clean installed wheel each pass 90 tests with one skip; clean build
 The matrix covers the currently connected four-stage lane subset, not arbitrary permutations, all possible inputs or every planned module. No mocks supply solver outputs. Continuous collision/indefinite parking safety, multi-robot warehouse planning, joint warehouse integration, Runtime and execution remain unverified or unimplemented. Wait for PR review and merge before extending the matrix to additional real modules or supported cases.
 ## Automated review covers code-related changes only
 
-At the user's request, IGNORE.REGEX excludes the entire docs/ and web/ directories, the warehouse_api_v0_7/ reference package, and Markdown, RST, AsciiDoc, HTML, CSS, SVG, images and PDF at any depth before diff generation. Website JS and check scripts are therefore excluded too. Application source, tests, integration adapters, build and CI configuration remain, including CMakeLists.txt. Review instructions explicitly exclude website, documentation, styling, translation, publication records and progress statistics. Project instruction reading and manual documentation checks remain unaffected.
+At the user's request, IGNORE.REGEX excludes the entire docs/ and web/ directories, the warehouse_api_v0_7/ reference package, and Markdown, RST, AsciiDoc, HTML, CSS, SVG, images and PDF at any depth before diff generation. Website JS and check scripts are therefore excluded too. Application source, tests, integration adapters, build and CI configuration remain, including CMakeLists.txt. Review instructions explicitly exclude website, documentation, styling, translation, publication records and progress statistics. Manual documentation checks remain; repository instruction injection is disabled as described below.
 
 The pinned PR-Agent v0.48.0 real settings loader and filter_ignored failed the offline behavior check before the edit and passed afterward. Command: `PYTHONPATH=/tmp/warehouse-pr-agent-research /tmp/warehouse-llm-probe/bin/python /tmp/warehouse-review-scope-check.py`. The check covers excluded and retained files; the default vendor exclusion still works. YAML parsing and diff checks pass. This follow-up changes configuration and paired logs only, without changing planning code, model budgets or dashboard content. Pushing triggers a new review; offline verification does not establish remote success.
 
 Private dashboard publication succeeded with owner-only access retained; hosted sign-in was not tested. [Site](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site), source `488596b7548860f7f6408adef82d9cb7be1f4ce0`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_6f9d95eaba7c8191b58b26321ed36d93`.
+
+## Automated review omits development-process instructions
+
+At the user's request, CONFIG.REPO_CONTEXT_FILES=[] disables injection of AGENTS.md and other repository instruction files. REQUIRE_CAN_BE_SPLIT_REVIEW is explicitly disabled, and the prompt excludes PR line limits and development-process rules even if mentioned in the PR description. AGENTS.md itself is unchanged; the development-stage 500-line convention remains. Model budgets and file filtering are unchanged; no dashboard republication is needed.
+
+The pinned v0.48.0 real settings loader and build_repo_context were checked: before the edit, the effective list was ['AGENTS.md'] and the assertion failed; afterward, the list and context were empty and the provider received no calls. Initial import lacked html2text; the probe substitutes only the GitProvider type import to isolate unrelated dependencies, not the upstream context function. Command: `PYTHONPATH=/tmp/warehouse-pr-agent-research /tmp/warehouse-llm-probe/bin/python /tmp/warehouse-review-context-check.py`. Existing file-filter checks, YAML parsing and diff checks pass; remote execution remains to be confirmed after push.
