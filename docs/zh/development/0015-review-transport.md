@@ -2,11 +2,11 @@
 
 [中文](../../zh/development/0015-review-transport.md) | [English](../../en/development/0015-review-transport.md)
 
-<!-- doc-sync: review-transport / 2026-10-23-r1 -->
+<!-- doc-sync: review-transport / 2026-10-23-r2 -->
 
 ## 范围与状态
 
-本次是基于已合并基线 `cabdac3` 的独立基础设施修复; C++ 轨迹工作仍在 PR #14. PR 链接: 待创建. 适配器保留 PR-Agent 的 diff 过滤, 中文审查格式, 解析和发布; 只替换模型传输层. 不修改仓库业务模块或 API.
+本次是基于已合并基线 `cabdac3` 的独立基础设施修复; C++ 轨迹工作仍在 PR #14. 修复 PR: [#15](https://github.com/Requora/TAPF_MAPF_TPG/pull/15). 适配器保留 PR-Agent 的 diff 过滤, 中文审查格式, 解析和发布; 只替换模型传输层. 不修改仓库业务模块或 API.
 
 ## 失败证据
 
@@ -26,4 +26,10 @@ PR-Agent 0.48.0: [上游](https://github.com/qodo-ai/pr-agent), MIT, 固定镜�
 
 ## 验证与下一步
 
-TDD: 传输测试先因适配器文件不存在而失败, 实现后通过. 六项传输测试覆盖流内 502, HTTP 502, 单次调用限制, 实际请求参数, 空白/截断/断流及总时限取消. Ruff 通过. 命令: `python -m unittest discover -s .github/tests -v` 和 `ruff check .github/review_transport.py .github/tests`. 测试在固定镜像内先于真实审查步骤运行. 远端镜像执行, 实际供应商路由及审查发布仍待验证. 传输成功不证明审查意见正确. 下一步: 对 PR #14 运行修复后的 workflow, 核对 GitHub 和 OpenRouter 证据, 然后等待 review.
+TDD: 传输测试先因适配器文件不存在而失败, 实现后通过. 六项传输测试覆盖流内 502, HTTP 502, 单次调用限制, 实际请求参数, 空白/截断/断流及总时限取消. Ruff 通过. 命令: `python -m unittest discover -s .github/tests -v` 和 `ruff check .github/review_transport.py .github/tests`. 测试在固定镜像内先于真实审查步骤运行. 最初六项测试在固定远端镜像中也已通过. 增加凭据隔离覆盖后, 本地七项测试通过; 加强后的总时限测试验证持续收到推理片段时仍能取消. 新隔离测试先因缺少独立测试 job 而失败, 实现后通过. 传输成功不证明审查意见正确. 下一步: 验证隔离后的 workflow jobs, 然后等待 PR #15 review, 再更新独立的轨迹 PR.
+
+## 真实审查与安全修正
+
+运行版本 `9de2738a19eb269f3aaf16f3c302894d7b44e95d` 已完成两次真实审查, 各只调用一次. PR #15 [运行 40013283451](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/40013283451) 使用 Alibaba, 提示词 7949 / 输出 64214 token (其中推理 63797), 正文 1039 字符, 费用 $0.043692825; generation 为 `gen-1792784478-NgKgKmlZFF92wIA4jRNz`. PR #14 [手动运行 40013469647](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/40013469647) 使用 Sail Research, 提示词 11026 / 输出 48105 token (其中推理 47627), 正文 1159 字符, 费用 $0.008329376; generation 为 `gen-1792784566-hYpbZocBzVUdNVbpnqjY`. 两次均以 stop 结束, 排除了 Ionstream 并发布行内意见 (分别 1 条和 2 条). OpenRouter 账户记录与供应商, 用量及费用一致. 模型调用仍约需九分钟; 这是有界运行成功, 不保证延迟. 常规 CI [40013283290](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/40013283290) 通过.
+
+PR #15 审查指出 PR checkout 代码与模型凭据同处执行环境. 已采纳: 测试改为独立只读 runner 且不注入模型密钥; 发布 runner 只 checkout 上述已实际运行的不可变适配器 commit. Checkout 自身固定为 `11d5960a326750d5838078e36cf38b85af677262`. 后续适配器改动需单独验证并显式更新运行版本; 仅修改 PR 中的适配器不会改变持有凭据的运行代码. 仓库维护者仍控制 workflow 定义; 此隔离不防御有权限的恶意 workflow 修改. PR #14 的两条意见涉及头文件重编依赖和浮点测试容差, 与本次传输修复分开处理.

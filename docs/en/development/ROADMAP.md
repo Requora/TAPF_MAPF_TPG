@@ -4,7 +4,7 @@
 
 <!-- doc-sync: roadmap / 2026-10-23-r27 -->
 
-Status: PR #13 is merged at `cabdac3`; C++ trajectory PR #14 remains under review. Current work independently repairs OpenRouter review transport: one attempt, explicit upstream errors, provider filtering and bounded runtime. Six transport tests pass; remote review verification is pending. See [review transport](0015-review-transport.md). Runtime, execution and continuous safety remain incomplete.
+Status: PR #13 is merged at `cabdac3`; C++ trajectory PR #14 remains under review. Current work independently repairs OpenRouter review transport: one attempt, explicit upstream errors, provider filtering and bounded runtime. Seven local transport/isolation tests pass. Real reviews of PR #14 and #15 each completed in one attempt; the isolated publishing job is awaiting verification. See [review transport](0015-review-transport.md). Runtime, execution and continuous safety remain incomplete.
 
 ## Replaceable modules
 

@@ -2,11 +2,11 @@
 
 [中文](../../zh/development/0015-review-transport.md) | [English](../../en/development/0015-review-transport.md)
 
-<!-- doc-sync: review-transport / 2026-10-23-r1 -->
+<!-- doc-sync: review-transport / 2026-10-23-r2 -->
 
 ## Scope and status
 
-Independent infrastructure repair on merged baseline `cabdac3`; the C++ trajectory work remains in PR #14. PR link: pending creation. The adapter preserves PR-Agent diff filtering, Chinese review format, parsing and publication; only its model transport is replaced. No warehouse module or API changes.
+Independent infrastructure repair on merged baseline `cabdac3`; the C++ trajectory work remains in PR #14. Repair PR: [#15](https://github.com/Requora/TAPF_MAPF_TPG/pull/15). The adapter preserves PR-Agent diff filtering, Chinese review format, parsing and publication; only its model transport is replaced. No warehouse module or API changes.
 
 ## Failure evidence
 
@@ -26,4 +26,10 @@ PR-Agent 0.48.0: [upstream](https://github.com/qodo-ai/pr-agent), MIT, immutable
 
 ## Validation and next step
 
-TDD: transport tests first failed because the adapter file was absent, then passed. Six transport tests cover stream 502, HTTP 502, one-attempt enforcement, actual request parameters, blank/truncated/disconnected streams and total deadline cancellation. Ruff passes. Commands: `python -m unittest discover -s .github/tests -v` and `ruff check .github/review_transport.py .github/tests`. Tests run inside the pinned image before the real review step. Remote image execution, actual provider routing and review publication remain pending. A successful transport is not proof that review findings are correct. Next: run the repaired workflow against PR #14, compare GitHub and OpenRouter evidence, then await review.
+TDD: transport tests first failed because the adapter file was absent, then passed. Six transport tests cover stream 502, HTTP 502, one-attempt enforcement, actual request parameters, blank/truncated/disconnected streams and total deadline cancellation. Ruff passes. Commands: `python -m unittest discover -s .github/tests -v` and `ruff check .github/review_transport.py .github/tests`. Tests run inside the pinned image before the real review step. The initial six tests also pass in the pinned remote image. Seven tests now pass locally after adding credential-isolation coverage; the strengthened deadline test verifies cancellation while reasoning chunks keep arriving. The new isolation test first failed because the separate test job was absent, then passed. A successful transport is not proof that review findings are correct. Next: verify the isolated workflow jobs, then await review of PR #15 before updating the independent trajectory PR.
+
+## Real review and security follow-up
+
+Runtime commit `9de2738a19eb269f3aaf16f3c302894d7b44e95d` completed two real reviews with one attempt each. PR #15 [run 40013283451](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/40013283451) used Alibaba, 7949 prompt / 64214 completion tokens (63797 reasoning), 1039 visible characters and $0.043692825; generation `gen-1792784478-NgKgKmlZFF92wIA4jRNz`. PR #14 [manual run 40013469647](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/40013469647) used Sail Research, 11026 prompt / 48105 completion tokens (47627 reasoning), 1159 visible characters and $0.008329376; generation `gen-1792784566-hYpbZocBzVUdNVbpnqjY`. Both finished with stop, excluded Ionstream and published inline findings (one and two respectively). OpenRouter account records match the provider, usage and cost. Model calls still take about nine minutes; this is bounded functioning, not a latency guarantee. General CI [40013283290](https://github.com/Requora/TAPF_MAPF_TPG/actions/runs/40013283290) passes.
+
+The PR #15 review identified PR-checkout code running with model credentials. Accepted: tests now run on a separate read-only runner without model secrets; the publishing runner checks out only the already exercised immutable adapter commit above. Checkout itself is pinned to `11d5960a326750d5838078e36cf38b85af677262`. Future adapter changes require separate validation and explicit runtime-pin updates; editing the PR adapter alone does not change the credential-bearing runtime. Repository maintainers still control workflow definitions; this isolation is not a defense against an authorized malicious workflow edit. The two PR #14 findings concern header rebuild dependencies and floating-point test tolerance, separate from this transport repair.

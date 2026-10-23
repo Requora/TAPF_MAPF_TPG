@@ -11,21 +11,20 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: deepseek-review-${{ github.event.pull_request.number || inputs.pr_number }}
   cancel-in-progress: true
 
 jobs:
-  review:
+  transport-tests:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    # 中文: job 为单次 10 min 模型请求另留初始化和发布时间.
-    # English: The job adds setup and publishing time around one 10-minute model request.
-    timeout-minutes: 15
+    permissions:
+      contents: read
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
       - name: Transport regression tests in pinned runtime
@@ -33,6 +32,23 @@ jobs:
         with:
           entrypoint: python
           args: -m unittest discover -s /github/workspace/.github/tests -v
+
+  review:
+    needs: transport-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    # 中文: review job 使用独立 runner 和固定适配器源码, 不让 PR 测试进程接触模型密钥.
+    # English: The review job uses a separate runner and pinned adapter source, keeping PR test processes away from model credentials.
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          # 中文: 此版本已完成 PR #14/#15 真实审查; 更新适配器时需另行验证并显式更新此 SHA.
+          # English: This revision completed real PR #14/#15 reviews; adapter updates require separate verification and an explicit SHA update.
+          ref: 9de2738a19eb269f3aaf16f3c302894d7b44e95d
+          persist-credentials: false
       - name: PR-Agent review with one observable OpenRouter attempt
         # PR-Agent 0.48.0; retain review logic, replace only model transport.
         uses: docker://pragent/pr-agent@sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d

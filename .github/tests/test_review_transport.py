@@ -83,20 +83,38 @@ class ReviewTransportTests(unittest.IsolatedAsyncioTestCase):
         """This test verifies a wall-clock deadline rather than only socket inactivity.
         本测试验证总时限, 避免持续有数据时绕过网络读取超时.
         """
-        calls = []
+        calls, closed = [], []
 
-        async def respond(request):
-            """respond stalls one request so the deadline can cancel it.
-            respond 暂停一次请求, 用于检查总时限能取消调用.
+        class Trickle(httpx.AsyncByteStream):
+            """Trickle emits data continuously so socket activity cannot avoid the total deadline.
+            Trickle 持续发送数据, 验证网络活跃不会绕过总时限.
+            """
+            async def __aiter__(self):
+                """__aiter__ emits reasoning chunks without a final answer to simulate a stuck model.
+                __aiter__ 只发送推理片段而不结束, 模拟无法输出答案的模型.
+                """
+                while True:
+                    await asyncio.sleep(0.001)
+                    yield b'data: {"choices":[{"delta":{"reasoning":"hidden"}}]}\n\n'
+
+            async def aclose(self):
+                """aclose records stream cleanup so cancellation cannot leave the response open.
+                aclose 记录流关闭, 验证取消时不会遗留未关闭响应.
+                """
+                closed.append(True)
+
+        def respond(request):
+            """respond starts one continuously active response to test deadline cancellation.
+            respond 启动一个持续活跃的响应, 用于验证总时限取消.
             """
             calls.append(request)
-            await asyncio.sleep(1)
-            return httpx.Response(200)
+            return httpx.Response(200, stream=Trickle())
 
         async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
             with self.assertRaises(TimeoutError):
                 await transport.request_review(client, 'system', 'diff', {}, deadline=0.01)
         self.assertEqual(len(calls), 1)
+        self.assertEqual(closed, [True])
 
     async def test_http_failure_is_not_retried(self):
         """This test rejects an HTTP-level 502 after exactly one attempt.
