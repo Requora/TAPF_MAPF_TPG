@@ -603,6 +603,22 @@ class PlanningRequest:
     assignment: AssignmentRequest = F("完整但无隐藏对象的本轮输入.", "Complete round input without hidden runtime objects.")
     target_end_s: float = F("本轮希望延长到的时间.", "Desired extension end time.")
 
+# 中文: JointPlan 将联合搜索选定的任务草稿与路线绑定, 让流水线重新编译并检查动作一致性.
+# English: JointPlan binds jointly selected task edits and routes so the pipeline can recompile and check action consistency.
+@dataclass(frozen=True)
+class JointPlan:
+    task_delta: TaskDelta = F("联合搜索提出的任务与队列修改, 尚未提交.", "Jointly proposed task and queue edits, not committed.")
+    plan: FleetPlan = F("同一草稿对应的路线与先后约束, 尚未通过连续安全验收.", "Routes and precedence for the same draft, without continuous safety acceptance.")
+
+
+# 中文: JointPlanner 定义分配与路径的整体替换边界, 让运动规划继续复用统一契约.
+# English: JointPlanner defines a combined assignment/routing boundary so motion planning retains shared contracts.
+class JointPlanner(Protocol):
+    # 中文: plan 基于只读快照联合选择任务和路线; 实现须使用共享编译语义并明确拒绝不支持的约束.
+    # English: plan jointly selects tasks and routes from a read-only snapshot; implementations must use shared compilation semantics and reject unsupported constraints.
+    def plan(self, request: AssignmentRequest) -> JointPlan | Failure: ...
+
+
 # Ports: implement these signatures independently. Constructors receive model/config.
 # 中文: OrderSource 声明订单重置与按时间发布的方法签名, 让需求生成可替换, 并与库存和分配职责分开.
 # English: OrderSource declares reset and timed-release signatures so demand generation remains

@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r7 -->
+<!-- doc-sync: module-boundaries / 2026-10-23-r8 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 
-私有网页同步 PR #9 已合并状态和 `b2a3f77` 的目标分配实验, 保留原生链 CI 与未完成边界.
+私有网页同步 PR #11 合并基线 `5e35ee0` 和联合编排的 fixture 状态, 保留历史原生证据与未完成边界.
 
 ## 已实现目录
 
@@ -49,6 +49,7 @@ src/warehouse_api/
   planning/
     __init__.py
     _staged.py
+    _joint.py
     _validation.py
   task_compiler/
     __init__.py
@@ -96,7 +97,7 @@ flowchart LR
 | order_source | ReplayOrderSource, generate_orders | 发布和生成订单 |
 | task_compiler | CurrentTaskCompiler | 编译受支持的当前任务和新绑定 |
 | action_timing | action_duration_s, action_duration_ticks | 共用动作耗时 |
-| planning | StagedPipeline | 共用预算组合注入的阶段并记录真实 trace; 原生单车道链路已本地验证 |
+| planning | StagedPipeline, JointPipeline | 共用预算组合注入的阶段并记录真实 trace; 原生单车道链路已本地验证 |
 | allocation | SingleShelfAllocator | 唯一可行货架/机器人; 从需求生成 Pick |
 | mapf | NativeMawpfPlanner | 固定版本 LaCAM 输出转为相邻移动和动作引用 |
 | tpg | NativeWinkTpgPlanner | 固定版本 speedSolver 原语转为 Hermite 节点和动作静止段 |
@@ -149,3 +150,11 @@ flowchart LR
 `tests/tapf/` 和 `integrations/tapf/` 运行固定版本 libMultiRobotPlanning 的 assignment, CBS 与 CBS-TA. 实验复用 `native_process.run_native`, 不新增生产模块或模块依赖. 两台点机器人在同一格图上的目标分配总代价为 6/8, 联合结果为 6.
 
 实验 JSON 是研究证据, 不作为新的公共 DTO, 不返回 ExecutableProposal. 目标业务图中的联合 TAPF 连接仍为计划. SKU, Lift/Serve/Drop, 共享编译器, TPG, Runtime 和连续安全尚未接入该实验. 见 [开发记录与真实重放](../development/0010-native-tapf-comparison.md).
+
+## 联合编排入口
+
+JointPipeline 在 planning 模块内实现 DecisionPipeline.solve. 新增 JointPlanner.plan(AssignmentRequest) -> JointPlan | Failure; JointPlan 在统一 contracts.py 中组合 TaskDelta 与 FleetPlan. 没有新增跨模块依赖.
+
+联合求解器必须在搜索中使用共享编译语义. 流水线用真实 SharedCompiler 重新编译最终草稿, 复用路径结果校验后调用 MotionPlanner. last_trace 记录 joint, compilation, tpg. 本轮只有 fixture 联接证据, 未接原生 CBS-TA 仓库任务. Runtime 仍须独立验收和原子提交.
+
+见 [联合入口日志](../development/0012-joint-pipeline.md).

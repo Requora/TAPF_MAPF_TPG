@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-20-r7 -->
+<!-- doc-sync: module-boundaries / 2026-10-23-r8 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
-The private website tracks merged PR #9 and the goal-assignment experiment at `b2a3f77`, retaining native-chain CI and remaining limits.
+The private website tracks PR #11 merged baseline `5e35ee0` and joint-composition fixture status, retaining historical native evidence and remaining limits.
 
 ## Implemented directories
 
@@ -50,6 +50,7 @@ src/warehouse_api/
   planning/
     __init__.py
     _staged.py
+    _joint.py
     _validation.py
   task_compiler/
     __init__.py
@@ -97,7 +98,7 @@ flowchart LR
 | order_source | ReplayOrderSource, generate_orders | Order release and generation |
 | task_compiler | CurrentTaskCompiler | Compile supported current tasks and new bindings |
 | action_timing | action_duration_s, action_duration_ticks | Shared action timing |
-| planning | StagedPipeline | Compose injected stages with a shared budget and actual stage trace; native single-lane chain verified locally |
+| planning | StagedPipeline, JointPipeline | Compose injected stages with a shared budget and actual stage trace; native single-lane chain verified locally |
 | allocation | SingleShelfAllocator | One feasible shelf/robot; picks derived from demand |
 | mapf | NativeMawpfPlanner | Pinned LaCAM output to adjacent moves and action references |
 | tpg | NativeWinkTpgPlanner | Pinned speedSolver primitives to Hermite knots and action holds |
@@ -156,3 +157,11 @@ Native tests exercise real upstreams and exact Hermite kinematic bounds. They do
 `tests/tapf/` and `integrations/tapf/` run pinned libMultiRobotPlanning assignment, CBS and CBS-TA. The experiment reuses `native_process.run_native` without adding production modules or module dependencies. Two point robots on the same grid have fixed-assignment total costs 6/8 and joint cost 6.
 
 Experimental JSON is research evidence, not a new public DTO; it returns no ExecutableProposal. Joint TAPF connections in the target workflow remain planned. SKU, Lift/Serve/Drop, the shared compiler, TPG, Runtime and continuous safety are not connected to this experiment. See [development record and real replay](../development/0010-native-tapf-comparison.md).
+
+## Joint composition entry
+
+JointPipeline implements DecisionPipeline.solve inside planning. The new JointPlanner.plan(AssignmentRequest) -> JointPlan | Failure boundary uses JointPlan in shared contracts.py to combine TaskDelta and FleetPlan. No cross-module dependencies are added.
+
+Joint solvers must use shared compilation semantics during search. The pipeline recompiles the final draft with the real SharedCompiler and reuses route-result checks before calling MotionPlanner. last_trace records joint, compilation and tpg. This increment has fixture wiring evidence only, without native CBS-TA warehouse tasks. Runtime still requires independent acceptance and atomic commit.
+
+See the [joint entry log](../development/0012-joint-pipeline.md).

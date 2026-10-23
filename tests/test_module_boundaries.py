@@ -26,7 +26,7 @@ EXPORTS = {
     "order_source": {"ReplayOrderSource", "generate_orders"},
     "action_timing": {"action_duration_s", "action_duration_ticks"},
     "task_compiler": {"CurrentTaskCompiler"},
-    "planning": {"StagedPipeline"},
+    "planning": {"StagedPipeline", "JointPipeline"},
     "validation": {"check_single_lane", "check_jobs", "check_assignment"},
     "allocation": {"SingleShelfAllocator"},
     "native_process": {"run_native"},
