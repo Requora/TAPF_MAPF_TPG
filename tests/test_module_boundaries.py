@@ -29,7 +29,7 @@ EXPORTS = {
     "action_timing": {"action_duration_s", "action_duration_ticks"},
     "task_compiler": {"CurrentTaskCompiler"},
     "planning": {"StagedPipeline"},
-    "validation": {"check_single_lane", "check_jobs", "check_assignment"},
+    "validation": {"check_single_lane", "check_jobs", "check_assignment", "check_stop_tail_structure"},
     "allocation": {"SingleShelfAllocator"},
     "native_process": {"run_native"},
     "mapf": {"NativeMawpfPlanner"},

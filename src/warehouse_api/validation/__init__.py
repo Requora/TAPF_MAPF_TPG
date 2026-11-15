@@ -2,6 +2,7 @@
 
 English: The validation module exports native-adapter subset checks so path and motion planning share restrictions; the module does not yet validate continuous-motion candidate safety.
 """
+from ._stop_tail import check_stop_tail_structure
 from ._single_lane import check_single_lane, check_jobs, check_assignment
 
-__all__ = ["check_single_lane", "check_jobs", "check_assignment"]
+__all__ = ["check_single_lane", "check_jobs", "check_assignment", "check_stop_tail_structure"]

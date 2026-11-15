@@ -2,14 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-11-15-r31 -->
+<!-- doc-sync: roadmap / 2026-11-15-r32 -->
 
-状态: [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 已合并于 `a6cdd31`. 当前 [PR #16](https://github.com/Requora/TAPF_MAPF_TPG/pull/16) 清理重复的轨迹准备路径, 等待 review.
-所有调用方先创建一个 PreparedTrajectory 快照, 再调用 evaluate / slice_curve. 已删除 tuple 自动转换和基准 --prepared 开关; C++ 是唯一计算核心.
-107 项测试: 106 通过, 1 项可选 CBS-TA 跳过. 真实 MAWPF/WinkTPG 重放保留 36 次切片比较, 最大 x/vx 误差 1.67e-15. 本次干净安装验证见清理日志.
-共享工具尚未接入连续验证器或执行器. Runtime, 连续安全与联合仓库适配仍未完成.
-见 [单一轨迹路径](0016-single-trajectory-path.md). [PR #14 性能证据](0014-trajectory-performance.md) 属于历史记录; 本次不新增性能声明.
-PR #15 审查传输层修复保持在已合并基线内. 见 [审查传输层](0015-review-transport.md).
+状态: PR #16 已确认合并于 `1956531`. 当前开发停车尾段结构检查, 作为阶段 9 连续验证器的前置条件.
+公开函数 `validation.check_stop_tail_structure(model, start, motion)` 检查车队覆盖, 有限有序节点, 共同边界, 精确衔接和零终速.
+113 项测试: 112 通过, 1 项可选 CBS-TA 跳过. 仅 fixture 验证; 不证明碰撞, 制动能力, 资源或无限期停车安全. 未接 Runtime 或方案接受路径.
+见 [停车尾段结构检查](0017-stop-tail-structure.md). 下一步在本 PR review 合并后实现连续几何检查.
 
 ## 可替换模块
 
