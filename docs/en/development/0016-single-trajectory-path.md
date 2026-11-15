@@ -6,7 +6,7 @@
 
 ## Scope and baseline
 
-GitHub confirms PR #14 merged at `a6cdd31ca2d27e522efa6f9773b1db5da5898092`. After updating origin/main, this work starts on independent branch `refactor/single-trajectory-path`. The current PR is pending submission. The user requires one way to perform each task, without compatibility switches.
+GitHub confirms PR #14 merged at `a6cdd31ca2d27e522efa6f9773b1db5da5898092`. After updating origin/main, this work starts on independent branch `refactor/single-trajectory-path`. The current change is [PR #16](https://github.com/Requora/TAPF_MAPF_TPG/pull/16), awaiting review. The user requires one way to perform each task, without compatibility switches.
 
 This update cleans up only shared trajectories and their callers. The C++ Hermite core, centralized validation, shared contracts and upstream versions are unchanged. Python only converts between shared contracts and native data. Runtime, continuous validation and execution remain unimplemented.
 
@@ -15,6 +15,8 @@ This update cleans up only shared trajectories and their callers. The C++ Hermit
 The evaluate / slice_curve tuple auto-conversion is removed; inputs are now PreparedTrajectory only. The benchmark prepared parameter, --prepared option and prepared mode field are removed. Each trajectory creates one native snapshot before repeated queries. Native replay and tests construct snapshots explicitly.
 
 Tuples of Knot remain snapshot-construction input and slice output: data representations rather than a second computation path. Python contract conversion, independent analytic tests, browser replay and historical performance records retain their API-boundary, validation and evidence-display roles. PR #14 already removed the old Python interpolator and temporary C++ comparison program. Local untracked setuptools build output and obsolete Python validation bytecode were also removed; these are outside the PR source diff.
+
+This update also records the single production implementation/path rule in root AGENTS.md so later work cannot reintroduce old implementations, fallbacks or mode switches. Root AGENTS.md remains Chinese-only as required by the repository.
 
 ## Single call chain
 
@@ -50,4 +52,6 @@ Current clean sdist -> wheel isolated tests report 107 tests, 106 passing and on
 
 ## PR and next work
 
-Submit this minimal PR and await review without starting the next stage. Other platforms, full real-time execution, continuous safety and consumer integration remain unverified.
+This minimal PR is submitted and awaits review without starting the next stage. Other platforms, full real-time execution, continuous safety and consumer integration remain unverified.
+
+Final status: [PR #16](https://github.com/Requora/TAPF_MAPF_TPG/pull/16) awaits review. Independent gpt-6-luna/low documentation review passes after correcting a leading space in the Chinese paragraph. Desktop and mobile screenshots were inspected. Private progress publication succeeded: source `1ec1496a78a93acd7b1855bc3a2865953424618e`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_d3734856fb208191a8aad3afb586aa79`. Owner-only access is unchanged; hosted login remains unverified. The full PR against `a6cdd31` has 106 code lines including tests/web and 171 documentation lines including root AGENTS.md, with no configuration or license changes. New remote CI remains pending confirmation; do not merge automatically.

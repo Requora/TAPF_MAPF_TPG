@@ -4,7 +4,7 @@
 
 <!-- doc-sync: roadmap / 2026-11-15-r31 -->
 
-状态: [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 已合并于 `a6cdd31`. 当前清理重复的轨迹准备路径.
+状态: [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 已合并于 `a6cdd31`. 当前 [PR #16](https://github.com/Requora/TAPF_MAPF_TPG/pull/16) 清理重复的轨迹准备路径, 等待 review.
 所有调用方先创建一个 PreparedTrajectory 快照, 再调用 evaluate / slice_curve. 已删除 tuple 自动转换和基准 --prepared 开关; C++ 是唯一计算核心.
 107 项测试: 106 通过, 1 项可选 CBS-TA 跳过. 真实 MAWPF/WinkTPG 重放保留 36 次切片比较, 最大 x/vx 误差 1.67e-15. 本次干净安装验证见清理日志.
 共享工具尚未接入连续验证器或执行器. Runtime, 连续安全与联合仓库适配仍未完成.

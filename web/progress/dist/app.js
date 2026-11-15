@@ -78,7 +78,7 @@ function render() {
   const locale = lang ? "en" : "zh";
   const evidence = [
     [text(["性能基准 · 对比表与原始样本", "Performance · comparison and raw samples"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-trajectory-performance.md`],
-    [text(["当前清理分支 · 单一轨迹路径", "Current cleanup branch · single trajectory path"]), `${project.repo}/compare/main...${project.branch}`],
+    [text(["当前 PR #16 · 单一轨迹路径", "Current PR #16 · single trajectory path"]), `${project.repo}/pull/16`],
     [text(["已合并 PR #14 · C++ 轨迹", "Merged PR #14 · C++ trajectories"]), `${project.repo}/pull/14`],
     [text(["已合并 PR #15 · 审查传输层", "Merged PR #15 · review transport"]), `${project.repo}/pull/15`],
     [text(["已合并 PR #13 · 运动结果边界", "Merged PR #13 · motion-result boundary"]), `${project.repo}/pull/13`],
