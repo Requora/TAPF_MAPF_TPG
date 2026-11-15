@@ -2,16 +2,14 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-11-15-r30 -->
+<!-- doc-sync: roadmap / 2026-11-15-r31 -->
 
-Status: PR #13 merged at `cabdac3`. [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) now uses a C++ evaluation/slicing core and awaits review.
-PreparedTrajectory converts and validates once; evaluate / slice_curve preserve Python contracts and tuple-call compatibility.
-106 tests: 105 pass, one skip; clean sdist -> wheel verified; 36 native trajectory slice comparisons have error 1.67e-15.
-For 1000 robots/1024 knots, snapshot preparation costs about 267-270 ms, subsequent fleet evaluation 3.928 ms and slicing 8.391 ms; bindings included, not a full real-time loop.
+Status: [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) is merged at `a6cdd31`. Current work removes the duplicate trajectory preparation path.
+Every consumer creates one PreparedTrajectory snapshot, then calls evaluate / slice_curve. Tuple auto-conversion and the benchmark --prepared flag are removed; C++ is the only computation core.
+107 tests: 106 pass, one optional CBS-TA skip. Real MAWPF/WinkTPG replay retains 36 slice comparisons with maximum x/vx error 1.67e-15. Current clean-install validation is recorded in the cleanup log.
 The shared utility is not connected to the continuous validator or executor. Runtime, continuous safety and joint warehouse integration remain incomplete.
-See [shared trajectories](0014-shared-trajectory.md) and [performance evidence](0014-trajectory-performance.md).
-
-The PR #15 review-transport fix is merged; latest main is `c59ba4d`. PR #14 incorporates that baseline to resolve roadmap and progress-page conflicts, preserving C++ trajectory evidence and the single-attempt review guard. See [review transport](0015-review-transport.md).
+See [single trajectory path](0016-single-trajectory-path.md). [PR #14 performance evidence](0014-trajectory-performance.md) is historical; no new performance claim is made here.
+PR #15 review-transport fixes remain in the merged baseline. See [review transport](0015-review-transport.md).
 
 ## Replaceable modules
 

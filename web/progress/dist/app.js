@@ -68,8 +68,8 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["C++ 轨迹核心与 Python API", "C++ trajectory core, Python API"], ["求值, 切片和校验均由 C++ 执行. PreparedTrajectory 一次转换, 后续复用; 原 tuple 调用仍兼容, 但每次都会准备. 返回类型保持统一契约.", "C++ evaluates, slices and validates. PreparedTrajectory converts once for reuse; tuple calls remain compatible but prepare each time. Results retain shared contracts."]],
-    [["NEXT / 待审查", "NEXT / REVIEW"], ["审查绑定与安装边界", "Review binding and installation boundaries"], ["106 项测试: 105 通过, 1 跳过. 干净 sdist 到 wheel 已验证. review 修正: 头文件增量重编, 浮点容差, 基准仅 Linux. 最大案例快照准备约 267-270 ms; 后续求值 3.928 ms / 切片 8.391 ms, 含绑定. 其他平台和完整实时闭环未验证.", "106 tests: 105 pass, 1 skip. Clean sdist-to-wheel verified. Review fixes: header rebuilds, float tolerance, Linux-only benchmark. Largest snapshot preparation costs 267-270 ms; later evaluation 3.928 ms / slicing 8.391 ms includes bindings. Other platforms and full real-time execution unverified."]],
+    [["NOW / 正在做", "NOW"], ["只保留一条轨迹路径", "One trajectory path"], ["先创建 PreparedTrajectory, 再求值或切片. Python 只转换统一契约, C++ 执行计算和校验. 删除 tuple 自动准备及 --prepared 开关.", "Create PreparedTrajectory before evaluation or slicing. Python converts shared contracts; C++ computes and validates. Tuple auto-preparation and --prepared are removed."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["检查统一调用与证据", "Review unified calls and evidence"], ["107 项测试: 106 通过, 1 跳过. 原生重放 36 次比较最大 x/vx 误差 1.67e-15. 基准只保留先准备再查询的路径. 完整实时闭环与连续安全仍未验证.", "107 tests: 106 pass, 1 skip. Native replay: 36 comparisons, maximum x/vx error 1.67e-15. The benchmark only prepares then queries. Full real-time execution and continuous safety remain unverified."]],
     [["NOT YET / 尚未完成", "NOT YET"], ["联合仓库与执行闭环", "Joint warehouse & execution loop"], ["目标实验未接 SKU, Lift/Serve/Drop, 共享编译或 TPG. 多车仓库, Runtime, 连续几何, 无限期停车和中央执行器仍未完成.", "The goal experiment has no SKU, Lift/Serve/Drop, shared compiler or TPG connection. Multi-robot warehouse planning, Runtime, continuous geometry, indefinite parking and execution remain incomplete."]],
   ];
   // 中文: map 的回调把每个工作状态条目转换为卡片, 分开显示当前工作和未实现项, 防止读者把计划当成已完成成果.
@@ -78,7 +78,8 @@ function render() {
   const locale = lang ? "en" : "zh";
   const evidence = [
     [text(["性能基准 · 对比表与原始样本", "Performance · comparison and raw samples"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-trajectory-performance.md`],
-    [text(["当前 PR #14 · 共享轨迹", "Current PR #14 · shared trajectories"]), `${project.repo}/pull/14`],
+    [text(["当前清理分支 · 单一轨迹路径", "Current cleanup branch · single trajectory path"]), `${project.repo}/compare/main...${project.branch}`],
+    [text(["已合并 PR #14 · C++ 轨迹", "Merged PR #14 · C++ trajectories"]), `${project.repo}/pull/14`],
     [text(["已合并 PR #15 · 审查传输层", "Merged PR #15 · review transport"]), `${project.repo}/pull/15`],
     [text(["已合并 PR #13 · 运动结果边界", "Merged PR #13 · motion-result boundary"]), `${project.repo}/pull/13`],
     [text(["真实目标实验 CI · 下载单步重放", "Real goal experiment CI · download replay"]), `${project.repo}/actions/runs/39379639913/artifacts/12244991832`],
@@ -87,7 +88,7 @@ function render() {
     [text(["已合并 PR #11 · 路径约束", "Merged PR #11 · path contract"]), `${project.repo}/pull/11`],
     [text(["已合并 PR #10 · 实验证据", "Merged PR #10 · experiment evidence"]), `${project.repo}/pull/10`],
     [text(["已合并验证基线", "Merged verification baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
-    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-shared-trajectory.md`],
+    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0016-single-trajectory-path.md`],
     [text(["路线图 · 阶段 1—11", "Roadmap · stages 1–11"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/ROADMAP.md`],
   ];
   // 中文: map 的回调把每条验证证据转换成链接, 让用户能从页面追查代码, 自动构建与测试记录(CI), 或开发日志.

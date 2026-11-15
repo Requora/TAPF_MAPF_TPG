@@ -25,16 +25,15 @@ def make_fleet(robots, knots):
                        for i in range(knots)) for robot in range(robots))
 
 
-# 中文: measure 测量中段连续查询的整车队耗时, 包含绑定和结果分配; 可选快照准备单独计时, 建模与结果核对不计时.
-# English: measure times consecutive mid-curve fleet queries, including bindings and output allocation; optional snapshot preparation is timed separately, setup and result checks excluded.
-def measure(fleet, hz, operation, *, frames, repeats, prepared=False):
+# 中文: measure 测量中段连续查询的整车队耗时, 包含绑定和结果分配; 每条曲线只准备一次快照并单独计时, 建模与结果核对不计时.
+# English: measure times consecutive mid-curve fleet queries, including bindings and output allocation; each curve is prepared once and preparation is timed separately, setup and result checks excluded.
+def measure(fleet, hz, operation, *, frames, repeats):
     dt = 1/hz
     start = (len(fleet[0]) - 1)/2 + 0.125
     assert start + frames*dt < fleet[0][-1].time_s, 'Queries must remain inside the curve'
     knot_count = len(fleet[0])
     before = perf_counter_ns()
-    if prepared:
-        fleet = tuple(PreparedTrajectory(curve) for curve in fleet)
+    fleet = tuple(PreparedTrajectory(curve) for curve in fleet)
     preparation_ms = (perf_counter_ns() - before)/1e6
     samples, max_error = [], 0.0
     for repeat in range(repeats + 1):
@@ -54,7 +53,7 @@ def measure(fleet, hz, operation, *, frames, repeats, prepared=False):
                     error = max(abs(node.pose.x_m - node.time_s), abs(node.pose.y_m - robot))
                     max_error = max(max_error, error)
                     assert error < 1e-9 and abs(node.velocity.vx_mps - 1) < 1e-9
-    return {'robots': len(fleet), 'knots': knot_count, 'prepared': prepared, 'preparation_ms': preparation_ms, 'hz': hz, 'operation': operation,
+    return {'robots': len(fleet), 'knots': knot_count, 'preparation_ms': preparation_ms, 'hz': hz, 'operation': operation,
             'frames_per_repeat': frames, 'repeats': repeats, 'warmup_frames': frames,
             'timed_calls': len(samples)*len(fleet), 'query_start_s': start,
             'frame_ms': samples, 'median_frame_ms': median(samples),
@@ -70,7 +69,6 @@ def main():
     parser.add_argument('--robots', type=int, nargs='+', default=[1, 100, 1000])
     parser.add_argument('--knots', type=int, nargs='+', default=[16, 128, 1024])
     parser.add_argument('--hz', type=int, nargs='+', default=[10, 50])
-    parser.add_argument('--prepared', action='store_true')
     parser.add_argument('--frames', type=int, default=3)
     parser.add_argument('--repeats', type=int, default=5)
     parser.add_argument('--output', type=Path, required=True)
@@ -94,7 +92,7 @@ def main():
             fleet = make_fleet(robots, knots)
             for hz in args.hz:
                 for operation in ('evaluate', 'slice_curve'):
-                    row = measure(fleet, hz, operation, frames=args.frames, repeats=args.repeats, prepared=args.prepared)
+                    row = measure(fleet, hz, operation, frames=args.frames, repeats=args.repeats)
                     evidence['cases'].append(row)
                     args.output.write_text(json.dumps(evidence, indent=2) + '\n')
                     print(f'{robots:4} robots {knots:4} knots {hz:2} Hz {operation:11} '
