@@ -2,9 +2,16 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-11-15-r28 -->
+<!-- doc-sync: roadmap / 2026-11-15-r30 -->
 
-Status: PR #13 is merged at `cabdac3`; C++ trajectory PR #14 remains under review. Current work independently repairs OpenRouter review transport: one attempt, explicit upstream errors, provider filtering and bounded runtime. Seven local transport/isolation tests pass. Real reviews of PR #14 and #15 each completed in one attempt; the isolated publishing job passed. Current review corrections clarify the main flow, enforce a process-wide attempt guard and check tested/runtime adapter equality; seven local tests pass, with new remote validation pending. See [review transport](0015-review-transport.md). Runtime, execution and continuous safety remain incomplete.
+Status: PR #13 merged at `cabdac3`. [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) now uses a C++ evaluation/slicing core and awaits review.
+PreparedTrajectory converts and validates once; evaluate / slice_curve preserve Python contracts and tuple-call compatibility.
+106 tests: 105 pass, one skip; clean sdist -> wheel verified; 36 native trajectory slice comparisons have error 1.67e-15.
+For 1000 robots/1024 knots, snapshot preparation costs about 267-270 ms, subsequent fleet evaluation 3.928 ms and slicing 8.391 ms; bindings included, not a full real-time loop.
+The shared utility is not connected to the continuous validator or executor. Runtime, continuous safety and joint warehouse integration remain incomplete.
+See [shared trajectories](0014-shared-trajectory.md) and [performance evidence](0014-trajectory-performance.md).
+
+The PR #15 review-transport fix is merged; latest main is `c59ba4d`. PR #14 incorporates that baseline to resolve roadmap and progress-page conflicts, preserving C++ trajectory evidence and the single-attempt review guard. See [review transport](0015-review-transport.md).
 
 ## Replaceable modules
 
@@ -53,7 +60,7 @@ Do not add a mandatory intermediate submit or claim TAPF covers warehouse stock.
 | 8 | Staged and joint TAPF composition | Replace standalone assignment/MAPF with CBS-TA on the same supported fixture |
 | 9 | Continuous validator | Crossing between samples, following, turning loads, resource capacities, indefinite terminal holds |
 | 10 | Runtime transactions and branches | No double reservation, idempotent submit, stale rejection, protected Lift, due branch wins |
-| 11 | Central executor and integrated replay | Exact Hermite slices, retained switch knots, action starts once, event deduplication |
+| 11 | Central executor and integrated replay | Integrate shared Hermite slices, retained switch knots, action starts once, event deduplication |
 
 Before extending upstream integration, define and test the adapter's supported subset.
 Refuse unsupported mid-edge starts, loaded handovers, geometry, cyclic rotations,

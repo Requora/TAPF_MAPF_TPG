@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "pybind11==3.0.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -16,3 +16,6 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E9", "F"]
+
+[tool.setuptools.package-data]
+"warehouse_api.trajectory" = ["*.hpp", "PYBIND11_LICENSE.txt"]

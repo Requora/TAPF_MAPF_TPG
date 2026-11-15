@@ -10,6 +10,7 @@ import warehouse_api
 
 DEPENDENCIES = {
     "contracts": set(),
+    "trajectory": {"contracts"},
     "serialization": set(),
     "order_source": {"contracts"},
     "action_timing": {"contracts"},
@@ -22,6 +23,7 @@ DEPENDENCIES = {
     "tpg": {"contracts", "validation", "native_process"},
 }
 EXPORTS = {
+    "trajectory": {"PreparedTrajectory", "evaluate", "slice_curve"},
     "serialization": {"dumps", "loads", "from_data", "to_data"},
     "order_source": {"ReplayOrderSource", "generate_orders"},
     "action_timing": {"action_duration_s", "action_duration_ticks"},

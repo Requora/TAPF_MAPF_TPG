@@ -2,9 +2,16 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-11-15-r28 -->
+<!-- doc-sync: roadmap / 2026-11-15-r30 -->
 
-状态: PR #13 已合并于 `cabdac3`; C++ 轨迹 PR #14 仍待 review. 当前独立修复 OpenRouter 审查传输层: 单次调用, 明确上游错误, 供应商过滤及有界运行时间. 七项本地传输/隔离测试通过. PR #14 和 #15 的真实审查各单次调用完成; 隔离后的发布 job 已通过. 当前修正主流程可读性, 跨实例限制和测试/运行版本一致性; 七项本地测试通过, 新远端验证待完成. 见 [审查传输层](0015-review-transport.md). Runtime, 执行与连续安全仍未完成.
+状态: PR #13 已合并, 基线 `cabdac3`. [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 已改用 C++ 求值/切片核心, 等待 review.
+PreparedTrajectory 一次转换并校验; evaluate / slice_curve 保留 Python 契约和 tuple 兼容调用.
+106 项测试中 105 通过, 1 跳过; 干净 sdist -> wheel 验证通过, 原生轨迹 36 次切片比较误差 1.67e-15.
+1000 台/1024 节点快照准备约 267-270 ms, 后续整车队求值约 3.928 ms, 切片约 8.391 ms; 包含绑定, 不是完整实时闭环.
+共享工具尚未接入连续验证器或执行器. Runtime, 连续安全与联合仓库适配仍未完成.
+见 [共享轨迹](0014-shared-trajectory.md) 和 [性能证据](0014-trajectory-performance.md).
+
+PR #15 的审查传输层修复已合并, 最新 main 为 `c59ba4d`. PR #14 已合入该基线以解决路线图和进展网页冲突, 保留 C++ 轨迹证据及单次审查请求保护. 见 [审查传输层](0015-review-transport.md).
 
 ## 可替换模块
 
@@ -51,7 +58,7 @@ flowchart TD
 | 8 | 分阶段与联合 TAPF 组合 | 在同一受支持 fixture 上用 CBS-TA 替换独立分配/MAPF |
 | 9 | 连续验证器 | 采样间交叉, 跟随, 载货转弯, 资源容量, 无限期终点占用 |
 | 10 | Runtime 事务与分支 | 不重复预留, 幂等提交, 拒绝过期结果, 保护 Lift, 到期分支优先 |
-| 11 | 中央执行器与集成重放 | 精确 Hermite 切片, 保留切换节点, 动作只启动一次, 事件去重 |
+| 11 | 中央执行器与集成重放 | 接入共享 Hermite 切片, 保留切换节点, 动作只启动一次, 事件去重 |
 
 扩展上游集成前先定义并测试适配器支持的子集.
 不支持的边中间起步, 载货交接, 几何, 循环旋转或动作语义必须明确拒绝,

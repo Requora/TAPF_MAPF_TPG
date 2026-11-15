@@ -1,7 +1,7 @@
 const project = window.PROJECT;
 let lang = new URLSearchParams(location.search).get("lang") === "en" ? 1 : 0;
 let view = "flow";
-let selected = "task_compiler";
+let selected = "trajectory";
 // 中文: text 从一对中英文文字中取出当前语言的内容, 让各个界面组件使用同一个语言设置.
 // English: text selects the current language from a Chinese/English pair so all components share one language setting.
 const text = pair => pair[lang];
@@ -68,8 +68,8 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["修复自动审查调用链", "Repair automated review transport"], ["两次 Ionstream 502 共等待 62 分钟且无正文. 新传输层单次调用, 总时限 10 min, 保留供应商错误与用量元数据.", "Two Ionstream 502 failures consumed 62 minutes without visible output. The new transport allows one attempt, a 10-minute deadline and provider error/usage metadata."]],
-    [["NEXT / 待审查", "NEXT / REVIEW"], ["验证真实 review", "Verify a real review"], ["PR #14/#15 已各单次完成真实审查并发布意见, 费用约 $0.00833 / $0.0437. 七项本地测试通过; 隔离后的发布 job 已通过. 本轮可读性和请求/版本保护修正通过七项本地测试, 新远端验证待完成. 此图展示已合并业务基线, PR #14 C++ 轨迹仍独立待审查.", "PR #14/#15 each completed and published a real review in one attempt, costing about $0.00833 / $0.0437. Seven local tests pass; the isolated publishing job passed. Current readability and request/version guard corrections pass seven local tests; new remote validation is pending. This diagram shows the merged application baseline; PR #14 C++ trajectory remains separately under review."]],
+    [["NOW / 正在做", "NOW"], ["C++ 轨迹核心与 Python API", "C++ trajectory core, Python API"], ["求值, 切片和校验均由 C++ 执行. PreparedTrajectory 一次转换, 后续复用; 原 tuple 调用仍兼容, 但每次都会准备. 返回类型保持统一契约.", "C++ evaluates, slices and validates. PreparedTrajectory converts once for reuse; tuple calls remain compatible but prepare each time. Results retain shared contracts."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["审查绑定与安装边界", "Review binding and installation boundaries"], ["106 项测试: 105 通过, 1 跳过. 干净 sdist 到 wheel 已验证. review 修正: 头文件增量重编, 浮点容差, 基准仅 Linux. 最大案例快照准备约 267-270 ms; 后续求值 3.928 ms / 切片 8.391 ms, 含绑定. 其他平台和完整实时闭环未验证.", "106 tests: 105 pass, 1 skip. Clean sdist-to-wheel verified. Review fixes: header rebuilds, float tolerance, Linux-only benchmark. Largest snapshot preparation costs 267-270 ms; later evaluation 3.928 ms / slicing 8.391 ms includes bindings. Other platforms and full real-time execution unverified."]],
     [["NOT YET / 尚未完成", "NOT YET"], ["联合仓库与执行闭环", "Joint warehouse & execution loop"], ["目标实验未接 SKU, Lift/Serve/Drop, 共享编译或 TPG. 多车仓库, Runtime, 连续几何, 无限期停车和中央执行器仍未完成.", "The goal experiment has no SKU, Lift/Serve/Drop, shared compiler or TPG connection. Multi-robot warehouse planning, Runtime, continuous geometry, indefinite parking and execution remain incomplete."]],
   ];
   // 中文: map 的回调把每个工作状态条目转换为卡片, 分开显示当前工作和未实现项, 防止读者把计划当成已完成成果.
@@ -77,8 +77,9 @@ function render() {
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
-    [text(["当前 PR #15 · 审查传输层", "Current PR #15 · review transport"]), `${project.repo}/pull/15`],
-    [text(["待审查 PR #14 · C++ 轨迹", "Pending PR #14 · C++ trajectory"]), `${project.repo}/pull/14`],
+    [text(["性能基准 · 对比表与原始样本", "Performance · comparison and raw samples"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-trajectory-performance.md`],
+    [text(["当前 PR #14 · 共享轨迹", "Current PR #14 · shared trajectories"]), `${project.repo}/pull/14`],
+    [text(["已合并 PR #15 · 审查传输层", "Merged PR #15 · review transport"]), `${project.repo}/pull/15`],
     [text(["已合并 PR #13 · 运动结果边界", "Merged PR #13 · motion-result boundary"]), `${project.repo}/pull/13`],
     [text(["真实目标实验 CI · 下载单步重放", "Real goal experiment CI · download replay"]), `${project.repo}/actions/runs/39379639913/artifacts/12244991832`],
     [text(["真实原生 CI · HTML/JSON 重放", "Real native CI · HTML/JSON replay"]), `${project.repo}/actions/runs/39366365034`],
@@ -86,7 +87,7 @@ function render() {
     [text(["已合并 PR #11 · 路径约束", "Merged PR #11 · path contract"]), `${project.repo}/pull/11`],
     [text(["已合并 PR #10 · 实验证据", "Merged PR #10 · experiment evidence"]), `${project.repo}/pull/10`],
     [text(["已合并验证基线", "Merged verification baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
-    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0015-review-transport.md`],
+    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-shared-trajectory.md`],
     [text(["路线图 · 阶段 1—11", "Roadmap · stages 1–11"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/ROADMAP.md`],
   ];
   // 中文: map 的回调把每条验证证据转换成链接, 让用户能从页面追查代码, 自动构建与测试记录(CI), 或开发日志.

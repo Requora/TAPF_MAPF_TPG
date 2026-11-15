@@ -15,7 +15,7 @@ with sync_playwright() as playwright:
     for language in ("zh-CN", "en"):
         assert page.locator("html").get_attribute("lang") == language
         page.locator('[data-view="flow"]').click()
-        assert page.locator(".node").count() == 15
+        assert page.locator(".node").count() == 16
         assert page.locator(".edge.future").count() == 10
         # 中文: evaluate_all 的回调通过 map 逐个读取架构图元素的模块 ID, 让测试循环检查每个模块的选择行为.
         # 这里的节点是代表软件模块的界面元素, 不是仓库地图中的机器人位置.
@@ -26,9 +26,9 @@ with sync_playwright() as playwright:
             assert page.locator(f'[data-id="{node_id}"]').get_attribute("aria-pressed") == "true"
             assert page.locator("#inspector a").get_attribute("href").startswith("https://github.com/Requora/")
         page.locator('[data-view="imports"]').click()
-        assert page.locator(".node").count() == 11
+        assert page.locator(".node").count() == 12
         assert page.locator(".edge.future").count() == 0
-        assert page.locator(".edge").count() == 16
+        assert page.locator(".edge").count() == 17
         page.locator('[data-id="order_source"]').focus()
         page.keyboard.press("Enter")
         assert page.locator('[data-id="order_source"]').get_attribute("aria-pressed") == "true"
@@ -45,4 +45,4 @@ with sync_playwright() as playwright:
     page.screenshot(path="/tmp/warehouse-progress-mobile.png", full_page=True)
     assert not errors, errors
     browser.close()
-print("PASS: two languages, both diagrams, 30 module selections, keyboard, mobile layout, no JS errors")
+print("PASS: two languages, both diagrams, 32 module selections, keyboard, mobile layout, no JS errors")

@@ -1,0 +1,108 @@
+# Shared trajectory evaluation and exact slicing
+
+[中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
+
+<!-- doc-sync: shared-trajectory / 2026-11-15-r6 -->
+
+## Current implementation: C++ core
+
+The user requested production use of C++. Package-local `_native.cpp` / `_validation.hpp` now perform evaluation, slicing and structural validation; Python `_curve.py` only converts shared contracts. `PreparedTrajectory(knots)` creates an independent read-only native snapshot with one conversion and validation. `evaluate(snapshot, t)` and `slice_curve(snapshot, a, b)` reuse it. Existing tuple inputs remain compatible but convert and validate on every call. Results remain Knot or tuple[Knot, ...]; no native class is a public API.
+
+This does not replan motion, implement continuous collision acceptance or connect an executor. It does not cache live ledgers. Intervals are still scanned sequentially; bindings retain the GIL and claim no parallel speedup. The old Python interpolation/validation and temporary C++ comparison program were removed to avoid two runtime cores. Earlier figures and unbound comparisons below are historical; this section and the appended evidence describe current status.
+
+## Scope and decisions
+
+PR #13 is confirmed merged at `cabdac3572290707cbf3405d850031632ea62b1f`. Branch: `feat/shared-trajectory`. This PR adds `warehouse_api.trajectory.evaluate` and `slice_curve`, using the existing Knot/Pose2/Twist2 contracts. The only new production dependency is trajectory -> contracts. No solver, executor, Runtime or backend behavior changes.
+
+API 0.7 sections 8 and 10 define cubic Hermite curves and exact slicing. The adapter already defines the curve; this utility reads it, rather than planning another curve. Source: the unchanged user reference `warehouse_api_v0_7/package/warehouse_api/trajectory.py`, SHA256 `13bb45ebb55468bd0af2c6f51f87df7ea359df1be51b0e97f4c566835d8eec62`. No new runtime library or planner-upstream version change; the current build-only pybind11 dependency is described below. ReferenceExecutor is not ported.
+
+Both APIs return immutable contract objects and raise ValueError for invalid curves/ranges. Package-local validation checks finite values, positive finite intervals and coverage. Position and velocity use the reference Hermite formulas, with unwrapped yaw. Slices preserve endpoints and every internal knot, including acceleration switches, up to floating-point arithmetic error.
+
+Deliberate reference differences: no EPS snapping near knots; only exactly zero terminal velocity allows indefinite hold. A moving singleton may be queried at its exact instant, matching PR #13's immediate-braking prefix, but may not extend. Validation stays outside interpolation logic. Consumers must concatenate an immediate prefix with its valid tail before requesting a positive-duration slice across that boundary.
+
+## Verification and failure record
+
+TDD: the new analytic behavior tests first failed with ModuleNotFoundError because warehouse_api.trajectory did not exist (`/tmp/trajectory-red.log`). After implementation, all six pass: independent cubic position/derivative, unwrapped yaw, nested slicing/input immutability, acceleration switches/terminal hold, moving-end rejection, malformed inputs and sub-nanosecond intervals.
+
+```bash
+PYTHONPATH=src python -m unittest discover -s tests/trajectory -v
+WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges PYTHONPATH=src python -m unittest discover -s tests -v
+PYTHONPATH=src:tests python -m trajectory.replay /tmp/tapf-chain-bridges --output /tmp/trajectory-native.json
+/tmp/warehouse-ci-check/bin/ruff check src tests web/progress/check.py
+git diff --check
+```
+
+Full suite: 103 tests, 102 pass, one optional CBS-TA test skips. The native replay executes MAWPF/WinkTPG and compares 36 original/sliced x-position and x-velocity states; maximum absolute error is 1.67e-15. Its JSON retains requests, original native outputs, binary hashes, stage trace and paired states. The x and vx error maximum combines different units for a numerical regression summary, not a physical safety metric. Logs: `/tmp/trajectory-tests.log`. Existing pinned binaries were reused, not rebuilt: MAWPF `0cdb8e4`, WinkTPG `dd96946`; see [native integration](0009-staged-pipeline.md).
+
+## PR and next step
+
+[PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) awaits review. The dashboard and roadmap distinguish the implemented shared utility from the still interface-only CentralExecutor and continuous Validator. Await review after submission. No next PR is started.
+
+Continuous collision, resource capacity, motion-limit validation, indefinite parking safety, runtime commits, action dispatch, event deduplication, joint warehouse adaptation and backend execution remain unverified or unimplemented. Curve preservation tests are not a safety proof.
+
+Final local checks: a wheel built from clean source and installed separately passes 102 of 103 tests with one skip; pip check passes. Environment: `/tmp/trajectory-wheel-kt1j73tx/venv`; log: `/tmp/trajectory-wheel-tests.log`. Ruff, JS syntax and diff checks pass. Browser checks cover both languages, both graphs, 32 module selections, keyboard and mobile layout with no JS errors; desktop and mobile screenshots were inspected. Independent gpt-6-luna/low review verified bilingual facts and local links; its suggestion clarified roadmap stage 11 as executor integration of shared slicing. Hosted sign-in and this PR's remote CI are unverified.
+
+Private publication succeeded: [progress site](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site). Sites source `d8d144d24535054714802de812f49510840a71ad`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_298c14963dd481919fd1aacd4f712ddc`. An independent temporary checkout preserved the repository remote and owner-only access. Hosted sign-in is unverified.
+
+Process failures: the first Sites helper initialization returned a generic failure; a later opening in the independent directory succeeded without changing business code. After a session restart stopped the preview server, browser checks reported connection refusal; restarting the local server restored all browser checks. The initial TDD failure is recorded above.
+
+Final diff against `cabdac3`: 295 code lines including tests/web, 134 documentation lines, no configuration changes. Existing user .gitignore changes, helloworld.md and the reference bundle are excluded. Final-commit remote CI awaits confirmation.
+
+## Performance benchmark follow-up
+
+At the user's request, this PR adds [performance measurements and all raw samples](0014-trajectory-performance.md). The 36 synthetic cases cover 1/100/1000 robots, 16/128/1024 knots per robot and 10/50 Hz evaluation and slicing. At 1000 robots, 128 knots and 50 Hz, median fleet evaluation takes 80.406 ms, exceeding the 20 ms period. Separate cProfile analysis identifies repeated knot validation as the main cost. No production code changes or speedups are claimed.
+
+The new workload test first failed because its module was absent, then passed. Source and the existing clean-installed wheel both run 104 tests: 103 pass, one skip; no wheel rebuild. `/tmp/trajectory-benchmark.json` and `/tmp/trajectory-benchmark.log` retain the benchmark; `/tmp/trajectory-profile.log` retains separate hotspot analysis. This is a serial synthetic measurement, excludes the full system and does not isolate shared-host load. The 295/134-line figures above describe the initial delivery.
+
+Follow-up validation: Ruff, JS syntax, diff and bilingual/keyboard/mobile browser checks pass; desktop and mobile screenshots inspected. Independent gpt-6-luna/low review confirmed numbers, bilingual facts and links; stdout redirection was added so the command reproduces the benchmark log.
+
+Performance snapshot privately published: Sites source `8654dfb66516ce6a4fbd84551751253e6f2eb443`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_ad011024774c81918acc26bd0515ad57`. The URL and owner-only access above are retained; the independent checkout preserves the repository remote. Hosted sign-in is unverified.
+
+After this update, the whole PR against `cabdac3` contains 416 code lines including tests/web, 412 documentation lines and no configuration changes. Raw measured samples are retained as documentation tables, not generated code to bypass the limit. Final remote CI awaits confirmation; wait for review after pushing.
+
+## C++ comparison follow-up
+
+At the user's request, an 82-line C++ interior-evaluation experiment retains full validation and sequential lookup per query, without caching or indexing. Four fresh comparisons show about 117-172x difference; 1000 robots/1024 knots take Python 649.473 ms versus C++ 4.903 ms. Three-axis analytic cubic states and all constant-speed outputs pass checks. Results include language and data-layout effects; slicing, bindings, conversion and the full execution chain are unmeasured. See [raw samples and commands](0014-trajectory-performance.md#c-evaluation-comparison).
+
+C++ builds with g++ C++17/O3 and passes analytic checks. A separate `-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer` build passes the 1000-robot/1024-knot/50-Hz case without sanitizer diagnostics. Source tests: 104 total, 103 pass, one skip. JS syntax, diff and bilingual/keyboard/mobile browser checks pass; screenshots inspected. gpt-6-luna/low confirmed bilingual facts and samples. Whole PR against `cabdac3`: 498 code lines, 514 documentation lines, no configuration changes. Final remote CI awaits confirmation.
+
+C++ snapshot privately published: Sites source `23ce8e4b93365ba0041f037670a8a845ad1b57b5`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_93e9783413048191b9c06c887a6989ef`. The URL above and owner-only access remain unchanged. The independent checkout preserves the repository remote; hosted sign-in is unverified. Wait for current PR review after pushing.
+
+## C++ binding and installation validation
+
+TDD: the new reusable-snapshot test first failed because PreparedTrajectory was absent (`/tmp/trajectory-cpp-binding-red.log`), then passed. All existing curve boundary and slicing tests now pass through C++. Source and a clean sdist -> wheel install each run 105 tests: 104 pass, one CBS-TA skip; pip check passes. `/tmp/trajectory-native-wheel-tests.log` and `/tmp/trajectory-native-wheel-build.log` retain installation evidence. The C++ core preserves the real MAWPF/WinkTPG output over 36 slice comparisons, with maximum x/vx error still 1.67e-15.
+
+Build dependency: [pybind11 v3.0.1](https://github.com/pybind/pybind11/tree/v3.0.1), commit `f5fbe867d2d26e4a0a9177a51f6e568868ad3dc8`, BSD-3-Clause; its original license is included in the package. The [official build method](https://pybind11.readthedocs.io/en/stable/compiling.html) uses setuptools/Pybind11Extension and C++17. pybind11 is build-only; wheels are platform/CPython ABI specific. Linux x86_64/CPython 3.14.7 is verified, other platforms/Python versions are unverified. The local build uses g++ with the Python toolchain's `-O2`, unlike the earlier standalone `-O3` comparison.
+
+```bash
+python -m pip install -e .
+WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges python -m unittest discover -s tests -v
+PYTHONPATH=tests python -m trajectory.replay /tmp/tapf-chain-bridges --output /tmp/trajectory-bound-native-replay.json
+PYTHONPATH=tests python -m trajectory.benchmark --prepared --robots 100 1000 --knots 128 1024 --hz 50 --output /tmp/trajectory-bound-prepared.json
+```
+
+Development requires building/installing the extension first; setting PYTHONPATH alone cannot run unbuilt source. Installed wheels do not require a local compiler. Native solvers remain optional external dependencies; the trajectory module itself now requires its compiled extension.
+
+Final binding checks: Ruff and JS syntax pass. The first page syntax check found a missing closing bracket; the bracket was fixed and bilingual/keyboard/mobile browser checks then passed. Desktop and mobile screenshots were inspected. The final wheel contains the extension, validation header and upstream license. Whole PR against `cabdac3`: 472 code lines, 658 documentation lines, 29 license lines and 5 configuration lines (added + removed). Remote CI remains unconfirmed; no full-system real-time or continuous-safety claim is made.
+
+Binding snapshot privately published: Sites source `ec92f51bfe65bd8a83aac9bbe5cc3b49cebde10d`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_321aaf3740e88191b13fceac536af1a3`, deployment succeeded. The URL above and owner-only access are unchanged; hosted sign-in is unverified. The independent checkout preserves the repository remote. Wait for PR #14 review after pushing.
+
+## Main conflict resolution, 2026-11-15
+
+PR #15 merged into `c59ba4d`. PR #14 incorporates that main baseline, resolving five conflicted files in the bilingual roadmaps and progress page. This update preserves the C++ trajectory implementation, all review-transport fixes and the single-attempt guard; application code had no conflicts and gains no new behavior.
+
+Validation: `WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-dev/bin/python -m unittest discover -s tests -v` reports 105 tests, 104 passing and one CBS-TA skip. `/tmp/openrouter-browser-env/bin/python -m unittest discover -s .github/tests -v` passes all seven tests. Ruff, JS syntax and diff checks pass. `web/progress/check.py` passes bilingual, diagram, keyboard and mobile checks; desktop and mobile screenshots were inspected. The default Python lacks the extension and PyYAML, so initial checks failed; existing dedicated environments pass. The first Sites helper returned a generic failure in an empty directory; retry uses an explicitly initialized independent Git checkout.
+
+Scope remains [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14), without starting the next stage. New remote CI and full continuous safety remain unverified.
+
+Independent bilingual review passes, with matching facts and links. The private progress page deployed successfully from source `ceb3c143926bb2d5b507506469d1815b3fdb7a93`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_61893894b0908191ae96813ebbeecee0`. Owner-only access is unchanged; hosted login remains unverified. The full PR against `c59ba4d` has 473 code lines, 676 documentation lines, 29 license lines and 5 configuration lines (additions + deletions). User local files are excluded from the commit.
+
+## Review fixes, 2026-11-15
+
+All three PR #14 review findings are accepted. setup.py now declares `_validation.hpp` as a build dependency. The short-interval test uses absolute tolerance `1e-24` and requires the result strictly between `0` and `1e-10`. The benchmark explicitly supports Linux only and returns a command-line error on other hosts before platform-specific reads or measurements. This update does not claim real macOS/Windows or ARM64/FMA validation.
+
+TDD: the new simulated Darwin/Windows regression test first produced two `Linux file read` failures (`/tmp/pr14-review-platform-red.log`) and passes after the fix. An independent source copy at `/tmp/pr14-header-regression` built the extension, then changed only the header timestamp to simulate an edit: old setup.py left `_native.o` unchanged and failed the assertion; the new depends configuration rebuilt the object, and the next unchanged build retained its timestamp. Production C++ algorithms are unchanged.
+
+Validation: `WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-dev/bin/python -m unittest discover -s tests -v` reports 106 tests, 105 passing and one CBS-TA skip (`/tmp/pr14-review-green.log`). Seven review-transport tests and Ruff pass. A small real Linux benchmark completed evaluation and slicing, with evidence at `/tmp/pr14-review-linux-benchmark.json`; this small sample does not update historical performance conclusions. Next work remains review of the current PR, without starting a new stage.
+
+Final validation: isolated tests after a clean sdist -> wheel installation also report 106 tests, 105 passing and one skip (`/tmp/pr14-review-wheel-tests.log`); pip check passes. Bilingual browser, keyboard and mobile checks pass; desktop and mobile screenshots were inspected. Independent documentation review prompted the added page review status and current clean-build evidence. Private publication succeeded: source `3a3af241fd467dea70b5aea233bf34ef7c69ed21`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_477046d1ed6c8191a6e96f8705244889`; owner-only access is unchanged, hosted login remains unverified. The full PR against `c59ba4d` has 489 code lines, 700 documentation lines, 29 license lines and 5 configuration lines. Remote CI after this push remains pending confirmation.
