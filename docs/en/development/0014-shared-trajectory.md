@@ -2,7 +2,9 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-11-15-r6 -->
+<!-- doc-sync: shared-trajectory / 2026-11-15-r7 -->
+
+This document records merged PR #14 behavior and evidence. The current API removes tuple auto-conversion and the --prepared mode flag; see [single trajectory path](0016-single-trajectory-path.md). Historical --prepared commands require PR #14 revision `7e8acde`; earlier experiments use their recorded revisions.
 
 ## Current implementation: C++ core
 

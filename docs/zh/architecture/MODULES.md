@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-10-23-r11 -->
+<!-- doc-sync: module-boundaries / 2026-11-15-r12 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 
-私有网页记录 PR #13 已合并基线 `cabdac3` 和共享轨迹工具, 保留原生证据和未完成边界.
+私有网页记录 PR #14 已合并基线 `a6cdd31` 和单一轨迹准备路径清理, 保留原生证据和未完成边界.
 
 ## 已实现目录
 
@@ -169,3 +169,5 @@ flowchart LR
 ## 轨迹原生边界
 
 trajectory 的 Python 层只转换统一契约, C++ 核心负责求值/切片, `_validation.hpp` 集中检查曲线和查询. PreparedTrajectory 是可复用的只读计算快照, 不是替代 contracts 的 DTO; 不公开 pybind11 对象. 只有 trajectory -> contracts 的生产模块依赖. setup.py 构建内部扩展, pybind11 3.0.1 仅作构建依赖. 源码使用前需 `pip install -e .`, wheel 为平台/CPython ABI 专用. 安装与性能证据见 [当前日志](../development/0014-shared-trajectory.md).
+
+调用链固定为 `tuple[Knot, ...] -> PreparedTrajectory -> evaluate / slice_curve -> Knot / tuple[Knot, ...]`. tuple 仅用于输入构造和切片输出, 不再直接传入查询函数. 基准只测量这一条准备和查询路径, 不提供模式开关. 见 [清理日志](../development/0016-single-trajectory-path.md).

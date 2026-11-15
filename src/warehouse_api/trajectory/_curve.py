@@ -21,15 +21,13 @@ def _knot(row) -> Knot:
     return Knot(row[0], Pose2(*row[1:4]), Twist2(*row[4:7]))
 
 
-# 中文: evaluate 读取 C++ 原曲线的位置和导数; tuple 输入每次转换, 预备快照可复用, 非法值抛出 ValueError.
-# English: evaluate reads position and derivative from the C++ curve; tuple inputs convert per call, prepared snapshots are reusable, and invalid values raise ValueError.
-def evaluate(knots: tuple[Knot, ...] | PreparedTrajectory, time_s: float) -> Knot:
-    curve = knots if isinstance(knots, PreparedTrajectory) else PreparedTrajectory(knots)
+# 中文: evaluate 从已校验快照读取 C++ 曲线的位置和导数, 使查询始终复用同一原生数据, 非法时间抛出 ValueError.
+# English: evaluate reads position and derivative from a validated snapshot so queries always reuse native data; invalid times raise ValueError.
+def evaluate(curve: PreparedTrajectory, time_s: float) -> Knot:
     return _knot(curve._curve.evaluate(time_s))
 
 
-# 中文: slice_curve 通过 C++ 保留两端和全部内部节点, 浮点误差外保持原曲线; 非法区间抛出 ValueError.
-# English: slice_curve uses C++ to retain endpoints and all internal knots, preserving the original curve up to floating-point error; invalid intervals raise ValueError.
-def slice_curve(knots: tuple[Knot, ...] | PreparedTrajectory, start_s: float, end_s: float) -> tuple[Knot, ...]:
-    curve = knots if isinstance(knots, PreparedTrajectory) else PreparedTrajectory(knots)
+# 中文: slice_curve 从已校验快照通过 C++ 保留两端和全部内部节点, 浮点误差外保持原曲线; 非法区间抛出 ValueError.
+# English: slice_curve uses a validated snapshot and C++ to retain endpoints and all internal knots, preserving the original curve up to floating-point error; invalid intervals raise ValueError.
+def slice_curve(curve: PreparedTrajectory, start_s: float, end_s: float) -> tuple[Knot, ...]:
     return tuple(_knot(row) for row in curve._curve.slice(start_s, end_s))

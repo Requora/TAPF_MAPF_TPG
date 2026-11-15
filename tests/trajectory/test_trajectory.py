@@ -31,7 +31,7 @@ class TrajectoryTests(unittest.TestCase):
     # 中文: 本测试用独立三次多项式和导数检查段内状态, 防止线性插值或朝向折返.
     # English: This test checks interior states against independent cubics and derivatives, rejecting linear interpolation and yaw wrapping.
     def test_evaluation_matches_analytic_curve(self):
-        curve = (cubic(0), cubic(2))
+        curve = PreparedTrajectory((cubic(0), cubic(2)))
         for t in (0, 0.1, 0.5, 1, 1.9, 2):
             self.assert_knot(evaluate(curve, t), cubic(t))
 
@@ -40,9 +40,9 @@ class TrajectoryTests(unittest.TestCase):
     def test_slice_preserves_curve_and_input(self):
         curve = (cubic(0), cubic(1), cubic(2))
         original = tuple(curve)
-        sliced = slice_curve(curve, 0.2, 1.8)
+        sliced = slice_curve(PreparedTrajectory(curve), 0.2, 1.8)
         self.assertEqual(tuple(k.time_s for k in sliced), (0.2, 1, 1.8))
-        nested = slice_curve(sliced, 0.4, 1.6)
+        nested = PreparedTrajectory(slice_curve(PreparedTrajectory(sliced), 0.4, 1.6))
         for i in range(21):
             t = 0.4 + 1.2*i/20
             self.assert_knot(evaluate(nested, t), cubic(t))
@@ -54,23 +54,24 @@ class TrajectoryTests(unittest.TestCase):
         curve = (Knot(0, Pose2(0, 0, 0), Twist2(0, 0, 0)),
                  Knot(1, Pose2(0.5, 0, 0), Twist2(1, 0, 0)),
                  Knot(2, Pose2(1, 0, 0), Twist2(0, 0, 0)))
-        sliced = slice_curve(curve, 0.5, 3)
+        sliced = slice_curve(PreparedTrajectory(curve), 0.5, 3)
+        snapshot = PreparedTrajectory(sliced)
         self.assertEqual(sliced[1:3], curve[1:])
         for t, x, v in ((0.5, 0.125, 0.5), (1.5, 0.875, 0.5), (2.5, 1, 0)):
-            self.assert_knot(evaluate(sliced, t), Knot(t, Pose2(x, 0, 0), Twist2(v, 0, 0)))
-        self.assertEqual(slice_curve(curve, 1, 2), curve[1:])
-        self.assertEqual(evaluate((curve[-1],), 10), replace(curve[-1], time_s=10))
+            self.assert_knot(evaluate(snapshot, t), Knot(t, Pose2(x, 0, 0), Twist2(v, 0, 0)))
+        self.assertEqual(slice_curve(PreparedTrajectory(curve), 1, 2), curve[1:])
+        self.assertEqual(evaluate(PreparedTrajectory((curve[-1],)), 10), replace(curve[-1], time_s=10))
 
     # 中文: 本测试只允许读取移动单节点的精确时刻, 防止零长度前缀被当作无限运动.
     # English: This test permits a moving singleton only at its instant so a zero-duration prefix cannot imply indefinite motion.
     def test_moving_endpoint_does_not_authorize_extrapolation(self):
-        self.assertEqual(evaluate((cubic(1),), 1), cubic(1))
+        self.assertEqual(evaluate(PreparedTrajectory((cubic(1),)), 1), cubic(1))
         for curve in ((cubic(1),), (cubic(0), cubic(1))):
             with self.assertRaises(ValueError):
-                evaluate(curve, math.nextafter(1, math.inf))
+                evaluate(PreparedTrajectory(curve), math.nextafter(1, math.inf))
         tiny_motion = replace(cubic(1), velocity=Twist2(1e-12, 0, 0))
         with self.assertRaises(ValueError):
-            evaluate((tiny_motion,), 2)
+            evaluate(PreparedTrajectory((tiny_motion,)), 2)
 
     # 中文: 本测试拒绝坏节点和非法时间范围, 防止 NaN 或静默截断进入执行数据.
     # English: This test rejects invalid knots and time ranges so NaN and silent clamping cannot enter execution data.
@@ -80,20 +81,20 @@ class TrajectoryTests(unittest.TestCase):
                       (replace(cubic(0), velocity=Twist2(0, math.inf, 0)),),
                       (replace(cubic(0), time_s=math.inf),)):
             with self.subTest(curve=curve), self.assertRaises(ValueError):
-                evaluate(curve, 0)
+                PreparedTrajectory(curve)
         for t in (-1e-12, math.nan, math.inf, -math.inf):
             with self.subTest(t=t), self.assertRaises(ValueError):
-                evaluate((cubic(0), cubic(1)), t)
+                evaluate(PreparedTrajectory((cubic(0), cubic(1))), t)
         for start, end in ((0, 0), (1, 0), (0, math.nan), (math.nan, 1), (0, math.inf)):
             with self.subTest(start=start, end=end), self.assertRaises(ValueError):
-                slice_curve((cubic(0), cubic(1)), start, end)
+                slice_curve(PreparedTrajectory((cubic(0), cubic(1))), start, end)
 
     # 中文: 本测试保留很短的正时长段, 用远小于区间尺度的容差和严格内点断言, 防止真实运动被吸附到端点.
     # English: This test preserves short positive intervals using a small tolerance and strict interior bounds so real motion cannot snap to endpoints.
     def test_short_interval_is_not_snapped(self):
         curve = (Knot(0, Pose2(0, 0, 0), Twist2(1, 0, 0)),
                  Knot(1e-10, Pose2(1e-10, 0, 0), Twist2(1, 0, 0)))
-        result = evaluate(curve, 5e-11)
+        result = evaluate(PreparedTrajectory(curve), 5e-11)
         self.assertAlmostEqual(result.pose.x_m, 5e-11, delta=1e-24)
         self.assertGreater(result.pose.x_m, 0)
         self.assertLess(result.pose.x_m, 1e-10)
@@ -107,7 +108,7 @@ class TrajectoryTests(unittest.TestCase):
             self.assert_knot(evaluate(curve, t), cubic(t))
         cut = slice_curve(curve, 0.25, 1.75)
         self.assertEqual(tuple(k.time_s for k in cut), (0.25, 1, 1.75))
-        self.assert_knot(evaluate(cut, 1.5), cubic(1.5))
+        self.assert_knot(evaluate(PreparedTrajectory(cut), 1.5), cubic(1.5))
         with self.assertRaises(ValueError):
             evaluate(curve, 3)
         with self.assertRaises(ValueError):

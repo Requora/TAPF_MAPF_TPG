@@ -2,7 +2,9 @@
 
 [中文](../../zh/development/0014-trajectory-performance.md) | [English](../../en/development/0014-trajectory-performance.md)
 
-<!-- doc-sync: trajectory-performance / 2026-11-15-r4 -->
+<!-- doc-sync: trajectory-performance / 2026-11-15-r5 -->
+
+本文记录已合并 PR #14 的历史行为与证据. 当前 API 已删除 tuple 自动转换和 --prepared 模式开关; 使用方式见 [单一轨迹路径](0016-single-trajectory-path.md). 历史 --prepared 命令应在 PR #14 的 `7e8acde` 版本运行; 更早实验仍使用各节记录的版本.
 
 当前实现已迁入 C++ 绑定, 最新结果见末尾 "C++ 绑定后的实际 API". 下方原 Python 和独立 C++ 对照为历史数据, 对应 commit `0150ea2`; 已移除的独立程序可从该提交取回, 旧命令需在该版本运行.
 

@@ -2,7 +2,9 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-11-15-r6 -->
+<!-- doc-sync: shared-trajectory / 2026-11-15-r7 -->
+
+本文记录已合并 PR #14 的历史行为与证据. 当前 API 已删除 tuple 自动转换和 --prepared 模式开关; 使用方式见 [单一轨迹路径](0016-single-trajectory-path.md). 历史 --prepared 命令应在 PR #14 的 `7e8acde` 版本运行; 更早实验仍使用各节记录的版本.
 
 ## 当前实现: C++ 核心
 

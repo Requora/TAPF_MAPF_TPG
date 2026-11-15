@@ -7,7 +7,7 @@ from pathlib import Path
 from native.replay import run
 from warehouse_api.contracts import ExecutableProposal
 from warehouse_api.serialization import dumps
-from warehouse_api.trajectory import evaluate, slice_curve
+from warehouse_api.trajectory import PreparedTrajectory, evaluate, slice_curve
 
 
 # 中文: replay 运行原生链并比较每段内部切片, 让审查者查看真实节点, 查询状态及数值误差.
@@ -18,15 +18,17 @@ def replay(binary_directory: Path):
     assert isinstance(proposal, ExecutableProposal), proposal
     comparisons = []
     for segment in (*proposal.motion.common_prefix, *proposal.motion.stop_tail):
+        snapshot = PreparedTrajectory(segment.knots)
         for left, right in zip(segment.knots, segment.knots[1:]):
             h = right.time_s - left.time_s
-            sliced = slice_curve(segment.knots, left.time_s + h/4, right.time_s - h/4)
+            sliced = slice_curve(snapshot, left.time_s + h/4, right.time_s - h/4)
+            cut_snapshot = PreparedTrajectory(sliced)
             for fraction in (0.25, 0.5, 0.75):
                 t = left.time_s + h*fraction
                 # Use stored slice boundaries to avoid an independently rounded time outside coverage.
                 # 中文: replay 使用已存储的边界时间, 避免独立舍入把查询移到切片之外.
                 t = min(max(t, sliced[0].time_s), sliced[-1].time_s)
-                original, cut = evaluate(segment.knots, t), evaluate(sliced, t)
+                original, cut = evaluate(snapshot, t), evaluate(cut_snapshot, t)
                 error = max(abs(original.pose.x_m - cut.pose.x_m),
                             abs(original.velocity.vx_mps - cut.velocity.vx_mps))
                 assert error < 1e-10, (original, cut, error)

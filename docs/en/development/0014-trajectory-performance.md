@@ -2,7 +2,9 @@
 
 [中文](../../zh/development/0014-trajectory-performance.md) | [English](../../en/development/0014-trajectory-performance.md)
 
-<!-- doc-sync: trajectory-performance / 2026-11-15-r4 -->
+<!-- doc-sync: trajectory-performance / 2026-11-15-r5 -->
+
+This document records merged PR #14 behavior and evidence. The current API removes tuple auto-conversion and the --prepared mode flag; see [single trajectory path](0016-single-trajectory-path.md). Historical --prepared commands require PR #14 revision `7e8acde`; earlier experiments use their recorded revisions.
 
 The current implementation uses C++ bindings; see "Actual API with C++ bindings" at the end for current results. Original Python and standalone C++ comparisons below are historical at commit `0150ea2`; the removed standalone program is available there, and old commands require that revision.
 
