@@ -1,6 +1,6 @@
 // Curated snapshot. Update with the roadmap and evidence whenever project state changes.
 window.PROJECT = {
-  date: "2026-10-23", evidenceCommit: "cabdac3", branch: "feat/shared-trajectory",
+  date: "2026-11-15", evidenceCommit: "c59ba4d", branch: "feat/shared-trajectory",
   repo: "https://github.com/Requora/TAPF_MAPF_TPG", current: ["trajectory"],
   copy: {
     navMap: ["架构", "Architecture"], navWork: ["当前进展", "Progress"],

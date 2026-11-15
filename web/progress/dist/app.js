@@ -79,6 +79,7 @@ function render() {
   const evidence = [
     [text(["性能基准 · 对比表与原始样本", "Performance · comparison and raw samples"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-trajectory-performance.md`],
     [text(["当前 PR #14 · 共享轨迹", "Current PR #14 · shared trajectories"]), `${project.repo}/pull/14`],
+    [text(["已合并 PR #15 · 审查传输层", "Merged PR #15 · review transport"]), `${project.repo}/pull/15`],
     [text(["已合并 PR #13 · 运动结果边界", "Merged PR #13 · motion-result boundary"]), `${project.repo}/pull/13`],
     [text(["真实目标实验 CI · 下载单步重放", "Real goal experiment CI · download replay"]), `${project.repo}/actions/runs/39379639913/artifacts/12244991832`],
     [text(["真实原生 CI · HTML/JSON 重放", "Real native CI · HTML/JSON replay"]), `${project.repo}/actions/runs/39366365034`],

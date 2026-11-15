@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-10-23-r4 -->
+<!-- doc-sync: shared-trajectory / 2026-11-15-r5 -->
 
 ## Current implementation: C++ core
 
@@ -86,3 +86,13 @@ Development requires building/installing the extension first; setting PYTHONPATH
 Final binding checks: Ruff and JS syntax pass. The first page syntax check found a missing closing bracket; the bracket was fixed and bilingual/keyboard/mobile browser checks then passed. Desktop and mobile screenshots were inspected. The final wheel contains the extension, validation header and upstream license. Whole PR against `cabdac3`: 472 code lines, 658 documentation lines, 29 license lines and 5 configuration lines (added + removed). Remote CI remains unconfirmed; no full-system real-time or continuous-safety claim is made.
 
 Binding snapshot privately published: Sites source `ec92f51bfe65bd8a83aac9bbe5cc3b49cebde10d`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_321aaf3740e88191b13fceac536af1a3`, deployment succeeded. The URL above and owner-only access are unchanged; hosted sign-in is unverified. The independent checkout preserves the repository remote. Wait for PR #14 review after pushing.
+
+## Main conflict resolution, 2026-11-15
+
+PR #15 merged into `c59ba4d`. PR #14 incorporates that main baseline, resolving five conflicted files in the bilingual roadmaps and progress page. This update preserves the C++ trajectory implementation, all review-transport fixes and the single-attempt guard; application code had no conflicts and gains no new behavior.
+
+Validation: `WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-dev/bin/python -m unittest discover -s tests -v` reports 105 tests, 104 passing and one CBS-TA skip. `/tmp/openrouter-browser-env/bin/python -m unittest discover -s .github/tests -v` passes all seven tests. Ruff, JS syntax and diff checks pass. `web/progress/check.py` passes bilingual, diagram, keyboard and mobile checks; desktop and mobile screenshots were inspected. The default Python lacks the extension and PyYAML, so initial checks failed; existing dedicated environments pass. The first Sites helper returned a generic failure in an empty directory; retry uses an explicitly initialized independent Git checkout.
+
+Scope remains [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14), without starting the next stage. New remote CI and full continuous safety remain unverified.
+
+Independent bilingual review passes, with matching facts and links. The private progress page deployed successfully from source `ceb3c143926bb2d5b507506469d1815b3fdb7a93`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_61893894b0908191ae96813ebbeecee0`. Owner-only access is unchanged; hosted login remains unverified. The full PR against `c59ba4d` has 473 code lines, 674 documentation lines, 29 license lines and 5 configuration lines (additions + deletions). User local files are excluded from the commit.

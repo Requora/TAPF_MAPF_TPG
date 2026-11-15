@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-10-23-r4 -->
+<!-- doc-sync: shared-trajectory / 2026-11-15-r5 -->
 
 ## 当前实现: C++ 核心
 
@@ -86,3 +86,13 @@ PYTHONPATH=tests python -m trajectory.benchmark --prepared --robots 100 1000 --k
 最终绑定检查: Ruff 和 JS 语法通过. 首次页面语法检查发现缺失右括号; 修复后双语, 键盘和手机浏览器检查通过. 已检查桌面和手机截图. 最终 wheel 包含扩展, 校验头文件和上游许可证. 整个 PR 相对 `cabdac3`: 472 行代码, 658 行文档, 29 行许可证和 5 行配置 (新增 + 删除). 远端 CI 尚未确认; 不宣称完整系统实时性或连续安全已验证.
 
 绑定快照已私有发布: Sites 源码 `ec92f51bfe65bd8a83aac9bbe5cc3b49cebde10d`, 版本 `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_321aaf3740e88191b13fceac536af1a3`, 部署成功. 上述 URL 和仅所有者访问权限不变; 托管登录尚未验证. 独立 checkout 保持本仓库 remote 不变. 推送后等待 PR #14 review.
+
+## main 冲突修复, 2026-11-15
+
+PR #15 已合并至 `c59ba4d`. PR #14 合入该 main 基线, 修复双语路线图和进展网页的五处文件冲突. 本次保留 C++ 轨迹实现, 全部审查传输层修复和单次请求保护; 业务代码没有冲突, 未增加业务行为.
+
+验证: `WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-dev/bin/python -m unittest discover -s tests -v` 为 105 项, 104 通过, 1 项 CBS-TA 跳过. `/tmp/openrouter-browser-env/bin/python -m unittest discover -s .github/tests -v` 七项通过. Ruff, JS 语法和 diff 检查通过. `web/progress/check.py` 双语, 架构图, 键盘和手机检查通过; 桌面和手机截图已检查. 默认 Python 缺少扩展和 PyYAML, 首次检查失败; 使用已有专用环境后通过. 首次 Sites helper 在空目录返回通用失败; 显式初始化独立 Git checkout 后重试.
+
+范围仍为 [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14), 不启动下一阶段. 新远端 CI 和完整连续安全尚未验证.
+
+双语文档独立检查通过, 已确认事实和链接一致. 私有进展页发布成功, 源码 `ceb3c143926bb2d5b507506469d1815b3fdb7a93`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_61893894b0908191ae96813ebbeecee0`. 仅所有者访问保持不变, 托管登录未验证. 整个 PR 相对 `c59ba4d`: 473 行代码, 674 行文档, 29 行许可证和 5 行配置 (新增 + 删除). 用户本地文件未纳入提交.

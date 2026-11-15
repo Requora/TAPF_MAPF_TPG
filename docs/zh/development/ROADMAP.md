@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r26 -->
+<!-- doc-sync: roadmap / 2026-11-15-r29 -->
 
 状态: PR #13 已合并, 基线 `cabdac3`. [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) 已改用 C++ 求值/切片核心, 等待 review.
 PreparedTrajectory 一次转换并校验; evaluate / slice_curve 保留 Python 契约和 tuple 兼容调用.
@@ -10,6 +10,8 @@ PreparedTrajectory 一次转换并校验; evaluate / slice_curve 保留 Python �
 1000 台/1024 节点快照准备约 267-270 ms, 后续整车队求值约 3.928 ms, 切片约 8.391 ms; 包含绑定, 不是完整实时闭环.
 共享工具尚未接入连续验证器或执行器. Runtime, 连续安全与联合仓库适配仍未完成.
 见 [共享轨迹](0014-shared-trajectory.md) 和 [性能证据](0014-trajectory-performance.md).
+
+PR #15 的审查传输层修复已合并, 最新 main 为 `c59ba4d`. PR #14 已合入该基线以解决路线图和进展网页冲突, 保留 C++ 轨迹证据及单次审查请求保护. 见 [审查传输层](0015-review-transport.md).
 
 ## 可替换模块
 
