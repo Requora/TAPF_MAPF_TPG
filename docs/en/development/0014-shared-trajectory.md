@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-11-15-r5 -->
+<!-- doc-sync: shared-trajectory / 2026-11-15-r6 -->
 
 ## Current implementation: C++ core
 
@@ -96,3 +96,13 @@ Validation: `WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-de
 Scope remains [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14), without starting the next stage. New remote CI and full continuous safety remain unverified.
 
 Independent bilingual review passes, with matching facts and links. The private progress page deployed successfully from source `ceb3c143926bb2d5b507506469d1815b3fdb7a93`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_61893894b0908191ae96813ebbeecee0`. Owner-only access is unchanged; hosted login remains unverified. The full PR against `c59ba4d` has 473 code lines, 676 documentation lines, 29 license lines and 5 configuration lines (additions + deletions). User local files are excluded from the commit.
+
+## Review fixes, 2026-11-15
+
+All three PR #14 review findings are accepted. setup.py now declares `_validation.hpp` as a build dependency. The short-interval test uses absolute tolerance `1e-24` and requires the result strictly between `0` and `1e-10`. The benchmark explicitly supports Linux only and returns a command-line error on other hosts before platform-specific reads or measurements. This update does not claim real macOS/Windows or ARM64/FMA validation.
+
+TDD: the new simulated Darwin/Windows regression test first produced two `Linux file read` failures (`/tmp/pr14-review-platform-red.log`) and passes after the fix. An independent source copy at `/tmp/pr14-header-regression` built the extension, then changed only the header timestamp to simulate an edit: old setup.py left `_native.o` unchanged and failed the assertion; the new depends configuration rebuilt the object, and the next unchanged build retained its timestamp. Production C++ algorithms are unchanged.
+
+Validation: `WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-dev/bin/python -m unittest discover -s tests -v` reports 106 tests, 105 passing and one CBS-TA skip (`/tmp/pr14-review-green.log`). Seven review-transport tests and Ruff pass. A small real Linux benchmark completed evaluation and slicing, with evidence at `/tmp/pr14-review-linux-benchmark.json`; this small sample does not update historical performance conclusions. Next work remains review of the current PR, without starting a new stage.
+
+Final validation: isolated tests after a clean sdist -> wheel installation also report 106 tests, 105 passing and one skip (`/tmp/pr14-review-wheel-tests.log`); pip check passes. Bilingual browser, keyboard and mobile checks pass; desktop and mobile screenshots were inspected. Independent documentation review prompted the added page review status and current clean-build evidence. Private publication succeeded: source `3a3af241fd467dea70b5aea233bf34ef7c69ed21`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_477046d1ed6c8191a6e96f8705244889`; owner-only access is unchanged, hosted login remains unverified. The full PR against `c59ba4d` has 489 code lines, 698 documentation lines, 29 license lines and 5 configuration lines. Remote CI after this push remains pending confirmation.

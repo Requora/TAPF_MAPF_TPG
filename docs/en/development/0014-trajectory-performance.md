@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-trajectory-performance.md) | [English](../../en/development/0014-trajectory-performance.md)
 
-<!-- doc-sync: trajectory-performance / 2026-10-23-r3 -->
+<!-- doc-sync: trajectory-performance / 2026-11-15-r4 -->
 
 The current implementation uses C++ bindings; see "Actual API with C++ bindings" at the end for current results. Original Python and standalone C++ comparisons below are historical at commit `0150ea2`; the removed standalone program is available there, and old commands require that revision.
 
@@ -208,3 +208,5 @@ Each case warms three frames and measures fifteen. Preparing the largest snapsho
 | 1000 / 1024 / slice_curve | 249.965061, 246.445533, 245.976272, 248.807053, 247.632875, 247.940950, 245.970331, 246.994314, 247.344498, 248.681145, 249.968287, 249.960522, 248.631060, 249.249343, 250.292612 | 8.795530, 8.184210, 8.327152, 8.316661, 8.400140, 8.399138, 8.615188, 8.292205, 8.390692, 8.264853, 8.324095, 8.243433, 8.668590, 8.673679, 8.704909 |
 
 </details>
+
+The benchmark script supports Linux only because its evidence includes `/proc/cpuinfo` and CPU affinity. Other platforms receive an explicit command-line error before metadata reads or measurements; this does not change the trajectory library installation boundary or verify other platforms.

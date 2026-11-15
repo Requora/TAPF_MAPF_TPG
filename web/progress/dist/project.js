@@ -7,7 +7,7 @@ window.PROJECT = {
     headline: ["让系统的每一步,\n都看得见.", "Every part.\nA clearer picture."],
     intro: ["从订单到安全执行, 看清模块如何连接, 哪些能力已有证据, 哪些仍待实现. 一个持续维护的研究项目窗口.", "From orders to safe execution. See how the pieces connect, what the evidence supports, and what remains to be built."],
     explore: ["探索系统架构 ↓", "Explore the architecture ↓"], snapshot: ["验证快照 / 非完成率", "EVIDENCE SNAPSHOT / NOT A COMPLETION SCORE"],
-    tests: ["本轮测试总数 · 104 通过, 1 跳过", "current test total · 104 pass, 1 skip"],
+    tests: ["本轮测试总数 · 105 通过, 1 跳过", "current test total · 105 pass, 1 skip"],
     implemented: ["已有实现的模块", "Modules with implementations"], native: ["已验证的原生求解器集成", "Verified native solver integrations"],
     snapshotNote: ["仓库原生链已通过 CI. 新增双车目标分配实验已通过本地与远端 CI; 仓库 API 与连续安全尚未接入.", "Warehouse native chain passes CI. New two-robot goal-assignment experiment passes locally and in remote CI; no warehouse API or continuous safety connection."],
     focusLabel: ["正在做", "IN FOCUS"], focus: ["PR #14 已迁入 C++ 核心. 1000 台/1024 节点快照准备约 267-270 ms, 后续求值 3.928 ms, 切片 8.391 ms. 已计绑定开销, 不代表完整实时闭环.", "PR #14 now uses C++. A 1000-robot/1024-knot snapshot costs 267-270 ms to prepare; later evaluation 3.928 ms and slicing 8.391 ms. Bindings included, not a full real-time loop."],

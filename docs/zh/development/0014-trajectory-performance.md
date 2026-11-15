@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-trajectory-performance.md) | [English](../../en/development/0014-trajectory-performance.md)
 
-<!-- doc-sync: trajectory-performance / 2026-10-23-r3 -->
+<!-- doc-sync: trajectory-performance / 2026-11-15-r4 -->
 
 当前实现已迁入 C++ 绑定, 最新结果见末尾 "C++ 绑定后的实际 API". 下方原 Python 和独立 C++ 对照为历史数据, 对应 commit `0150ea2`; 已移除的独立程序可从该提交取回, 旧命令需在该版本运行.
 
@@ -208,3 +208,5 @@ PYTHONPATH=tests python -m trajectory.benchmark --prepared --robots 100 1000 --k
 | 1000 / 1024 / slice_curve | 249.965061, 246.445533, 245.976272, 248.807053, 247.632875, 247.940950, 245.970331, 246.994314, 247.344498, 248.681145, 249.968287, 249.960522, 248.631060, 249.249343, 250.292612 | 8.795530, 8.184210, 8.327152, 8.316661, 8.400140, 8.399138, 8.615188, 8.292205, 8.390692, 8.264853, 8.324095, 8.243433, 8.668590, 8.673679, 8.704909 |
 
 </details>
+
+基准脚本仅支持 Linux, 因其证据包含 `/proc/cpuinfo` 和 CPU affinity. 非 Linux 平台在读取这些信息或测量前返回明确的命令行错误; 这不改变轨迹库的安装边界, 也不表示其他平台已验证.

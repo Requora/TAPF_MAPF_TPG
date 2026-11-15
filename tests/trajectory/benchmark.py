@@ -63,8 +63,8 @@ def measure(fleet, hz, operation, *, frames, repeats, prepared=False):
             'max_position_error_m': max_error}
 
 
-# 中文: main 记录机器和源码身份并逐案例保存原始时间, 让审查者复现性能边界而非依赖单个平均值.
-# English: main records machine/source identity and raw case timings so reviewers can reproduce limits rather than rely on one average.
+# 中文: main 记录机器和源码身份并逐案例保存原始时间, 在测量前拒绝非 Linux 平台, 让审查者复现已支持的性能边界.
+# English: main records machine/source identity and raw case timings and rejects non-Linux hosts before measuring so reviewers can reproduce supported limits.
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--robots', type=int, nargs='+', default=[1, 100, 1000])
@@ -77,6 +77,8 @@ def main():
     args = parser.parse_args()
     if min(*args.robots, *args.hz, args.frames, args.repeats) < 1 or min(args.knots) < 4:
         parser.error('Positive counts and at least four knots are required')
+    if platform.system() != 'Linux':
+        parser.error('This benchmark requires Linux (/proc/cpuinfo and CPU affinity)')
     source = Path(warehouse_api.trajectory.__file__).parent
     cpu = [line.split(':', 1)[1].strip() for line in Path('/proc/cpuinfo').read_text().splitlines()
            if line.startswith('model name')][0]

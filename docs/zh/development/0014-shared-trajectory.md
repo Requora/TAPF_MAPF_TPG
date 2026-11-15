@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0014-shared-trajectory.md) | [English](../../en/development/0014-shared-trajectory.md)
 
-<!-- doc-sync: shared-trajectory / 2026-11-15-r5 -->
+<!-- doc-sync: shared-trajectory / 2026-11-15-r6 -->
 
 ## 当前实现: C++ 核心
 
@@ -96,3 +96,13 @@ PR #15 已合并至 `c59ba4d`. PR #14 合入该 main 基线, 修复双语路线�
 范围仍为 [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14), 不启动下一阶段. 新远端 CI 和完整连续安全尚未验证.
 
 双语文档独立检查通过, 已确认事实和链接一致. 私有进展页发布成功, 源码 `ceb3c143926bb2d5b507506469d1815b3fdb7a93`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_61893894b0908191ae96813ebbeecee0`. 仅所有者访问保持不变, 托管登录未验证. 整个 PR 相对 `c59ba4d`: 473 行代码, 676 行文档, 29 行许可证和 5 行配置 (新增 + 删除). 用户本地文件未纳入提交.
+
+## Review 修正, 2026-11-15
+
+采纳 PR #14 的三条 review. setup.py 现在显式声明 `_validation.hpp` 构建依赖. 短区间测试使用 `1e-24` 绝对容差, 并要求结果严格位于 `0` 和 `1e-10` 之间. 基准脚本明确只支持 Linux, 在非 Linux 平台读取专属文件和开始测量前返回命令行错误. 本次未声称 macOS/Windows 或 ARM64/FMA 已真实验证.
+
+TDD: 新增模拟 Darwin/Windows 的回归测试先得到两次 `Linux file read` 失败 (`/tmp/pr14-review-platform-red.log`), 修改后通过. 独立源码副本 `/tmp/pr14-header-regression` 先构建扩展, 再仅更新时间戳模拟头文件修改: 旧 setup.py 未更新 `_native.o`, 断言失败; 新 depends 配置使对象文件重编, 下一次未修改源码的构建保持对象时间戳不变. 生产 C++ 算法未变.
+
+验证: `WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-dev/bin/python -m unittest discover -s tests -v` 为 106 项, 105 通过, 1 项 CBS-TA 跳过 (`/tmp/pr14-review-green.log`). 七项审查传输测试和 Ruff 通过. Linux 小规模真实基准完成求值及切片, 证据 `/tmp/pr14-review-linux-benchmark.json`; 不用该小样本更新历史性能结论. 下一步仍为等待当前 PR review, 不启动新阶段.
+
+最终验证: 干净 sdist -> wheel 安装后的隔离测试同样为 106 项, 105 通过, 1 跳过 (`/tmp/pr14-review-wheel-tests.log`); pip check 通过. 双语网页, 键盘和手机检查通过, 桌面和手机截图已检查. 文档独立检查后补充了网页 review 状态和本次干净构建证据. 私有发布成功: 源码 `3a3af241fd467dea70b5aea233bf34ef7c69ed21`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_477046d1ed6c8191a6e96f8705244889`; 仅所有者访问不变, 托管登录未验证. 全 PR 相对 `c59ba4d`: 489 行代码, 698 行文档, 29 行许可证和 5 行配置. 本次推送后的远端 CI 待确认.

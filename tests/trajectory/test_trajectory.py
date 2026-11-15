@@ -88,13 +88,15 @@ class TrajectoryTests(unittest.TestCase):
             with self.subTest(start=start, end=end), self.assertRaises(ValueError):
                 slice_curve((cubic(0), cubic(1)), start, end)
 
-    # 中文: 本测试保留很短的正时长段, 防止时间容差把真实运动吸附到端点.
-    # English: This test preserves short positive intervals so time tolerances cannot snap real motion to endpoints.
+    # 中文: 本测试保留很短的正时长段, 用远小于区间尺度的容差和严格内点断言, 防止真实运动被吸附到端点.
+    # English: This test preserves short positive intervals using a small tolerance and strict interior bounds so real motion cannot snap to endpoints.
     def test_short_interval_is_not_snapped(self):
         curve = (Knot(0, Pose2(0, 0, 0), Twist2(1, 0, 0)),
                  Knot(1e-10, Pose2(1e-10, 0, 0), Twist2(1, 0, 0)))
         result = evaluate(curve, 5e-11)
-        self.assertEqual(result.pose.x_m, 5e-11)
+        self.assertAlmostEqual(result.pose.x_m, 5e-11, delta=1e-24)
+        self.assertGreater(result.pose.x_m, 0)
+        self.assertLess(result.pose.x_m, 1e-10)
         self.assertAlmostEqual(result.velocity.vx_mps, 1)
 
     # 中文: 本测试验证原生快照可重复查询且切片保持曲线, 防止绑定改变契约或跳过范围检查.
