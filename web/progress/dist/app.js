@@ -77,6 +77,7 @@ function render() {
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
+    [text(["当前 PR #17 · 停车结构", "Current PR #17 · stop structure"]), `${project.repo}/pull/17`],
     [text(["性能基准 · 对比表与原始样本", "Performance · comparison and raw samples"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-trajectory-performance.md`],
     [text(["已合并 PR #16 · 单一轨迹路径", "Merged PR #16 · single trajectory path"]), `${project.repo}/pull/16`],
     [text(["已合并 PR #14 · C++ 轨迹", "Merged PR #14 · C++ trajectories"]), `${project.repo}/pull/14`],

@@ -25,4 +25,8 @@ PYTHONPATH=src WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-
 
 ## PR and next step
 
-Current PR is pending creation. Await review after submission; do not merge automatically. Continuous geometry, braking and parking-occupancy checks remain planned. User-local .gitignore, helloworld.md and reference bundle remain unchanged.
+Current [PR #17](https://github.com/Requora/TAPF_MAPF_TPG/pull/17) awaits review. Await review after submission; do not merge automatically. Continuous geometry, braking and parking-occupancy checks remain planned. User-local .gitignore, helloworld.md and reference bundle remain unchanged.
+
+Final checks: Ruff, git diff --check and bilingual dashboard checks pass. Desktop/mobile screenshots inspected. Independent gpt-6-luna/low bilingual review passed. Actual API calls: a complete fleet returns `()`, a missing robot returns `BAD_INPUT: stop tail must cover each model robot exactly once`.
+
+Private progress publication through the Sites skill succeeded with owner-only access preserved. Source `8fa1529f4e006e2815275fbe973dd16e7fe0c223`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_7a665c34b5f081919b140f18ecd997ed`. The first source-helper attempt from the main repository failed; using an independent temporary checkout succeeded. The initial browser-check Python lacked Playwright; the existing browser environment passed. Port 8765 was occupied; this check used 8793. Hosted sign-in, clean wheel installation and full continuous safety remain unverified.

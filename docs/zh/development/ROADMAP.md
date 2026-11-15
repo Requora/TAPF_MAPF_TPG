@@ -4,7 +4,7 @@
 
 <!-- doc-sync: roadmap / 2026-11-15-r32 -->
 
-状态: PR #16 已确认合并于 `1956531`. 当前开发停车尾段结构检查, 作为阶段 9 连续验证器的前置条件.
+状态: PR #16 已确认合并于 `1956531`. 当前 [PR #17](https://github.com/Requora/TAPF_MAPF_TPG/pull/17) 开发停车尾段结构检查, 作为阶段 9 连续验证器的前置条件.
 公开函数 `validation.check_stop_tail_structure(model, start, motion)` 检查车队覆盖, 有限有序节点, 共同边界, 精确衔接和零终速.
 113 项测试: 112 通过, 1 项可选 CBS-TA 跳过. 仅 fixture 验证; 不证明碰撞, 制动能力, 资源或无限期停车安全. 未接 Runtime 或方案接受路径.
 见 [停车尾段结构检查](0017-stop-tail-structure.md). 下一步在本 PR review 合并后实现连续几何检查.
