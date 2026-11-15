@@ -136,8 +136,8 @@ class ReviewTransportTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(audit['http_status'], 502)
 
     async def test_handler_blocks_second_attempt_and_logs_metadata(self):
-        """This test checks the PR-Agent entrypoint cannot replay a failed call.
-        本测试验证 PR-Agent 接入入口无法重复失败调用且会记录证据.
+        """This test checks a new handler cannot replay a failed call within the same process.
+        本测试验证同一进程中的新 handler 无法重复失败调用且会记录证据.
         """
         import contextlib
         import io
@@ -145,12 +145,13 @@ class ReviewTransportTests(unittest.IsolatedAsyncioTestCase):
         from unittest.mock import AsyncMock, patch
         handler, output = SimpleNamespace(_review_attempted=False), io.StringIO()
         call = AsyncMock(side_effect=RuntimeError('provider 502'))
-        with patch.dict('os.environ', {'OPENAI_KEY':'test-only'}), patch.object(transport, 'request_review', call):
+        with patch.dict('os.environ', {'OPENAI_KEY':'test-only'}), patch.object(transport, 'request_review', call), \
+                patch.object(transport, '_review_attempted', False, create=True):
             with contextlib.redirect_stdout(output):
                 with self.assertRaisesRegex(RuntimeError, '502'):
                     await transport.chat_completion(handler, 'openai/'+transport.MODEL, 'private prompt', 'diff')
                 with self.assertRaisesRegex(RuntimeError, 'one model attempt'):
-                    await transport.chat_completion(handler, 'openai/'+transport.MODEL, 'private prompt', 'diff')
+                    await transport.chat_completion(SimpleNamespace(_review_attempted=False), 'openai/'+transport.MODEL, 'private prompt', 'diff')
         self.assertEqual(call.await_count, 1)
         self.assertIn('"status": "failed"', output.getvalue())
         self.assertNotIn('test-only', output.getvalue())
