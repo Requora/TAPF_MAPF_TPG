@@ -2,9 +2,9 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-10-23-r27 -->
+<!-- doc-sync: roadmap / 2026-11-15-r28 -->
 
-状态: PR #13 已合并于 `cabdac3`; C++ 轨迹 PR #14 仍待 review. 当前独立修复 OpenRouter 审查传输层: 单次调用, 明确上游错误, 供应商过滤及有界运行时间. 七项本地传输/隔离测试通过. PR #14 和 #15 的真实审查各单次调用完成; 隔离后的发布 job 待验证. 见 [审查传输层](0015-review-transport.md). Runtime, 执行与连续安全仍未完成.
+状态: PR #13 已合并于 `cabdac3`; C++ 轨迹 PR #14 仍待 review. 当前独立修复 OpenRouter 审查传输层: 单次调用, 明确上游错误, 供应商过滤及有界运行时间. 七项本地传输/隔离测试通过. PR #14 和 #15 的真实审查各单次调用完成; 隔离后的发布 job 已通过. 当前修正主流程可读性, 跨实例限制和测试/运行版本一致性; 七项本地测试通过, 新远端验证待完成. 见 [审查传输层](0015-review-transport.md). Runtime, 执行与连续安全仍未完成.
 
 ## 可替换模块
 

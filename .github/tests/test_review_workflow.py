@@ -11,8 +11,8 @@ class WorkflowIsolationTests(unittest.TestCase):
     WorkflowIsolationTests 检查凭据边界, 避免 PR 代码进入持有密钥的执行环境.
     """
     def test_review_uses_pinned_source_on_a_separate_runner(self):
-        """This test requires read-only tests and an immutable review-runtime checkout.
-        本测试要求只读测试权限和不可变审查源码版本, 防止执行未经固定的 PR 源码.
+        """This test requires isolated credentials and matching tested/runtime adapter bytes.
+        本测试要求凭据隔离及受测/运行适配器内容一致, 防止固定版本偏离受测行为.
         """
         workflow = yaml.safe_load((Path(__file__).parents[1] / 'workflows/deepseek-review.yml').read_text())
         tests = workflow['jobs']['transport-tests']
@@ -25,3 +25,9 @@ class WorkflowIsolationTests(unittest.TestCase):
         self.assertRegex(checkout['with']['ref'], r'^[0-9a-f]{40}$')
         self.assertFalse(checkout['with']['persist-credentials'])
         self.assertEqual(len(review['steps']), 2)
+        pinned = next(step for step in tests['steps'] if step.get('name') == 'Checkout review runtime')
+        self.assertEqual(pinned['with']['ref'], checkout['with']['ref'])
+        self.assertEqual(pinned['with']['path'], '.review-runtime')
+        self.assertFalse(pinned['with']['persist-credentials'])
+        self.assertIn({'name':'Require tested and executed adapter equality',
+                       'run':'cmp .github/review_transport.py .review-runtime/.github/review_transport.py'}, tests['steps'])

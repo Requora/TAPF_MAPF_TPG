@@ -27,6 +27,14 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+      - name: Checkout review runtime
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 2428ea7834ee7b06cab632f441614346ade5c852
+          path: .review-runtime
+          persist-credentials: false
+      - name: Require tested and executed adapter equality
+        run: cmp .github/review_transport.py .review-runtime/.github/review_transport.py
       - name: Transport regression tests in pinned runtime
         uses: docker://pragent/pr-agent@sha256:80edef71baa3df28c129d858d4b53784abfc14704c235efb32b6c461d5399a6d
         with:
@@ -45,9 +53,9 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          # 中文: 此版本已完成 PR #14/#15 真实审查; 更新适配器时需另行验证并显式更新此 SHA.
-          # English: This revision completed real PR #14/#15 reviews; adapter updates require separate verification and an explicit SHA update.
-          ref: 9de2738a19eb269f3aaf16f3c302894d7b44e95d
+          # 中文: 无密钥测试 job 先比对适配器内容; 更新适配器时必须同步两个固定 SHA.
+          # English: The secret-free test job checks adapter equality; adapter updates must update both pinned SHAs.
+          ref: 2428ea7834ee7b06cab632f441614346ade5c852
           persist-credentials: false
       - name: PR-Agent review with one observable OpenRouter attempt
         # PR-Agent 0.48.0; retain review logic, replace only model transport.
