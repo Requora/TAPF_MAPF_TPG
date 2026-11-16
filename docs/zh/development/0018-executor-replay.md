@@ -53,7 +53,7 @@ TDD: 先因缺少 TrajectoryExecutor 导入失败. 10 项执行器测试与 1 �
 
 补充验证: 干净目录 `/tmp/executor-wheel-ro4ojnsr` 重建 wheel 并安装后, 隔离测试同为 124 项, 123 通过, 1 跳过, pip check 通过. 真实原生程序复用已有固定版本二进制, SHA256 在 JSON 中, 本次不声称重新构建上游. 双语进展页和重放页均通过桌面, 手机与键盘检查, 已检查截图. 可从进展页进入 [实际单步重放](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/execution-replay.html). 发布时将本次生成的 HTML 作为证据加入独立 Sites checkout; 原始源码模板在 tests/execution/replay.html 审查, 不把生成数据计为新的算法实现.
 
-最终状态: 双语文档由 gpt-6-luna/low 独立检查通过, 0017 的旧 review 状态已标为历史. 私有进展页和实际单步重放通过 Sites skill 发布成功, 源码 `d920a31c638a7c522e8486c51a920b2c7c910133`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_ca13e26603788191b3a4e3e0a8387cdd`. 仅所有者访问保持不变. 托管登录与新远端 CI 尚未验证. 当前 PR 等待 review, 不自行合并或启动后续实现.
+首次发布状态: 双语文档由 gpt-6-luna/low 独立检查通过, 0017 的旧 review 状态已标为历史. 私有进展页和实际单步重放通过 Sites skill 发布成功, 源码 `d920a31c638a7c522e8486c51a920b2c7c910133`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_ca13e26603788191b3a4e3e0a8387cdd`. 仅所有者访问保持不变. 托管登录与新远端 CI 尚未验证. 当前 PR 等待 review, 不自行合并或启动后续实现.
 
 审查规则更新: 用户要求 PR 标题与说明中英文双语, 中文在前且两版结构, 事实与验证状态一致, 开头说明做什么, 为什么做以及与尽快展示端到端运行的具体联系, 然后再列实现和验证. 已写入 AGENTS.md, 当前 PR #18 同步改写.
 
@@ -62,3 +62,5 @@ TDD: 先因缺少 TrajectoryExecutor 导入失败. 10 项执行器测试与 1 �
 展示修正: 用户反馈看不懂后, 重放改为可播放的取货 -> 工作站服务 -> 归还停车叙事, 标出实际三个指令位置与已发出状态, 中英文对应. 原始数据折叠展示, 不将动画或指令状态误标为货架动作已完成.
 
 用户审查修正: build_frame 现在仅整体调用 prepare_frame, 所有输入规则, 曲线覆盖和状态衔接错误都在独立校验文件处理. 主函数仅转发 Failure, 切片和组装输出. 全库检查覆盖 36 个生产 Python 文件: 输入和业务检查位于校验模块; planning 的预算到期和 native_process 的进程超时, 退出码与缺失输出分类仍是现有运行结果处理, 本次未迁移, 不宣称所有错误构造均已移出主函数. 此区别在 review 回复中披露. AGENTS.md 新增阶段边界整体校验要求.
+
+本轮发布: 任务叙事和播放界面已通过桌面, 手机, 键盘, 三次指令及播放/暂停检查. 私有 Sites 发布成功, 源码 `f2457695a52580d51fdc4c0515fcabcd19a1fa9a`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_cf4628691ae481919436b452d2ad511f`. 所有三个 review 线程已双语回复, 两条自动审查已解决, 用户线程保留供复核.
