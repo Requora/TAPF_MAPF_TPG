@@ -5,7 +5,7 @@ from math import isfinite, isclose
 
 from warehouse_api.contracts import ExecutionInput, Failure, StepRef, Twist2
 from warehouse_api.validation import check_motion_curve
-from warehouse_api.trajectory import PreparedTrajectory, evaluate
+from warehouse_api.trajectory import evaluate
 
 
 # 中文: same_tick 仅为动作时钟比较容许至多 1 ns 且小于百万分之一步的舍入误差, 防止浮点累加漏发; 本函数不放宽位姿衔接.
@@ -30,6 +30,12 @@ def check_input(data: ExecutionInput, dt_s: float, started: set[tuple[str, StepR
     seen = set()
     running = {action.step: action for action in data.state.running_actions}
     for segment in data.active_segments:
+        failure = check_motion_curve(segment)
+        if failure is not None:
+            return Failure('BAD_FRAME', failure.message, failure.related_ids)
+        if now < segment.knots[0].time_s or (now + dt_s > segment.knots[-1].time_s
+                                             and segment.knots[-1].velocity != Twist2(0, 0, 0)):
+            return Failure('BAD_FRAME', 'Selected motion does not cover the control interval', (segment.robot_id,))
         starts = 0
         for scheduled in segment.actions:
             if scheduled.step not in table or scheduled.step in seen or not isfinite(scheduled.start_s):
@@ -57,28 +63,11 @@ def check_input(data: ExecutionInput, dt_s: float, started: set[tuple[str, StepR
     return None
 
 
-# 中文: prepare_frame 在执行边界整体检查输入, 准备曲线并检查覆盖与衔接, 让主函数只组装控制帧; 本函数不修改调用方缓存或输出记录.
-# English: prepare_frame validates the full execution boundary, prepares curves and checks coverage/joins so the main method only assembles frames; it does not mutate caller caches or output history.
-def prepare_frame(data: ExecutionInput, dt_s: float, cached: dict,
-                  started: set[tuple[str, StepRef]]) -> dict | Failure:
-    failure = check_input(data, dt_s, started)
-    if failure is not None:
-        return failure
-    now, end = data.state.time_s, data.state.time_s + dt_s
-    states = {robot.robot_id: robot for robot in data.state.robots}
-    curves = {}
-    for segment in data.active_segments:
-        curve = cached.get(segment.robot_id)
-        if curve is None or curve[0] != segment.knots:
-            failure = check_motion_curve(segment)
-            if failure is not None:
-                return Failure('BAD_FRAME', failure.message, failure.related_ids)
-            curve = (segment.knots, PreparedTrajectory(segment.knots))
-        if now < segment.knots[0].time_s or (end > segment.knots[-1].time_s
-                                             and segment.knots[-1].velocity != Twist2(0, 0, 0)):
-            return Failure('BAD_FRAME', 'Selected motion does not cover the control interval', (segment.robot_id,))
-        current, state = evaluate(curve[1], now), states[segment.robot_id]
+# 中文: check_joins 只核对已准备曲线与当前状态的衔接, 防止曲线准备函数混入具体位姿规则.
+# English: check_joins only compares prepared curves with current states so curve preparation contains no pose rules.
+def check_joins(data: ExecutionInput, curves: dict) -> Failure | None:
+    for state in data.state.robots:
+        current = evaluate(curves[state.robot_id][1], data.state.time_s)
         if current.pose != state.pose or current.velocity != state.velocity:
-            return Failure('BAD_FRAME', 'Curve start must exactly match current state', (segment.robot_id,))
-        curves[segment.robot_id] = curve
-    return curves
+            return Failure('BAD_FRAME', 'Curve start must exactly match current state', (state.robot_id,))
+    return None

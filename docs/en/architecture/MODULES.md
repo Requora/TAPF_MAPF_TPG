@@ -21,6 +21,7 @@ src/warehouse_api/
   execution/
     __init__.py
     _executor.py
+    _preparation.py
     _validation.py
   trajectory/
     __init__.py
@@ -192,3 +193,5 @@ The call chain is fixed: `tuple[Knot, ...] -> PreparedTrajectory -> evaluate / s
 The stop-structure check is a public helper, not a Validator Protocol implementation or an acceptance gate. Dependency directions are unchanged.
 
 Execution exports `TrajectoryExecutor.build_frame(ExecutionInput, dt_s)`. New dependencies are execution -> contracts, execution -> trajectory and execution -> validation, using public APIs only. The executor commits no state; callers dispatch one returned frame per tick. Action-clock comparison allows at most 1 ns and one millionth of a tick; pose and velocity joins remain exact.
+
+Executor internals: _validation.py only validates; _preparation.py prepares snapshots and invokes stage checks; _executor.py assembles frames. Validation does not construct PreparedTrajectory.

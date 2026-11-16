@@ -99,6 +99,10 @@ class ModuleBoundaryTests(unittest.TestCase):
             self.assertIn(parts[0], DEPENDENCIES)
             module = ".".join(["warehouse_api", *parts])
             package = module if is_package else module.rpartition(".")[0]
+            # 中文: 本守卫禁止执行校验模块准备轨迹, 防止规则检查再次混入曲线构造.
+            # English: This guard forbids trajectory preparation in execution validation so rule checks cannot absorb curve construction again.
+            if parts[0] == "execution" and path.stem == "_validation":
+                self.assertNotIn("PreparedTrajectory", path.read_text())
             errors.extend(violations(path.read_text(), module, package))
         self.assertEqual(errors, [])
 

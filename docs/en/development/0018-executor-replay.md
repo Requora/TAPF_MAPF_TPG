@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0018-executor-replay.md) | [English](../../en/development/0018-executor-replay.md)
 
-<!-- doc-sync: executor-replay / 2026-11-16-r2 -->
+<!-- doc-sync: executor-replay / 2026-11-16-r3 -->
 
 ## Scope and sources
 
@@ -64,3 +64,5 @@ Presentation correction: following user feedback, replay now tells a playable pi
 User-review correction: build_frame now calls prepare_frame once; all input rules, curve coverage and state-join failures are handled in the separate validation file. The main method forwards Failure, slices and assembles output. The repository audit covers 36 production Python files: input/business checks reside in validation modules. Existing planning budget expiry and native_process timeout, exit-code and missing-output classification remain runtime-result handling and were not migrated here; this does not claim every error constructor has left main functions. The review reply discloses that distinction. AGENTS.md now requires stage-boundary validation through one aggregate call.
 
 Revision publication: task-story playback passes desktop, mobile, keyboard, three-command and play/pause checks. Private Sites publication succeeded from source `f2457695a52580d51fdc4c0515fcabcd19a1fa9a`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_cf4628691ae481919436b452d2ad511f`. All three review threads have bilingual replies; both automated findings are resolved and the user thread remains open for review.
+
+Validation-responsibility correction: moving both rules and snapshot construction into prepare_frame still mixed responsibilities; the user identified this and it is corrected. Pure _validation.py checks input and joins without creating trajectory snapshots. New _preparation.py only reuses or creates snapshots, calling aggregate checks before and after preparation and forwarding failures. _executor.py slices and assembles output. Dependency directions are unchanged. The architecture test first failed because validation contained PreparedTrajectory and passes after separation. Replay removes the redundant frame counter and raw-text panel; the complete JSON remains separately downloadable.

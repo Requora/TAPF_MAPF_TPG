@@ -12,11 +12,11 @@ body{overflow-wrap:anywhere;font:16px/1.6 system-ui;background:#f7f4ed;color:#30
 <h2 id="story" aria-live="polite"></h2><p id="position"></p>
 <svg viewBox="0 0 800 140" role="img" aria-label="机器人路线与三个停靠点 / Robot route and three stops"><path d="M70 70H710" stroke="#c9bba6" stroke-width="4"/><g id="places"></g><circle id="robot" cy="70" r="17" fill="#a86138"/><text x="70" y="120">起点 / Start</text></svg>
 <div class="stops" id="stops"></div><p id="actions"></p>
-<input id="tick" type="range" min="0" value="0" aria-label="时间 / Time"><b id="counter"></b>
+<input id="tick" type="range" min="0" value="0" aria-label="时间 / Time">
 <p><b>发出指令 ≠ 动作已经完成. 本演示没有模拟货架搬动.<br>A command is not a completed action. Shelf handling is not simulated.</b></p>
 </section>
 <section><h2>这次接通了什么? / What is connected?</h2><p>订单 -> 分配 -> 编译 -> 真实路径与运动规划 -> 每一步的位置和动作指令.<br>Order -> allocation -> compilation -> real routing and motion planning -> per-step positions and commands.</p><p>位置来自真实 MAWPF/WinkTPG 轨迹经执行器切片后的记录. 端点观测是测试替身. Runtime 接受、动作完成、库存记账、真实后端和安全证明仍未接通.<br>Positions come from executor slices of real MAWPF/WinkTPG trajectories. Endpoint observations are test doubles. Runtime acceptance, action completion, inventory accounting, a real backend and safety proof are still missing.</p>
-<details><summary>检查原始数据 / Inspect recorded data</summary><p id="starts"></p><pre id="trace"></pre></details></section>
+<a href="https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/execution-replay.json">下载原始记录 / Download recorded JSON</a></section>
 <script id="evidence" type="application/json">__EVIDENCE__</script>
 <script>
 const evidence = JSON.parse(document.querySelector('#evidence').textContent), frames = evidence.frames;
@@ -49,8 +49,6 @@ function render() {
   // English: The map callback shows actual command starts, marking issued rather than unverified completion.
   document.querySelector('#stops').innerHTML = commands.map((c, index) => `<div class="stop ${time >= c.time ? 'sent' : ''}"><b>${index + 1}. ${names[c.action.kind].join('<br>')}</b><p>${c.position.toFixed(0)} m</p><small>${time >= c.time ? `指令已发出 / Issued · ${c.time.toFixed(1)} s` : '尚未到达 / Ahead'}</small></div>`).join('');
   document.querySelector('#actions').textContent = frame.start_actions.length ? '本步发出启动指令 / Start command emitted this step' : '本步无新指令 / No new command this step';
-  document.querySelector('#counter').textContent = `${index + 1}/${frames.length} · ${frame.from_s.toFixed(2)} -> ${frame.to_s.toFixed(2)} s`;
-  document.querySelector('#trace').textContent = JSON.stringify({frame,sources:evidence.native.sources,orders:evidence.native.orders,trace:evidence.native.trace}, null, 2);
   document.querySelector('#prev').disabled = index === 0; document.querySelector('#next').disabled = index === frames.length - 1;
 }
 // 中文: 播放回调按记录顺序推进, 到终点停止, 再次播放从起点重放, 不改变求解结果.
@@ -65,7 +63,6 @@ document.querySelector('#play').onclick = () => {
 document.querySelector('#prev').onclick = () => { stopPlayback(); tick.value = Number(tick.value) - 1; render(); };
 document.querySelector('#next').onclick = () => { stopPlayback(); tick.value = Number(tick.value) + 1; render(); };
 tick.oninput = () => { stopPlayback(); render(); };
-document.querySelector('#starts').textContent = JSON.stringify(evidence.action_starts);
 render();
 </script>
 </html>

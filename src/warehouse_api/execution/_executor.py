@@ -3,7 +3,8 @@ English: This module converts Runtime-selected curves to frames using shared C++
 """
 from warehouse_api.contracts import ActionStart, ExecutionInput, Failure, IdealControlFrame, RobotMotion
 from warehouse_api.trajectory import slice_curve
-from ._validation import prepare_frame, same_tick
+from ._preparation import prepare_frame
+from ._validation import same_tick
 
 
 # 中文: TrajectoryExecutor 实现 CentralExecutor 协议, 为所有机器人切出下一步并记录已输出的启动指令, 以识别漏步; 调用方每个时间步只发送一个返回帧, 重试构帧不会提交状态.

@@ -20,6 +20,7 @@ src/warehouse_api/
   execution/
     __init__.py
     _executor.py
+    _preparation.py
     _validation.py
   trajectory/
     __init__.py
@@ -185,3 +186,5 @@ trajectory 的 Python 层只转换统一契约, C++ 核心负责求值/切片, `
 停车结构检查是独立公开辅助函数, 不实现 Validator Protocol, 不接入候选接受路径. 模块依赖方向不变.
 
 执行器公开 `TrajectoryExecutor.build_frame(ExecutionInput, dt_s)`. 新增 execution -> contracts, execution -> trajectory 和 execution -> validation 三条依赖; 仅从公开 API 导入. 执行器不提交状态, 调用方每步只发送一次返回帧. 动作时钟比较容差至多 1 ns 且不超过百万分之一步; 位姿和速度衔接仍严格相等.
+
+执行器内部职责: _validation.py 只校验, _preparation.py 只准备快照并调用阶段校验, _executor.py 只组装控制帧. 校验文件不创建 PreparedTrajectory.

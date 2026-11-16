@@ -89,7 +89,7 @@ class ExecutorTests(unittest.TestCase):
     # 中文: test_prepares_once_per_active_curve 验证连续帧复用原生快照, 防止高频重建相同轨迹.
     # English: test_prepares_once_per_active_curve checks snapshot reuse across frames to avoid repeated high-frequency preparation.
     def test_prepares_once_per_active_curve(self):
-        with patch('warehouse_api.execution._validation.PreparedTrajectory', wraps=PreparedTrajectory) as prepare:
+        with patch('warehouse_api.execution._preparation.PreparedTrajectory', wraps=PreparedTrajectory) as prepare:
             self.executor.build_frame(self.data, .5)
             knot = evaluate(PreparedTrajectory(self.knots), .5)
             state = replace(self.state, time_s=.5, robots=(RobotState('A', knot.pose, knot.velocity),))
