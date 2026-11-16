@@ -2,14 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-11-15-r31 -->
+<!-- doc-sync: roadmap / 2026-11-15-r32 -->
 
-Status: [PR #14](https://github.com/Requora/TAPF_MAPF_TPG/pull/14) is merged at `a6cdd31`. Current [PR #16](https://github.com/Requora/TAPF_MAPF_TPG/pull/16) removes the duplicate trajectory preparation path and awaits review.
-Every consumer creates one PreparedTrajectory snapshot, then calls evaluate / slice_curve. Tuple auto-conversion and the benchmark --prepared flag are removed; C++ is the only computation core.
-107 tests: 106 pass, one optional CBS-TA skip. Real MAWPF/WinkTPG replay retains 36 slice comparisons with maximum x/vx error 1.67e-15. Current clean-install validation is recorded in the cleanup log.
-The shared utility is not connected to the continuous validator or executor. Runtime, continuous safety and joint warehouse integration remain incomplete.
-See [single trajectory path](0016-single-trajectory-path.md). [PR #14 performance evidence](0014-trajectory-performance.md) is historical; no new performance claim is made here.
-PR #15 review-transport fixes remain in the merged baseline. See [review transport](0015-review-transport.md).
+Status: PR #16 is confirmed merged at `1956531`. Current [PR #17](https://github.com/Requora/TAPF_MAPF_TPG/pull/17) checks stop-tail structure as a prerequisite for stage 9 continuous validation.
+Public function `validation.check_stop_tail_structure(model, start, motion)` checks fleet coverage, finite ordered knots, common horizon, exact joins and zero terminal velocity.
+113 tests: 112 pass, one optional CBS-TA skip. Fixture evidence only; no collision, braking, resource or indefinite parking safety claim. No Runtime or acceptance integration.
+See [stop-tail structure](0017-stop-tail-structure.md). Continuous geometry follows after review and merge of this PR.
 
 ## Replaceable modules
 

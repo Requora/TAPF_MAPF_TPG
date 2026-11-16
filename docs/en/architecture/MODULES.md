@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-11-15-r12 -->
+<!-- doc-sync: module-boundaries / 2026-11-15-r13 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
-The private website tracks PR #14 merged baseline `a6cdd31` and single trajectory preparation-path cleanup, retaining native evidence and remaining limits.
+The private website tracks merged PR #16 baseline `1956531` and stop-tail structure checks. Geometry, braking and indefinite parking safety remain unverified.
 
 ## Implemented directories
 
@@ -50,6 +50,7 @@ src/warehouse_api/
   validation/
     __init__.py
     _single_lane.py
+    _stop_tail.py
   native_process/
     __init__.py
     _run.py
@@ -110,7 +111,7 @@ flowchart LR
 | allocation | SingleShelfAllocator | One feasible shelf/robot; picks derived from demand |
 | mapf | NativeMawpfPlanner | Pinned LaCAM output to adjacent moves and action references |
 | tpg | NativeWinkTpgPlanner | Pinned speedSolver primitives to Hermite knots and action holds |
-| validation | check_single_lane, check_jobs, check_assignment | Supported-subset checks; continuous Validator remains unimplemented |
+| validation | check_single_lane, check_jobs, check_assignment, check_stop_tail_structure | Supported-subset checks; continuous Validator remains unimplemented |
 | native_process | run_native | Process budgets and retained raw evidence |
 | trajectory | PreparedTrajectory, evaluate, slice_curve | Evaluate and exactly slice existing Hermite curves; depends only on contracts, consumer integration pending |
 | serialization | dumps, loads, from_data, to_data | JSON structure conversion |
@@ -178,3 +179,5 @@ See [composition tests and replay](../development/0012-module-composition.md).
 The trajectory Python layer only converts shared contracts; C++ evaluates/slices, while `_validation.hpp` centralizes curve/query checks. PreparedTrajectory is a reusable read-only computation snapshot, not a DTO replacing contracts; pybind11 objects are not public. The only production module dependency remains trajectory -> contracts. setup.py builds the internal extension, with pybind11 3.0.1 as a build-only dependency. Source usage requires `pip install -e .`; wheels are platform/CPython ABI specific. See [current log](../development/0014-shared-trajectory.md) for installation and performance evidence.
 
 The call chain is fixed: `tuple[Knot, ...] -> PreparedTrajectory -> evaluate / slice_curve -> Knot / tuple[Knot, ...]`. Tuples are used only for construction input and slice output, not direct query calls. The benchmark measures this single preparation/query path without a mode flag. See [cleanup log](../development/0016-single-trajectory-path.md).
+
+The stop-structure check is a public helper, not a Validator Protocol implementation or an acceptance gate. Dependency directions are unchanged.

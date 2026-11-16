@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-11-15-r12 -->
+<!-- doc-sync: module-boundaries / 2026-11-15-r13 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 
-私有网页记录 PR #14 已合并基线 `a6cdd31` 和单一轨迹准备路径清理, 保留原生证据和未完成边界.
+私有网页记录 PR #16 已合并基线 `1956531` 和停车尾段结构检查. 几何, 制动和无限期停车安全仍未验证.
 
 ## 已实现目录
 
@@ -49,6 +49,7 @@ src/warehouse_api/
   validation/
     __init__.py
     _single_lane.py
+    _stop_tail.py
   native_process/
     __init__.py
     _run.py
@@ -109,7 +110,7 @@ flowchart LR
 | allocation | SingleShelfAllocator | 唯一可行货架/机器人; 从需求生成 Pick |
 | mapf | NativeMawpfPlanner | 固定版本 LaCAM 输出转为相邻移动和动作引用 |
 | tpg | NativeWinkTpgPlanner | 固定版本 speedSolver 原语转为 Hermite 节点和动作静止段 |
-| validation | check_single_lane, check_jobs, check_assignment | 支持范围检查; 连续 Validator 未实现 |
+| validation | check_single_lane, check_jobs, check_assignment, check_stop_tail_structure | 支持范围检查; 连续 Validator 未实现 |
 | native_process | run_native | 进程预算与原始证据保留 |
 | trajectory | PreparedTrajectory, evaluate, slice_curve | 读取与精确切片已有 Hermite 曲线; 仅依赖 contracts, 消费者接入待实现 |
 | serialization | dumps, loads, from_data, to_data | JSON 结构转换 |
@@ -171,3 +172,5 @@ flowchart LR
 trajectory 的 Python 层只转换统一契约, C++ 核心负责求值/切片, `_validation.hpp` 集中检查曲线和查询. PreparedTrajectory 是可复用的只读计算快照, 不是替代 contracts 的 DTO; 不公开 pybind11 对象. 只有 trajectory -> contracts 的生产模块依赖. setup.py 构建内部扩展, pybind11 3.0.1 仅作构建依赖. 源码使用前需 `pip install -e .`, wheel 为平台/CPython ABI 专用. 安装与性能证据见 [当前日志](../development/0014-shared-trajectory.md).
 
 调用链固定为 `tuple[Knot, ...] -> PreparedTrajectory -> evaluate / slice_curve -> Knot / tuple[Knot, ...]`. tuple 仅用于输入构造和切片输出, 不再直接传入查询函数. 基准只测量这一条准备和查询路径, 不提供模式开关. 见 [清理日志](../development/0016-single-trajectory-path.md).
+
+停车结构检查是独立公开辅助函数, 不实现 Validator Protocol, 不接入候选接受路径. 模块依赖方向不变.
