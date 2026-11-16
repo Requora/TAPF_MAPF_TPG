@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-11-15-r13 -->
+<!-- doc-sync: module-boundaries / 2026-11-16-r14 -->
 
 [交互架构与进展网页](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site).
 
-私有网页记录 PR #16 已合并基线 `1956531` 和停车尾段结构检查. 几何, 制动和无限期停车安全仍未验证.
+私有网页记录 PR #17 已合并基线 `08da31c` 和订单到控制帧的真实重放. 端点观测是替身; 无 Runtime 接受, 动作完成或真实后端.
 
 ## 已实现目录
 
@@ -17,6 +17,11 @@
 ```text
 src/warehouse_api/
   contracts.py
+  execution/
+    __init__.py
+    _executor.py
+    _preparation.py
+    _validation.py
   trajectory/
     __init__.py
     _curve.py
@@ -62,6 +67,7 @@ src/warehouse_api/
     _current_task.py
     _validation.py
 tests/
+  execution/
   trajectory/
   composition/
   native/
@@ -83,6 +89,9 @@ tests/
 flowchart LR
     Compiler[task_compiler] --> Contracts[contracts.py]
     Planning[planning] --> Contracts
+    Execution[execution: build_frame] --> Contracts
+    Execution --> Trajectory
+    Execution --> Validation
     Trajectory[trajectory: evaluate / slice_curve] --> Contracts
     Compiler --> Codec[serialization]
     Compiler --> Durations[action_timing]
@@ -110,9 +119,10 @@ flowchart LR
 | allocation | SingleShelfAllocator | 唯一可行货架/机器人; 从需求生成 Pick |
 | mapf | NativeMawpfPlanner | 固定版本 LaCAM 输出转为相邻移动和动作引用 |
 | tpg | NativeWinkTpgPlanner | 固定版本 speedSolver 原语转为 Hermite 节点和动作静止段 |
-| validation | check_single_lane, check_jobs, check_assignment, check_stop_tail_structure | 支持范围检查; 连续 Validator 未实现 |
+| validation | check_single_lane, check_jobs, check_assignment, check_stop_tail_structure, check_motion_curve | 支持范围检查; 连续 Validator 未实现 |
 | native_process | run_native | 进程预算与原始证据保留 |
-| trajectory | PreparedTrajectory, evaluate, slice_curve | 读取与精确切片已有 Hermite 曲线; 仅依赖 contracts, 消费者接入待实现 |
+| execution | TrajectoryExecutor | 精确切片和动作启动; 依赖 contracts, trajectory 与 validation |
+| trajectory | PreparedTrajectory, evaluate, slice_curve | 读取与精确切片已有 Hermite 曲线; 仅依赖 contracts, 已接执行器 |
 | serialization | dumps, loads, from_data, to_data | JSON 结构转换 |
 
 跨模块只从包入口或 contracts 导入. 例如编译器调用
@@ -134,15 +144,15 @@ flowchart LR
 | `durations` | `action_timing` |
 | `orders` | `order_source` |
 
-## 后续模块边界
+## 后续集成边界
 
-以下仅为接口已定义和目录规划, 尚未创建空实现包.
+以下列出执行链路的集成边界. execution 已实现, validation 已实现范围和结构检查, runtime 仍仅接口.
 
-| 计划目录 | contracts 中的接口 | 状态 |
+| 模块目录 | contracts 中的接口 | 状态 |
 | --- | --- | --- |
 | validation/ | Validator | 输入范围检查已实现; 连续验证仅接口 |
 | runtime/ | Runtime | 事务与原子提交接口已定义 |
-| execution/ | CentralExecutor | 执行接口已定义 |
+| execution/ | CentralExecutor | 精确共享切片和当前步动作启动; 已验证真实原生输出重放 |
 
 模块使用公开 Request/Result 通信, 原生对象留在适配器内部.
 新模块独立建目录并更新依赖检查. 当前不实现模拟器, 后端, IPC 或场景资产.
@@ -174,3 +184,7 @@ trajectory 的 Python 层只转换统一契约, C++ 核心负责求值/切片, `
 调用链固定为 `tuple[Knot, ...] -> PreparedTrajectory -> evaluate / slice_curve -> Knot / tuple[Knot, ...]`. tuple 仅用于输入构造和切片输出, 不再直接传入查询函数. 基准只测量这一条准备和查询路径, 不提供模式开关. 见 [清理日志](../development/0016-single-trajectory-path.md).
 
 停车结构检查是独立公开辅助函数, 不实现 Validator Protocol, 不接入候选接受路径. 模块依赖方向不变.
+
+执行器公开 `TrajectoryExecutor.build_frame(ExecutionInput, dt_s)`. 新增 execution -> contracts, execution -> trajectory 和 execution -> validation 三条依赖; 仅从公开 API 导入. 执行器不提交状态, 调用方每步只发送一次返回帧. 动作时钟比较容差至多 1 ns 且不超过百万分之一步; 位姿和速度衔接仍严格相等.
+
+执行器内部职责: _validation.py 只校验, _preparation.py 只准备快照并调用阶段校验, _executor.py 只组装控制帧. 校验文件不创建 PreparedTrajectory.

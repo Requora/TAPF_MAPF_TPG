@@ -1,7 +1,7 @@
 const project = window.PROJECT;
 let lang = new URLSearchParams(location.search).get("lang") === "en" ? 1 : 0;
 let view = "flow";
-let selected = "trajectory";
+let selected = "execution";
 // 中文: text 从一对中英文文字中取出当前语言的内容, 让各个界面组件使用同一个语言设置.
 // English: text selects the current language from a Chinese/English pair so all components share one language setting.
 const text = pair => pair[lang];
@@ -68,16 +68,18 @@ function render() {
   document.querySelectorAll("[data-view]").forEach(button => button.setAttribute("aria-pressed", button.dataset.view === view));
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
-    [["NOW / 正在做", "NOW"], ["停车尾段结构", "Stop-tail structure"], ["检查车队覆盖, 有限有序节点, 共同边界, 精确衔接和零终速. 返回空元组不授权提交.", "Check fleet membership, finite ordered knots, common horizon, exact joins and zero terminal speeds. An empty result does not authorize submission."]],
-    [["NEXT / 待审查", "NEXT / REVIEW"], ["检查失败案例与边界", "Review failures and limits"], ["113 项测试: 112 通过, 1 跳过. 两车停在同一点仍可通过结构检查; 碰撞, 制动和无限期停车必须另行验证.", "113 tests: 112 pass, 1 skip. Both robots can stop at the same point and pass structure checks; collisions, braking and indefinite parking need separate validation."]],
-    [["NOT YET / 尚未完成", "NOT YET"], ["联合仓库与执行闭环", "Joint warehouse & execution loop"], ["目标实验未接 SKU, Lift/Serve/Drop, 共享编译或 TPG. 多车仓库, Runtime, 连续几何, 无限期停车和中央执行器仍未完成.", "The goal experiment has no SKU, Lift/Serve/Drop, shared compiler or TPG connection. Multi-robot warehouse planning, Runtime, continuous geometry, indefinite parking and execution remain incomplete."]],
+    [["NOW / 正在做", "NOW"], ["订单到控制帧重放", "Orders to control frames"], ["真实规划输出产生 91 个控制帧. Lift, Serve, Drop 各启动一次. 保留曲线内部切换点, 停止后继续保持.", "Real planning produces 91 control frames. Lift, Serve and Drop each start once. Internal curve switches and stopped holds are retained."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["检查单步轨迹与动作", "Inspect frames and starts"], ["124 项测试: 123 通过, 1 跳过. 端点观测为测试替身, 候选仅在测试中直连. 当前 PR 合并后再确定最小闭环改动.", "124 tests: 123 pass, 1 skip. Endpoint observations and candidate wiring are test-only. Select the next minimal loop increment after this PR merges."]],
+    [["NOT YET / 尚未完成", "NOT YET"], ["正式执行闭环", "Committed execution loop"], ["无 Runtime 接受, 动作完成, 货架效果, 账本更新或真实后端. 连续安全与无限期停车未验证.", "No Runtime acceptance, action completion, shelf effects, ledger update or real backend. Continuous and indefinite parking safety remain unverified."]],
   ];
   // 中文: map 的回调把每个工作状态条目转换为卡片, 分开显示当前工作和未实现项, 防止读者把计划当成已完成成果.
   // English: The map callback converts each work-status entry into a card, separating current work from missing scope so plans are not mistaken for results.
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
-    [text(["当前 PR #17 · 停车结构", "Current PR #17 · stop structure"]), `${project.repo}/pull/17`],
+    [text(["当前 PR #18 · 执行器重放", "Current PR #18 · executor replay"]), `${project.repo}/pull/18`],
+    [text(["实际单步重放 · 订单到控制帧", "Actual stepwise replay · orders to frames"]), "https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/execution-replay.html"],
+    [text(["已合并 PR #17 · 停车结构", "Merged PR #17 · stop structure"]), `${project.repo}/pull/17`],
     [text(["性能基准 · 对比表与原始样本", "Performance · comparison and raw samples"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-trajectory-performance.md`],
     [text(["已合并 PR #16 · 单一轨迹路径", "Merged PR #16 · single trajectory path"]), `${project.repo}/pull/16`],
     [text(["已合并 PR #14 · C++ 轨迹", "Merged PR #14 · C++ trajectories"]), `${project.repo}/pull/14`],
@@ -89,7 +91,7 @@ function render() {
     [text(["已合并 PR #11 · 路径约束", "Merged PR #11 · path contract"]), `${project.repo}/pull/11`],
     [text(["已合并 PR #10 · 实验证据", "Merged PR #10 · experiment evidence"]), `${project.repo}/pull/10`],
     [text(["已合并验证基线", "Merged verification baseline"]), `${project.repo}/commit/${project.evidenceCommit}`],
-    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0017-stop-tail-structure.md`],
+    [text(["开发日志 · 实际重放与边界", "Development log · replay & limits"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0018-executor-replay.md`],
     [text(["路线图 · 阶段 1—11", "Roadmap · stages 1–11"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/ROADMAP.md`],
   ];
   // 中文: map 的回调把每条验证证据转换成链接, 让用户能从页面追查代码, 自动构建与测试记录(CI), 或开发日志.

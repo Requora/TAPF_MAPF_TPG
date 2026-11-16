@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0017-stop-tail-structure.md) | [English](../../en/development/0017-stop-tail-structure.md)
 
-<!-- doc-sync: stop-tail-structure / 2026-11-15-r1 -->
+<!-- doc-sync: stop-tail-structure / 2026-11-16-r2 -->
 
 ## 范围与决策
 
@@ -25,8 +25,12 @@ PYTHONPATH=src WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-
 
 ## PR 与下一步
 
-当前 [PR #17](https://github.com/Requora/TAPF_MAPF_TPG/pull/17) 等待 review. 提交后等待 review, 不自行合并. 后续连续几何, 制动与停车占用检查仍为计划. 用户本地 .gitignore, helloworld.md 和参考包保持原状.
+历史状态: [PR #17](https://github.com/Requora/TAPF_MAPF_TPG/pull/17) 提交时等待 review, 当时不自行合并. 最新合并状态见下文. 后续连续几何, 制动与停车占用检查仍为计划. 用户本地 .gitignore, helloworld.md 和参考包保持原状.
 
 最终检查: Ruff, git diff --check 和双语网页检查通过. 已检查桌面和手机截图. gpt-6-luna/low 独立双语检查通过. 新接口实际调用: 完整车队返回 `()`, 漏车返回 `BAD_INPUT: stop tail must cover each model robot exactly once`.
 
 私有进展页通过 Sites skill 同步发布成功, 仅所有者访问保持不变. 源码 `8fa1529f4e006e2815275fbe973dd16e7fe0c223`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_7a665c34b5f081919b140f18ecd997ed`. 首次发布辅助程序在主仓库目录失败, 改用独立临时 checkout 后成功; 首次网页检查的 Python 环境缺少 Playwright, 改用已有浏览器环境后通过. 端口 8765 被占用, 本次检查使用 8793. 未验证托管登录, 干净 wheel 安装或完整连续安全.
+
+目标优先级更新: 用户更重视尽快展示端到端运行. 后续开发选择应优先接通最小可运行链路并提供真实轨迹与重放. 连续几何不再作为默认紧接的开发项; 受支持子集, 替身和未验证安全边界必须明确, 现有安全门禁与 PR review 规则保持有效. 本次仅记录偏好, 不启动下一项实现.
+
+合并状态更新: PR #17 已在远端确认合并于 `08da31c442a79fa1d377c7b69cebeb72f992e67a`. 后续执行器工作见 [0018](0018-executor-replay.md).

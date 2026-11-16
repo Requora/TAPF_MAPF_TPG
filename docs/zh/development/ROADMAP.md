@@ -2,12 +2,12 @@
 
 [中文](../../zh/development/ROADMAP.md) | [English](../../en/development/ROADMAP.md)
 
-<!-- doc-sync: roadmap / 2026-11-15-r32 -->
+<!-- doc-sync: roadmap / 2026-11-16-r34 -->
 
-状态: PR #16 已确认合并于 `1956531`. 当前 [PR #17](https://github.com/Requora/TAPF_MAPF_TPG/pull/17) 开发停车尾段结构检查, 作为阶段 9 连续验证器的前置条件.
-公开函数 `validation.check_stop_tail_structure(model, start, motion)` 检查车队覆盖, 有限有序节点, 共同边界, 精确衔接和零终速.
-113 项测试: 112 通过, 1 项可选 CBS-TA 跳过. 仅 fixture 验证; 不证明碰撞, 制动能力, 资源或无限期停车安全. 未接 Runtime 或方案接受路径.
-见 [停车尾段结构检查](0017-stop-tail-structure.md). 下一步在本 PR review 合并后实现连续几何检查.
+状态: PR #17 已确认合并于 `08da31c`. 当前 [PR #18](https://github.com/Requora/TAPF_MAPF_TPG/pull/18) 开发中央执行器和订单到控制帧的单步重放, 优先展示最小端到端链路.
+真实单车道订单经过分配, 编译, MAWPF, WinkTPG 和 TrajectoryExecutor, 得到 91 个控制帧及 3 次动作启动. 精确切片保留内部节点和停止保持. 124 项测试: 123 通过, 1 项可选 CBS-TA 跳过.
+该演示使用测试专用候选直连和端点观测替身; 无 Runtime 接受, 动作完成, 货架效果, 账本更新或真实后端. 不证明连续几何和无限期停车安全.
+见 [执行器与真实重放](0018-executor-replay.md). 当前 PR review 合并后再选择最小闭环改动. 用户优先尽快展示端到端运行, 不默认先补齐所有独立校验; 范围与安全门禁保持不变.
 
 ## 可替换模块
 

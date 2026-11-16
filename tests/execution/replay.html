@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>一条订单, 三个停靠点 / One order, three stops</title>
+<style>
+body{overflow-wrap:anywhere;font:16px/1.6 system-ui;background:#f7f4ed;color:#302d27;max-width:1000px;margin:auto;padding:24px}.stops{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.stop{border-top:3px solid #ddd;padding-top:12px;font-size:14px}.sent{border-color:#a86138}.stop p{margin:4px 0}section{background:#fffaf4;border:1px solid #ddd4c7;border-radius:16px;padding:24px;margin:24px 0}button,input{font:inherit}button{padding:8px 16px;margin:4px;border:1px solid #b9a68c;background:white;border-radius:8px;cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #a86138}input,svg{width:100%}pre{white-space:pre-wrap;overflow-wrap:anywhere}td{white-space:nowrap;font-size:14px}td,th{padding:8px;text-align:left;border-bottom:1px solid #ddd}table{width:100%;border-collapse:collapse}.stops{display:flex;gap:12px}.stop{flex:1;border-top:4px solid #d5c9b7;padding-top:12px}.sent{border-color:#a86138}#story{font-size:24px}small{color:#716658}
+</style>
+<h1>一条订单, 三个停靠点.<br>One order. Three stops.</h1>
+<p id="order"></p><p>橙色圆点是机器人 A. 按播放, 看它去哪里、何时停下、发出什么指令.<br>The orange dot is robot A. Press Play to see where it goes, stops, and issues commands.</p>
+<section aria-label="Task replay / 任务重放">
+<button id="play">播放 / Play</button><button id="prev">上一步 / Previous</button><button id="next">下一步 / Next</button>
+<h2 id="story" aria-live="polite"></h2><p id="position"></p>
+<svg viewBox="0 0 800 140" role="img" aria-label="机器人路线与三个停靠点 / Robot route and three stops"><path d="M70 70H710" stroke="#c9bba6" stroke-width="4"/><g id="places"></g><circle id="robot" cy="70" r="17" fill="#a86138"/><text x="70" y="120">起点 / Start</text></svg>
+<div class="stops" id="stops"></div><p id="actions"></p>
+<input id="tick" type="range" min="0" value="0" aria-label="时间 / Time">
+<p><b>发出指令 ≠ 动作已经完成. 本演示没有模拟货架搬动.<br>A command is not a completed action. Shelf handling is not simulated.</b></p>
+</section>
+<section><h2>这次接通了什么? / What is connected?</h2><p>订单 -> 分配 -> 编译 -> 真实路径与运动规划 -> 每一步的位置和动作指令.<br>Order -> allocation -> compilation -> real routing and motion planning -> per-step positions and commands.</p><p>位置来自真实 MAWPF/WinkTPG 轨迹经执行器切片后的记录. 端点观测是测试替身. Runtime 接受、动作完成、库存记账、真实后端和安全证明仍未接通.<br>Positions come from executor slices of real MAWPF/WinkTPG trajectories. Endpoint observations are test doubles. Runtime acceptance, action completion, inventory accounting, a real backend and safety proof are still missing.</p>
+<a href="https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/execution-replay.json">下载原始记录 / Download recorded JSON</a></section>
+<script id="evidence" type="application/json">__EVIDENCE__</script>
+<script>
+const evidence = JSON.parse(document.querySelector('#evidence').textContent), frames = evidence.frames;
+const tick = document.querySelector('#tick'); tick.max = frames.length - 1;
+const names = {lift:['取货点: 抬架指令','Pickup: lift command'],serve:['工作站: 服务指令','Station: serve command'],drop:['归还点: 放架指令','Return: drop command']};
+const destination = evidence.final_state.robots[0].pose.x_m; let timer = null;
+// 中文: x 将实际米制位置映射到车道, 只展示记录中的位置而不重新生成运动.
+// English: x maps actual metric positions to the lane without generating another motion curve.
+const x = value => 70 + value / destination * 640;
+// 中文: flatMap 回调读取控制帧实际发出的指令, 为叙事和停靠点标记提供真实事件而非预设动画时间.
+// English: The flatMap callback reads commands actually emitted in frames, supplying real events for the story and stop markers rather than scripted animation times.
+const commands = frames.flatMap(row => row.frame.start_actions.map(a => ({time:row.frame.from_s,action:a.action,position:row.state.robots[0].pose.x_m})));
+const item = evidence.native.orders[0].items[0]; document.querySelector('#order').textContent = `订单目标: 取货 -> 工作站服务 ${item.quantity} 件 ${item.sku} -> 归还停车. / Goal: pickup -> station service for ${item.quantity} × ${item.sku} -> return and stop.`;
+// 中文: map 回调在实际指令位置绘制停靠点, 让用户看清三个目的地.
+// English: The map callback marks actual command locations so the three destinations are visible.
+document.querySelector('#places').innerHTML = commands.map((c, index) => `<text x="${x(c.position)}" y="42" text-anchor="middle">${index + 1}</text><rect x="${x(c.position)-10}" y="60" width="20" height="20" fill="#d5c9b7"/>`).join('');
+// 中文: stopPlayback 取消播放计时器并恢复按钮, 让暂停和手动单步不会同时推进.
+// English: stopPlayback cancels playback and restores the button so manual navigation cannot race the timer.
+function stopPlayback() { clearInterval(timer); timer = null; document.querySelector('#play').textContent = '播放 / Play'; }
+// 中文: render 用真实状态和已发出指令解释当前任务阶段, 不把指令后的计划停留当成动作完成证据.
+// English: render explains the current stage from recorded states and emitted commands without treating planned post-command holds as completion evidence.
+function render() {
+  const index = Number(tick.value), row = frames[index], frame = row.frame, time = frame.from_s;
+  const next = commands.find(c => c.time > time), previous = commands.filter(c => c.time <= time).at(-1);
+  const dwelling = previous && time < previous.time + previous.action.duration_s - 1e-9;
+  document.querySelector('#story').textContent = dwelling ? `${names[previous.action.kind].join(' / ')}. 已发出, 按计划停留 / Issued; planned hold.` : next ? `正在前往${names[next.action.kind][0].split(':')[0]} / Going to ${names[next.action.kind][1].split(':')[0]}` : '路线已走完, 保持停车 / Route ended; holding still';
+  document.querySelector('#position').textContent = `机器人 A / Robot A · ${time.toFixed(1)} s · 位置 / position ${row.state.robots[0].pose.x_m.toFixed(2)} m · 速度 / speed ${row.state.robots[0].velocity.vx_mps.toFixed(2)} m/s`;
+  document.querySelector('#robot').setAttribute('cx', x(row.state.robots[0].pose.x_m));
+  // 中文: map 回调显示每条指令的实际启动记录, 以已发出标记代替未验证的已完成标记.
+  // English: The map callback shows actual command starts, marking issued rather than unverified completion.
+  document.querySelector('#stops').innerHTML = commands.map((c, index) => `<div class="stop ${time >= c.time ? 'sent' : ''}"><b>${index + 1}. ${names[c.action.kind].join('<br>')}</b><p>${c.position.toFixed(0)} m</p><small>${time >= c.time ? `指令已发出 / Issued · ${c.time.toFixed(1)} s` : '尚未到达 / Ahead'}</small></div>`).join('');
+  document.querySelector('#actions').textContent = frame.start_actions.length ? '本步发出启动指令 / Start command emitted this step' : '本步无新指令 / No new command this step';
+  document.querySelector('#prev').disabled = index === 0; document.querySelector('#next').disabled = index === frames.length - 1;
+}
+// 中文: 播放回调按记录顺序推进, 到终点停止, 再次播放从起点重放, 不改变求解结果.
+// English: The playback callback advances recorded frames, stops at the end and restarts from the beginning without changing solver results.
+document.querySelector('#play').onclick = () => {
+  if (timer) { stopPlayback(); return; } if (Number(tick.value) === frames.length - 1) tick.value = 0;
+  document.querySelector('#play').textContent = '暂停 / Pause';
+  timer = setInterval(() => { tick.value = Number(tick.value) + 1; render(); if (Number(tick.value) === frames.length - 1) stopPlayback(); }, 120);
+};
+// 中文: 单步和滑块回调先暂停, 让用户稳定检查选定状态.
+// English: Step and slider callbacks pause first so users can inspect the chosen state.
+document.querySelector('#prev').onclick = () => { stopPlayback(); tick.value = Number(tick.value) - 1; render(); };
+document.querySelector('#next').onclick = () => { stopPlayback(); tick.value = Number(tick.value) + 1; render(); };
+tick.oninput = () => { stopPlayback(); render(); };
+render();
+</script>
+</html>

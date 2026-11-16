@@ -26,9 +26,9 @@ with sync_playwright() as playwright:
             assert page.locator(f'[data-id="{node_id}"]').get_attribute("aria-pressed") == "true"
             assert page.locator("#inspector a").get_attribute("href").startswith("https://github.com/Requora/")
         page.locator('[data-view="imports"]').click()
-        assert page.locator(".node").count() == 12
+        assert page.locator(".node").count() == 13
         assert page.locator(".edge.future").count() == 0
-        assert page.locator(".edge").count() == 17
+        assert page.locator(".edge").count() == 20
         page.locator('[data-id="order_source"]').focus()
         page.keyboard.press("Enter")
         assert page.locator('[data-id="order_source"]').get_attribute("aria-pressed") == "true"

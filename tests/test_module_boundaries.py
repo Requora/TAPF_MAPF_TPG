@@ -11,6 +11,7 @@ import warehouse_api
 DEPENDENCIES = {
     "contracts": set(),
     "trajectory": {"contracts"},
+    "execution": {"contracts", "trajectory", "validation"},
     "serialization": set(),
     "order_source": {"contracts"},
     "action_timing": {"contracts"},
@@ -24,12 +25,13 @@ DEPENDENCIES = {
 }
 EXPORTS = {
     "trajectory": {"PreparedTrajectory", "evaluate", "slice_curve"},
+    "execution": {"TrajectoryExecutor"},
     "serialization": {"dumps", "loads", "from_data", "to_data"},
     "order_source": {"ReplayOrderSource", "generate_orders"},
     "action_timing": {"action_duration_s", "action_duration_ticks"},
     "task_compiler": {"CurrentTaskCompiler"},
     "planning": {"StagedPipeline"},
-    "validation": {"check_single_lane", "check_jobs", "check_assignment", "check_stop_tail_structure"},
+    "validation": {"check_single_lane", "check_jobs", "check_assignment", "check_stop_tail_structure", "check_motion_curve"},
     "allocation": {"SingleShelfAllocator"},
     "native_process": {"run_native"},
     "mapf": {"NativeMawpfPlanner"},
@@ -97,6 +99,10 @@ class ModuleBoundaryTests(unittest.TestCase):
             self.assertIn(parts[0], DEPENDENCIES)
             module = ".".join(["warehouse_api", *parts])
             package = module if is_package else module.rpartition(".")[0]
+            # 中文: 本守卫禁止执行校验模块准备轨迹, 防止规则检查再次混入曲线构造.
+            # English: This guard forbids trajectory preparation in execution validation so rule checks cannot absorb curve construction again.
+            if parts[0] == "execution" and path.stem == "_validation":
+                self.assertNotIn("PreparedTrajectory", path.read_text())
             errors.extend(violations(path.read_text(), module, package))
         self.assertEqual(errors, [])
 
