@@ -3,8 +3,9 @@ English: This module centralizes execution-input checks so slicing does not hide
 """
 from math import isfinite, isclose
 
-from warehouse_api.contracts import ExecutionInput, Failure, RobotSegment, Twist2
+from warehouse_api.contracts import ExecutionInput, Failure, StepRef, Twist2
 from warehouse_api.validation import check_motion_curve
+from warehouse_api.trajectory import PreparedTrajectory, evaluate
 
 
 # 中文: same_tick 仅为动作时钟比较容许至多 1 ns 且小于百万分之一步的舍入误差, 防止浮点累加漏发; 本函数不放宽位姿衔接.
@@ -13,9 +14,9 @@ def same_tick(a: float, b: float, dt_s: float) -> bool:
     return isclose(a, b, rel_tol=0, abs_tol=min(1e-9, dt_s * 1e-6))
 
 
-# 中文: check_input 检查完整车队, 控制时间和动作引用, 让执行器只转换结构有效的输入; 本函数不证明动作业务或几何安全.
-# English: check_input checks fleet coverage, control times and action references before conversion; it does not prove business or geometric safety.
-def check_input(data: ExecutionInput, dt_s: float) -> Failure | None:
+# 中文: check_input 检查完整车队, 控制时间, 动作引用和过去启动的输出记录, 让执行器只转换结构有效的输入; 本函数不证明动作业务或几何安全.
+# English: check_input checks fleet coverage, control times, action references and returned-start history before conversion; it does not prove business or geometric safety.
+def check_input(data: ExecutionInput, dt_s: float, started: set[tuple[str, StepRef]]) -> Failure | None:
     now = data.state.time_s
     if not isfinite(now) or not isfinite(dt_s) or dt_s <= 0 or not isfinite(now + dt_s) or now + dt_s <= now:
         return Failure('BAD_FRAME', 'Control interval must be finite and positive', ())
@@ -42,6 +43,9 @@ def check_input(data: ExecutionInput, dt_s: float) -> Failure | None:
                     and not same_tick(scheduled.start_s, now + dt_s, dt_s)):
                 return Failure('BAD_FRAME', 'Action starts inside a control step; use an aligned timestep', (segment.robot_id,))
             active = running.get(scheduled.step)
+            if (scheduled.start_s < now and not same_tick(scheduled.start_s, now, dt_s)
+                    and active is None and (segment.robot_id, scheduled.step) not in started):
+                return Failure('BAD_ACTION', 'Past action has no returned start or running evidence', (segment.robot_id,))
             if active is not None and active.robot_id != segment.robot_id:
                 return Failure('BAD_ACTION', 'Running action belongs to another robot', (segment.robot_id,))
             new_start = same_tick(scheduled.start_s, now, dt_s) and active is None
@@ -53,19 +57,28 @@ def check_input(data: ExecutionInput, dt_s: float) -> Failure | None:
     return None
 
 
-# 中文: check_curve 检查新曲线的节点与时间结构, 将执行边界错误映射为 BAD_FRAME, 避免原生切片收到无效节点.
-# English: check_curve checks new curve structure and maps execution-boundary errors to BAD_FRAME before native slicing.
-def check_curve(segment: RobotSegment) -> Failure | None:
-    failure = check_motion_curve(segment)
+# 中文: prepare_frame 在执行边界整体检查输入, 准备曲线并检查覆盖与衔接, 让主函数只组装控制帧; 本函数不修改调用方缓存或输出记录.
+# English: prepare_frame validates the full execution boundary, prepares curves and checks coverage/joins so the main method only assembles frames; it does not mutate caller caches or output history.
+def prepare_frame(data: ExecutionInput, dt_s: float, cached: dict,
+                  started: set[tuple[str, StepRef]]) -> dict | Failure:
+    failure = check_input(data, dt_s, started)
     if failure is not None:
-        return Failure('BAD_FRAME', failure.message, failure.related_ids)
-    return None
-
-
-# 中文: check_coverage 禁止移动终点外推, 仅允许静止终点保持, 确保下一帧在选定计划的有效时间内.
-# English: check_coverage forbids moving-endpoint extrapolation and permits stopped holds so each frame stays within selected-plan coverage.
-def check_coverage(segment: RobotSegment, start_s: float, end_s: float) -> Failure | None:
-    if start_s < segment.knots[0].time_s or (end_s > segment.knots[-1].time_s
+        return failure
+    now, end = data.state.time_s, data.state.time_s + dt_s
+    states = {robot.robot_id: robot for robot in data.state.robots}
+    curves = {}
+    for segment in data.active_segments:
+        curve = cached.get(segment.robot_id)
+        if curve is None or curve[0] != segment.knots:
+            failure = check_motion_curve(segment)
+            if failure is not None:
+                return Failure('BAD_FRAME', failure.message, failure.related_ids)
+            curve = (segment.knots, PreparedTrajectory(segment.knots))
+        if now < segment.knots[0].time_s or (end > segment.knots[-1].time_s
                                              and segment.knots[-1].velocity != Twist2(0, 0, 0)):
-        return Failure('BAD_FRAME', 'Selected motion does not cover the control interval', (segment.robot_id,))
-    return None
+            return Failure('BAD_FRAME', 'Selected motion does not cover the control interval', (segment.robot_id,))
+        current, state = evaluate(curve[1], now), states[segment.robot_id]
+        if current.pose != state.pose or current.velocity != state.velocity:
+            return Failure('BAD_FRAME', 'Curve start must exactly match current state', (segment.robot_id,))
+        curves[segment.robot_id] = curve
+    return curves

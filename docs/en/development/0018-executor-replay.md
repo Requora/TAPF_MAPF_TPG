@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0018-executor-replay.md) | [English](../../en/development/0018-executor-replay.md)
 
-<!-- doc-sync: executor-replay / 2026-11-16-r1 -->
+<!-- doc-sync: executor-replay / 2026-11-16-r2 -->
 
 ## Scope and sources
 
@@ -43,7 +43,7 @@ PYTHONPATH=src WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-
 /tmp/warehouse-ci-check/bin/ruff check src tests
 ```
 
-TDD began with the absent TrajectoryExecutor import failing. Nine executor tests and one real-replay test pass. Full suite: 123 tests, 122 pass, one optional CBS-TA skip. Ruff and diff checks pass. CI adds execution.json/html artifacts; remote results are pending.
+TDD began with the absent TrajectoryExecutor import failing. Ten executor tests and one real-replay test pass. Full suite: 124 tests, 123 pass, one optional CBS-TA skip. Ruff and diff checks pass. CI adds execution.json/html artifacts; remote results are pending.
 
 Failure record: the first real replay rejected tick=3 because the double rounded time independently of the curve endpoint; it now uses the returned frame's to_s. Another regression initially reported action count `0 != 1`, exposing `0.1 + 0.2` versus `0.3` clock equality; explicit small clock tolerance fixes it without relaxing pose checks. The first browser script failed with builtin append as an event callback; an explicit callback fixed it. Mobile action JSON overflowed; short wrapping action labels replace it while raw data remains in details.
 
@@ -51,6 +51,14 @@ Failure record: the first real replay rejected tick=3 because the double rounded
 
 Current [PR #18](https://github.com/Requora/TAPF_MAPF_TPG/pull/18) awaits review. Only address this PR's review before merge. Select the next minimal loop gap according to the user's end-to-end priority; no Runtime or backend implementation in this PR. The private dashboard and actual replay will be published together with access preserved.
 
-Additional verification: rebuilding a wheel in clean directory `/tmp/executor-wheel-ro4ojnsr` and installing it passes 123 isolated tests, 122 pass and one skip; pip check passes. Native executables reuse existing pinned binaries, with SHA256 in JSON; no fresh upstream build is claimed. Dashboard and replay pass desktop, mobile and keyboard checks; screenshots inspected. The dashboard links to the [actual stepwise replay](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/execution-replay.html). Publication adds this generated HTML evidence to the independent Sites checkout; its source template is reviewed at tests/execution/replay.html, without treating generated data as another algorithm implementation.
+Additional verification: rebuilding a wheel in clean directory `/tmp/executor-wheel-ro4ojnsr` and installing it passes 124 isolated tests, 123 pass and one skip; pip check passes. Native executables reuse existing pinned binaries, with SHA256 in JSON; no fresh upstream build is claimed. Dashboard and replay pass desktop, mobile and keyboard checks; screenshots inspected. The dashboard links to the [actual stepwise replay](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/execution-replay.html). Publication adds this generated HTML evidence to the independent Sites checkout; its source template is reviewed at tests/execution/replay.html, without treating generated data as another algorithm implementation.
 
 Final status: independent gpt-6-luna/low bilingual review passed, with old 0017 review status marked historical. Private dashboard and actual stepwise replay publication through the Sites skill succeeded from source `d920a31c638a7c522e8486c51a920b2c7c910133`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_ca13e26603788191b3a4e3e0a8387cdd`. Owner-only access is preserved. Hosted sign-in and new remote CI remain unverified. Current PR awaits review; no automatic merge or subsequent implementation.
+
+Review-rule update: the user requires bilingual Chinese-first PR titles and descriptions with matching structure, facts and verification status, opening with what changes, why it matters now and its concrete connection to demonstrating end-to-end execution soon, followed by implementation and verification. AGENTS.md records this rule and PR #18 is rewritten accordingly.
+
+Review corrections: both findings are accepted. Regressions first confirmed that skipping a start returned a normal frame rather than BAD_ACTION and rebuilding equal knot tuples prepared twice instead of once. The executor now retains returned-start references for the active plan; past actions without output history or a running record return BAD_ACTION. A fresh instance resuming historical schedules also rejects unproven past starts rather than guessing completion. History is bounded to active-plan references and does not prove backend receipt; callers still dispatch only one frame per tick. Cache lookup now compares knot values, reusing snapshots for equal reconstructed tuples without another implementation path. Real replay remains 91 frames and 3 starts.
+
+Presentation correction: following user feedback, replay now tells a playable pickup -> station service -> return-and-stop story, labeling the three actual command locations and issued status in Chinese and English. Raw evidence is collapsed, and neither animation nor issued commands are labeled as completed shelf handling.
+
+User-review correction: build_frame now calls prepare_frame once; all input rules, curve coverage and state-join failures are handled in the separate validation file. The main method forwards Failure, slices and assembles output. The repository audit covers 36 production Python files: input/business checks reside in validation modules. Existing planning budget expiry and native_process timeout, exit-code and missing-output classification remain runtime-result handling and were not migrated here; this does not claim every error constructor has left main functions. The review reply discloses that distinction. AGENTS.md now requires stage-boundary validation through one aggregate call.

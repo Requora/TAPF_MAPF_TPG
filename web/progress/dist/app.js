@@ -69,7 +69,7 @@ function render() {
   document.querySelector("#stamp").textContent = `${text(["人工同步快照", "Curated snapshot"])} / ${project.date} UTC / ${project.evidenceCommit}`;
   const work = [
     [["NOW / 正在做", "NOW"], ["订单到控制帧重放", "Orders to control frames"], ["真实规划输出产生 91 个控制帧. Lift, Serve, Drop 各启动一次. 保留曲线内部切换点, 停止后继续保持.", "Real planning produces 91 control frames. Lift, Serve and Drop each start once. Internal curve switches and stopped holds are retained."]],
-    [["NEXT / 待审查", "NEXT / REVIEW"], ["检查单步轨迹与动作", "Inspect frames and starts"], ["123 项测试: 122 通过, 1 跳过. 端点观测为测试替身, 候选仅在测试中直连. 当前 PR 合并后再确定最小闭环改动.", "123 tests: 122 pass, 1 skip. Endpoint observations and candidate wiring are test-only. Select the next minimal loop increment after this PR merges."]],
+    [["NEXT / 待审查", "NEXT / REVIEW"], ["检查单步轨迹与动作", "Inspect frames and starts"], ["124 项测试: 123 通过, 1 跳过. 端点观测为测试替身, 候选仅在测试中直连. 当前 PR 合并后再确定最小闭环改动.", "124 tests: 123 pass, 1 skip. Endpoint observations and candidate wiring are test-only. Select the next minimal loop increment after this PR merges."]],
     [["NOT YET / 尚未完成", "NOT YET"], ["正式执行闭环", "Committed execution loop"], ["无 Runtime 接受, 动作完成, 货架效果, 账本更新或真实后端. 连续安全与无限期停车未验证.", "No Runtime acceptance, action completion, shelf effects, ledger update or real backend. Continuous and indefinite parking safety remain unverified."]],
   ];
   // 中文: map 的回调把每个工作状态条目转换为卡片, 分开显示当前工作和未实现项, 防止读者把计划当成已完成成果.

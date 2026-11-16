@@ -89,11 +89,12 @@ class ExecutorTests(unittest.TestCase):
     # 中文: test_prepares_once_per_active_curve 验证连续帧复用原生快照, 防止高频重建相同轨迹.
     # English: test_prepares_once_per_active_curve checks snapshot reuse across frames to avoid repeated high-frequency preparation.
     def test_prepares_once_per_active_curve(self):
-        with patch('warehouse_api.execution._executor.PreparedTrajectory', wraps=PreparedTrajectory) as prepare:
+        with patch('warehouse_api.execution._validation.PreparedTrajectory', wraps=PreparedTrajectory) as prepare:
             self.executor.build_frame(self.data, .5)
             knot = evaluate(PreparedTrajectory(self.knots), .5)
             state = replace(self.state, time_s=.5, robots=(RobotState('A', knot.pose, knot.velocity),))
-            self.executor.build_frame(replace(self.data, state=state), .5)
+            rebuilt = replace(self.segment, knots=tuple(replace(knot) for knot in self.knots))
+            self.executor.build_frame(replace(self.data, state=state, active_segments=(rebuilt,)), .5)
             self.assertEqual(prepare.call_count, 1)
 
     # 中文: test_action_boundary_roundoff 检查浮点步进的边界误差, 防止真实动作因 0.1 + 0.2 不等于 0.3 而漏发.
@@ -123,3 +124,15 @@ class ExecutorTests(unittest.TestCase):
         hold = replace(self.segment, knots=(self.knots[0],))
         frame = self.executor.build_frame(replace(self.data, active_segments=(hold,)), .5)
         self.assertEqual(frame.motion[0].knots[-1].pose, self.knots[0].pose)
+
+    # 中文: test_rejects_missed_start 检查跳过启动时刻与无历史恢复, 避免漏发被当作正常完成.
+    # English: test_rejects_missed_start checks skipped starts and history-free resumption so missing output cannot masquerade as completion.
+    def test_rejects_missed_start(self):
+        hold = RobotSegment('A', (self.knots[0],), (TimedAction(.5, self.step),))
+        data = replace(self.data, active_segments=(hold,))
+        self.executor.build_frame(data, .5)
+        late = replace(data, state=replace(self.state, time_s=1))
+        self.assertEqual(self.executor.build_frame(late, .5).code, 'BAD_ACTION')
+        self.assertEqual(TrajectoryExecutor().build_frame(late, .5).code, 'BAD_ACTION')
+        self.executor.build_frame(replace(data, state=replace(self.state, time_s=.5)), .5)
+        self.assertNotIsInstance(self.executor.build_frame(late, .5), Failure)
