@@ -66,3 +66,5 @@ TDD: 先因缺少 TrajectoryExecutor 导入失败. 10 项执行器测试与 1 �
 本轮发布: 任务叙事和播放界面已通过桌面, 手机, 键盘, 三次指令及播放/暂停检查. 私有 Sites 发布成功, 源码 `f2457695a52580d51fdc4c0515fcabcd19a1fa9a`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_cf4628691ae481919436b452d2ad511f`. 所有三个 review 线程已双语回复, 两条自动审查已解决, 用户线程保留供复核.
 
 校验职责再次修正: 前次将规则与快照构造都移进 prepare_frame, 仍然混合职责, 用户指出后已纠正. 纯校验文件 _validation.py 只检查输入和衔接, 不创建轨迹快照. 新的 _preparation.py 只复用或创建快照, 在准备前后调用整体校验并转发失败; _executor.py 负责切片与组装. 模块依赖方向不变. 架构测试先确认校验模块中存在 PreparedTrajectory 而失败, 拆分后通过. 演示删去重复的帧编号与原始文本面板, 完整 JSON 仍可单独下载.
+
+纯校验拆分补充已推送至 e286042, 规范补充 de98d76. 保持原有 Failure 契约, 具体条件只在纯校验函数中. 独立干净 wheel 测试仍为 124 项, 123 通过, 1 跳过. 简化演示通过 Sites skill 私有发布成功: 源码 `b28f468ea602557efff344dc4bd8a638fc8a833e`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_056d77d8553081918bd94b6c7a863e0a`. 已在原 review 线程纠正上一轮仅搬代码的说明.
