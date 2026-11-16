@@ -8,9 +8,9 @@ from warehouse_api.contracts import (
 )
 
 
-# 中文: _check_curve 检查候选节点的有限值和时间顺序, 使结构错误返回失败原因而非进入插值计算.
-# English: _check_curve checks finite values and ordered times so malformed candidates return reasons before interpolation.
-def _check_curve(segment: RobotSegment) -> Failure | None:
+# 中文: check_motion_curve 检查候选节点的有限值和时间顺序, 使结构错误返回失败原因而非进入插值计算.
+# English: check_motion_curve checks finite values and ordered times so malformed candidates return reasons before interpolation.
+def check_motion_curve(segment: RobotSegment) -> Failure | None:
     previous = None
     for knot in segment.knots:
         values = (knot.time_s, knot.pose.x_m, knot.pose.y_m, knot.pose.yaw_rad,
@@ -43,7 +43,7 @@ def check_stop_tail_structure(model: WorldModel, start: PlanningStart,
     if not isfinite(start.join_state.time_s):
         return (Failure('BAD_INPUT', 'Join time must be finite', robot_ids),)
     errors = tuple(error for segment in (*motion.common_prefix, *motion.stop_tail)
-                   if (error := _check_curve(segment)) is not None)
+                   if (error := check_motion_curve(segment)) is not None)
     if errors:
         return errors
     states = {robot.robot_id: robot for robot in start.join_state.robots}

@@ -2,11 +2,11 @@
 
 [中文](../../zh/architecture/MODULES.md) | [English](../../en/architecture/MODULES.md)
 
-<!-- doc-sync: module-boundaries / 2026-11-15-r13 -->
+<!-- doc-sync: module-boundaries / 2026-11-16-r14 -->
 
 [Interactive architecture and progress website](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/?lang=en).
 
-The private website tracks merged PR #16 baseline `1956531` and stop-tail structure checks. Geometry, braking and indefinite parking safety remain unverified.
+The private website tracks merged PR #17 baseline `08da31c` and real orders-to-frames replay. Endpoint observations are doubles; no Runtime acceptance, action completion or real backend.
 
 ## Implemented directories
 
@@ -18,6 +18,10 @@ Tests are grouped by module; test cases and serialization fixtures retain their 
 ```text
 src/warehouse_api/
   contracts.py
+  execution/
+    __init__.py
+    _executor.py
+    _validation.py
   trajectory/
     __init__.py
     _curve.py
@@ -63,6 +67,7 @@ src/warehouse_api/
     _current_task.py
     _validation.py
 tests/
+  execution/
   trajectory/
   composition/
   native/
@@ -84,6 +89,9 @@ structures and does not depend on concrete contracts or business modules.
 flowchart LR
     Compiler[task_compiler] --> Contracts[contracts.py]
     Planning[planning] --> Contracts
+    Execution[execution: build_frame] --> Contracts
+    Execution --> Trajectory
+    Execution --> Validation
     Trajectory[trajectory: evaluate / slice_curve] --> Contracts
     Compiler --> Codec[serialization]
     Compiler --> Durations[action_timing]
@@ -111,9 +119,10 @@ flowchart LR
 | allocation | SingleShelfAllocator | One feasible shelf/robot; picks derived from demand |
 | mapf | NativeMawpfPlanner | Pinned LaCAM output to adjacent moves and action references |
 | tpg | NativeWinkTpgPlanner | Pinned speedSolver primitives to Hermite knots and action holds |
-| validation | check_single_lane, check_jobs, check_assignment, check_stop_tail_structure | Supported-subset checks; continuous Validator remains unimplemented |
+| validation | check_single_lane, check_jobs, check_assignment, check_stop_tail_structure, check_motion_curve | Supported-subset checks; continuous Validator remains unimplemented |
 | native_process | run_native | Process budgets and retained raw evidence |
-| trajectory | PreparedTrajectory, evaluate, slice_curve | Evaluate and exactly slice existing Hermite curves; depends only on contracts, consumer integration pending |
+| execution | TrajectoryExecutor | Exact slicing and action starts; depends on contracts, trajectory and validation |
+| trajectory | PreparedTrajectory, evaluate, slice_curve | Evaluate and exactly slice existing Hermite curves; depends only on contracts, connected to executor |
 | serialization | dumps, loads, from_data, to_data | JSON structure conversion |
 
 Cross-module imports use package entry points or contracts. For example, the
@@ -147,7 +156,7 @@ packages have been created.
 | --- | --- | --- |
 | validation/ | Validator | Input subset implemented; continuous validation interface only |
 | runtime/ | Runtime | Transaction and atomic commit interface defined |
-| execution/ | CentralExecutor | Execution interface defined |
+| execution/ | CentralExecutor | Exact shared slices and current-tick action starts; real native-output replay verified |
 
 Modules communicate through public Request/Result types; native objects remain
 inside adapters. New modules get separate directories and dependency checks.
@@ -181,3 +190,5 @@ The trajectory Python layer only converts shared contracts; C++ evaluates/slices
 The call chain is fixed: `tuple[Knot, ...] -> PreparedTrajectory -> evaluate / slice_curve -> Knot / tuple[Knot, ...]`. Tuples are used only for construction input and slice output, not direct query calls. The benchmark measures this single preparation/query path without a mode flag. See [cleanup log](../development/0016-single-trajectory-path.md).
 
 The stop-structure check is a public helper, not a Validator Protocol implementation or an acceptance gate. Dependency directions are unchanged.
+
+Execution exports `TrajectoryExecutor.build_frame(ExecutionInput, dt_s)`. New dependencies are execution -> contracts, execution -> trajectory and execution -> validation, using public APIs only. The executor commits no state; callers dispatch one returned frame per tick. Action-clock comparison allows at most 1 ns and one millionth of a tick; pose and velocity joins remain exact.

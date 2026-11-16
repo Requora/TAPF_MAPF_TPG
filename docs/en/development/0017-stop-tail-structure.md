@@ -2,7 +2,7 @@
 
 [中文](../../zh/development/0017-stop-tail-structure.md) | [English](../../en/development/0017-stop-tail-structure.md)
 
-<!-- doc-sync: stop-tail-structure / 2026-11-15-r1 -->
+<!-- doc-sync: stop-tail-structure / 2026-11-16-r2 -->
 
 ## Scope and decisions
 
@@ -25,8 +25,12 @@ PYTHONPATH=src WAREHOUSE_NATIVE_BIN=/tmp/tapf-chain-bridges /tmp/trajectory-cpp-
 
 ## PR and next step
 
-Current [PR #17](https://github.com/Requora/TAPF_MAPF_TPG/pull/17) awaits review. Await review after submission; do not merge automatically. Continuous geometry, braking and parking-occupancy checks remain planned. User-local .gitignore, helloworld.md and reference bundle remain unchanged.
+Historical status: [PR #17](https://github.com/Requora/TAPF_MAPF_TPG/pull/17) awaited review at submission, without automatic merge. Its latest merged status is recorded below. Continuous geometry, braking and parking-occupancy checks remain planned. User-local .gitignore, helloworld.md and reference bundle remain unchanged.
 
 Final checks: Ruff, git diff --check and bilingual dashboard checks pass. Desktop/mobile screenshots inspected. Independent gpt-6-luna/low bilingual review passed. Actual API calls: a complete fleet returns `()`, a missing robot returns `BAD_INPUT: stop tail must cover each model robot exactly once`.
 
 Private progress publication through the Sites skill succeeded with owner-only access preserved. Source `8fa1529f4e006e2815275fbe973dd16e7fe0c223`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_7a665c34b5f081919b140f18ecd997ed`. The first source-helper attempt from the main repository failed; using an independent temporary checkout succeeded. The initial browser-check Python lacked Playwright; the existing browser environment passed. Port 8765 was occupied; this check used 8793. Hosted sign-in, clean wheel installation and full continuous safety remain unverified.
+
+Priority update: the user values demonstrating end-to-end execution soon. Subsequent development should first connect a minimal runnable chain with real traces and replay. Continuous geometry is no longer the default immediate next increment. Supported subsets, test doubles and unverified safety boundaries must be explicit; existing safety gates and PR review rules remain effective. This update records the preference only and starts no subsequent implementation.
+
+Merge update: PR #17 is confirmed merged remotely at `08da31c442a79fa1d377c7b69cebeb72f992e67a`. Subsequent executor work is tracked in [0018](0018-executor-replay.md).

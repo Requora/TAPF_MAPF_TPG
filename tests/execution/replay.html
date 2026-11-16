@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Order to control frames / 订单到控制帧</title>
+<style>
+body{overflow-wrap:anywhere;font:16px/1.6 system-ui;background:#f7f4ed;color:#302d27;max-width:1000px;margin:auto;padding:24px}section{background:#fffaf4;border:1px solid #ddd4c7;border-radius:16px;padding:24px;margin:24px 0}button,input{font:inherit}button{padding:8px 16px;margin:4px;border:1px solid #b9a68c;background:white;border-radius:8px;cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #a86138}input{width:100%}svg{width:100%}pre{white-space:pre-wrap;overflow-wrap:anywhere}table{border-collapse:collapse;width:100%}td{white-space:nowrap;font-size:14px}td,th{padding:8px;text-align:left;border-bottom:1px solid #ddd}small{color:#716658}
+</style>
+<h1>订单 -> 规划 -> 控制帧<br>Order -> planning -> control frames</h1>
+<p>真实 MAWPF/WinkTPG 输出 + 共享执行器. 每一步均来自保存的执行记录.<br>Real MAWPF/WinkTPG output and shared executor. Every step comes from the recorded run.</p>
+<section><b>演示边界 / Demonstration limits</b><p>候选在测试中直接接入执行器. 端点观测为替身. 没有 Runtime 接受, 动作完成, 货架效果, 账本更新, 真实后端或安全证明.<br>Test-only candidate wiring and endpoint observations. No Runtime acceptance, action completion, shelf effects, ledger update, real backend or safety proof.</p></section>
+<section aria-label="Frame replay / 控制帧重放">
+<button id="prev">上一步 / Previous</button><button id="next">下一步 / Next</button><b id="counter" aria-live="polite"></b>
+<input id="tick" type="range" min="0" value="0" aria-label="Frame / 控制帧">
+<p id="position"></p><svg viewBox="0 0 800 140" role="img" aria-label="Robot position along lane / 机器人车道位置"><path d="M40 80H760" stroke="#c9bba6" stroke-width="4"/><circle id="robot" cy="80" r="14" fill="#a86138"/></svg>
+<p id="actions"></p><table><thead><tr><th>节点时间 / Knot time</th><th>x (m)</th><th>vx (m/s)</th></tr></thead><tbody id="knots"></tbody></table>
+</section>
+<section><h2>动作启动记录 / Action starts</h2><pre id="starts"></pre><p>一条订单 -> 分配 -> 编译 -> MAPF -> TPG -> 91 个控制步左右 -> 静止保持.<br>One order -> allocation -> compilation -> MAPF -> TPG -> about 91 control steps -> stopped hold.</p><details><summary>真实阶段证据 / Actual stage evidence</summary><pre id="trace"></pre></details></section>
+<script id="evidence" type="application/json">__EVIDENCE__</script>
+<script>
+const evidence = JSON.parse(document.querySelector('#evidence').textContent), frames = evidence.frames;
+const tick = document.querySelector('#tick'); tick.max = frames.length - 1;
+const destination = evidence.final_state.robots[0].pose.x_m;
+// 中文: x 将真实米制位置映射到图中坐标, 让画面只展示已记录状态而不重新拟合曲线.
+// English: x maps recorded metric positions to plot coordinates without fitting another motion curve.
+const x = value => 40 + value / destination * 720;
+// 中文: render 显示选定控制帧的真实节点和动作, 便于逐步验证切片与启动时刻.
+// English: render displays actual knots and starts from the selected frame for stepwise verification.
+function render() {
+  const index = Number(tick.value), row = frames[index], frame = row.frame, motion = frame.motion[0];
+  document.querySelector('#counter').textContent = `${index + 1}/${frames.length}: ${frame.from_s.toFixed(2)} -> ${frame.to_s.toFixed(2)} s`;
+  document.querySelector('#robot').setAttribute('cx', x(row.state.robots[0].pose.x_m));
+  document.querySelector('#position').textContent = `A: x=${row.state.robots[0].pose.x_m.toFixed(4)} m`;
+  // 中文: map 回调把实际动作字段转换为简短标签, 便于用户查看启动而不解析原始 JSON.
+  // English: The map callback formats actual actions as short labels so users can inspect starts without parsing raw JSON.
+  document.querySelector('#actions').textContent = frame.start_actions.length ? frame.start_actions.map(a => `${a.robot_id}: ${a.action.kind} / ${a.action.object_id} / ${a.action.duration_s.toFixed(1)} s`).join('; ') : '本步无新动作 / No new action this step';
+  // 中文: map 回调为每个真实节点生成一行数值, 保留内部切换点的可观察性.
+  // English: The map callback renders each recorded knot so internal switches remain observable.
+  document.querySelector('#knots').innerHTML = motion.knots.map(k => `<tr><td>${k.time_s.toFixed(4)}</td><td>${k.pose.x_m.toFixed(4)}</td><td>${k.velocity.vx_mps.toFixed(4)}</td></tr>`).join('');
+  document.querySelector('#prev').disabled = index === 0; document.querySelector('#next').disabled = index === frames.length - 1;
+}
+// 中文: 按钮回调移动一个记录步, range 回调支持键盘选择, 使重放无需自动播放也可检查.
+// English: Button callbacks move one recorded step and the range callback supports keyboard inspection without autoplay.
+document.querySelector('#prev').onclick = () => { tick.value = Number(tick.value) - 1; render(); };
+document.querySelector('#next').onclick = () => { tick.value = Number(tick.value) + 1; render(); };
+tick.oninput = render;
+// 中文: map 回调列出各动作的实际启动时刻, 使读者直接核对三次启动.
+// English: The map callback lists actual start times so readers can directly verify the three starts.
+document.querySelector('#starts').textContent = evidence.action_starts.map(([t, robot, step]) => `${t.toFixed(2)} s | ${robot} | ${['Lift / 抬架', 'Serve / 服务', 'Drop / 放架'][step.step_index]}`).join('\n');
+document.querySelector('#trace').textContent = JSON.stringify({sources:evidence.native.sources,binaries:evidence.native.binaries,orders:evidence.native.orders,trace:evidence.native.trace,action_starts:evidence.action_starts}, null, 2);
+render();
+</script>
+</html>

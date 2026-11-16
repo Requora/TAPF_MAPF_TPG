@@ -11,6 +11,7 @@ import warehouse_api
 DEPENDENCIES = {
     "contracts": set(),
     "trajectory": {"contracts"},
+    "execution": {"contracts", "trajectory", "validation"},
     "serialization": set(),
     "order_source": {"contracts"},
     "action_timing": {"contracts"},
@@ -24,12 +25,13 @@ DEPENDENCIES = {
 }
 EXPORTS = {
     "trajectory": {"PreparedTrajectory", "evaluate", "slice_curve"},
+    "execution": {"TrajectoryExecutor"},
     "serialization": {"dumps", "loads", "from_data", "to_data"},
     "order_source": {"ReplayOrderSource", "generate_orders"},
     "action_timing": {"action_duration_s", "action_duration_ticks"},
     "task_compiler": {"CurrentTaskCompiler"},
     "planning": {"StagedPipeline"},
-    "validation": {"check_single_lane", "check_jobs", "check_assignment", "check_stop_tail_structure"},
+    "validation": {"check_single_lane", "check_jobs", "check_assignment", "check_stop_tail_structure", "check_motion_curve"},
     "allocation": {"SingleShelfAllocator"},
     "native_process": {"run_native"},
     "mapf": {"NativeMawpfPlanner"},

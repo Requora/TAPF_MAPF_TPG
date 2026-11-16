@@ -87,6 +87,7 @@ jobs:
           WAREHOUSE_NATIVE_BIN="$RUNNER_TEMP/native-build" python -I -m unittest discover -s tests -v
           PYTHONPATH=tests python -m native.replay "$RUNNER_TEMP/native-build" --output "$RUNNER_TEMP/native-chain.json" --html "$RUNNER_TEMP/native-chain.html"
           PYTHONPATH=tests python -m composition.replay "$RUNNER_TEMP/native-build" --output "$RUNNER_TEMP/composition.json"
+          PYTHONPATH=tests python -m execution.replay "$RUNNER_TEMP/native-build" --output "$RUNNER_TEMP/execution.json" --html "$RUNNER_TEMP/execution.html"
       - uses: actions/upload-artifact@v4
         with:
           name: native-chain-evidence
@@ -94,6 +95,8 @@ jobs:
             ${{ runner.temp }}/native-chain.json
             ${{ runner.temp }}/native-chain.html
             ${{ runner.temp }}/composition.json
+            ${{ runner.temp }}/execution.json
+            ${{ runner.temp }}/execution.html
 
   native_tapf:
     name: Real assignment, CBS and CBS-TA comparison
