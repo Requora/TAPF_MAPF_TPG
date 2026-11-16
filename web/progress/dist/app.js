@@ -77,6 +77,7 @@ function render() {
   document.querySelector("#workItems").innerHTML = work.map(([tag, title, detail]) => `<article><small>${text(tag)}</small><h3>${text(title)}</h3><p>${text(detail)}</p></article>`).join("");
   const locale = lang ? "en" : "zh";
   const evidence = [
+    [text(["当前 PR #18 · 执行器重放", "Current PR #18 · executor replay"]), `${project.repo}/pull/18`],
     [text(["实际单步重放 · 订单到控制帧", "Actual stepwise replay · orders to frames"]), "https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/execution-replay.html"],
     [text(["已合并 PR #17 · 停车结构", "Merged PR #17 · stop structure"]), `${project.repo}/pull/17`],
     [text(["性能基准 · 对比表与原始样本", "Performance · comparison and raw samples"]), `${project.repo}/blob/${project.branch}/docs/${locale}/development/0014-trajectory-performance.md`],

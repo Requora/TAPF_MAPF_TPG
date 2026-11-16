@@ -49,6 +49,8 @@ TDD: 先因缺少 TrajectoryExecutor 导入失败. 9 项执行器测试与 1 项
 
 ## PR 与下一步
 
-当前 PR 待创建. 合并前只处理本 PR 审查. 下一步按用户端到端优先级选择最小闭环缺口, 不在本 PR 实现 Runtime 或后端. 私有进展页与实际重放将同步发布, 不改变访问权限.
+当前 [PR #18](https://github.com/Requora/TAPF_MAPF_TPG/pull/18) 等待 review. 合并前只处理本 PR 审查. 下一步按用户端到端优先级选择最小闭环缺口, 不在本 PR 实现 Runtime 或后端. 私有进展页与实际重放将同步发布, 不改变访问权限.
 
 补充验证: 干净目录 `/tmp/executor-wheel-ro4ojnsr` 重建 wheel 并安装后, 隔离测试同为 123 项, 122 通过, 1 跳过, pip check 通过. 真实原生程序复用已有固定版本二进制, SHA256 在 JSON 中, 本次不声称重新构建上游. 双语进展页和重放页均通过桌面, 手机与键盘检查, 已检查截图. 可从进展页进入 [实际单步重放](https://warehouse-planning-observatory.gain-salvo-0t.chatgpt.site/execution-replay.html). 发布时将本次生成的 HTML 作为证据加入独立 Sites checkout; 原始源码模板在 tests/execution/replay.html 审查, 不把生成数据计为新的算法实现.
+
+最终状态: 双语文档由 gpt-6-luna/low 独立检查通过, 0017 的旧 review 状态已标为历史. 私有进展页和实际单步重放通过 Sites skill 发布成功, 源码 `d920a31c638a7c522e8486c51a920b2c7c910133`, version `appgprj_6ad6c9324f348191aab84e8bfffe6102~appgver_ca13e26603788191b3a4e3e0a8387cdd`. 仅所有者访问保持不变. 托管登录与新远端 CI 尚未验证. 当前 PR 等待 review, 不自行合并或启动后续实现.

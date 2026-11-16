@@ -147,12 +147,12 @@ are unchanged. StagedPipeline now composes four injected stages. The native repl
 | `durations` | `action_timing` |
 | `orders` | `order_source` |
 
-## Future module boundaries
+## Remaining integration boundaries
 
-The following interfaces are defined and directories planned; no empty implementation
-packages have been created.
+These are execution-chain integration boundaries. Execution is implemented; validation has
+subset and structure checks; Runtime remains interface-only.
 
-| Planned directory | Interface in contracts | Status |
+| Module directory | Interface in contracts | Status |
 | --- | --- | --- |
 | validation/ | Validator | Input subset implemented; continuous validation interface only |
 | runtime/ | Runtime | Transaction and atomic commit interface defined |

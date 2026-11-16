@@ -143,11 +143,11 @@ flowchart LR
 | `durations` | `action_timing` |
 | `orders` | `order_source` |
 
-## 后续模块边界
+## 后续集成边界
 
-以下仅为接口已定义和目录规划, 尚未创建空实现包.
+以下列出执行链路的集成边界. execution 已实现, validation 已实现范围和结构检查, runtime 仍仅接口.
 
-| 计划目录 | contracts 中的接口 | 状态 |
+| 模块目录 | contracts 中的接口 | 状态 |
 | --- | --- | --- |
 | validation/ | Validator | 输入范围检查已实现; 连续验证仅接口 |
 | runtime/ | Runtime | 事务与原子提交接口已定义 |

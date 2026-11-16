@@ -4,7 +4,7 @@
 
 <!-- doc-sync: roadmap / 2026-11-16-r34 -->
 
-Status: PR #17 is confirmed merged at `08da31c`. Current work adds the central executor and stepwise orders-to-frames replay, prioritizing a minimal end-to-end demonstration.
+Status: PR #17 is confirmed merged at `08da31c`. Current [PR #18](https://github.com/Requora/TAPF_MAPF_TPG/pull/18) adds the central executor and stepwise orders-to-frames replay, prioritizing a minimal end-to-end demonstration.
 A real single-lane order passes allocation, compilation, MAWPF, WinkTPG and TrajectoryExecutor, producing 91 control frames and 3 action starts. Exact slicing retains internal knots and stopped holds. 123 tests: 122 pass, one optional CBS-TA skip.
 The demonstration uses test-only candidate wiring and endpoint-observation doubles; no Runtime acceptance, action completion, shelf effects, ledger update or real backend. It proves neither continuous geometry nor indefinite parking safety.
 See [executor and native replay](0018-executor-replay.md). Select the next minimal loop increment after current PR review and merge. The user prioritizes demonstrating end-to-end execution soon rather than completing every standalone check first; scope and safety gates remain unchanged.
